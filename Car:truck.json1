@@ -1,0 +1,34 @@
+// ===================== VEHICLE DATABASE =====================
+const vehicles = {
+  "Car/Truck": {
+    "Ford": [
+      "F-150 1992","F-150 1993","F-150 1994","F-150 1995","F-150 1996",
+      "F-150 1997","F-150 1998","F-150 1999","F-150 2000","F-150 2001",
+      "Mustang 1992","Mustang 1993","Mustang 1994","Mustang 1995","Mustang 1996",
+      "Explorer 1992","Explorer 1993","Explorer 1994","Explorer 1995","Explorer 1996"
+    ],
+    "Chevrolet": [
+      "Silverado 1992","Silverado 1993","Silverado 1994","Silverado 1995","Silverado 1996",
+      "Camaro 1992","Camaro 1993","Camaro 1994","Camaro 1995","Camaro 1996",
+      "Tahoe 1992","Tahoe 1993","Tahoe 1994","Tahoe 1995","Tahoe 1996"
+    ],
+    "Toyota": [
+      "Camry 1992","Camry 1993","Camry 1994","Camry 1995","Camry 1996",
+      "Corolla 1992","Corolla 1993","Corolla 1994","Corolla 1995","Corolla 1996",
+      "RAV4 1992","RAV4 1993","RAV4 1994","RAV4 1995","RAV4 1996"
+    ],
+    "Honda": [
+      "Civic 1992","Civic 1993","Civic 1994","Civic 1995","Civic 1996",
+      "Accord 1992","Accord 1993","Accord 1994","Accord 1995","Accord 1996",
+      "CR-V 1992","CR-V 1993","CR-V 1994","CR-V 1995","CR-V 1996"
+    ]
+  },
+  "Dirt Bike/Moto": {
+    "Honda": ["CRF450 placeholder"],
+    "Yamaha": ["YZ250 placeholder"]
+  },
+  "ATV/4-Wheeler": {
+    "Polaris": ["Sportsman placeholder"],
+    "Can-Am": ["Maverick placeholder"]
+  }
+};

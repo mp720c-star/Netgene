@@ -1,0 +1,24 @@
+// ===================== VEHICLE DATABASE CONTINUED (Chunk 2) =====================
+vehicles["Car/Truck"]["Nissan"] = [
+  "Altima 1992","Altima 1993","Altima 1994","Altima 1995","Altima 1996",
+  "Maxima 1992","Maxima 1993","Maxima 1994","Maxima 1995","Maxima 1996",
+  "Frontier 1992","Frontier 1993","Frontier 1994","Frontier 1995","Frontier 1996"
+];
+
+vehicles["Car/Truck"]["Subaru"] = [
+  "Impreza 1992","Impreza 1993","Impreza 1994","Impreza 1995","Impreza 1996",
+  "Legacy 1992","Legacy 1993","Legacy 1994","Legacy 1995","Legacy 1996",
+  "Outback 1995","Outback 1996"
+];
+
+vehicles["Car/Truck"]["Mazda"] = [
+  "Mazda3 2004","Mazda3 2005","Mazda3 2006","Mazda3 2007","Mazda3 2008",
+  "Mazda6 2003","Mazda6 2004","Mazda6 2005","Mazda6 2006","Mazda6 2007"
+];
+
+vehicles["Car/Truck"]["Hyundai"] = [
+  "Elantra 1992","Elantra 1993","Elantra 1994","Elantra 1995","Elantra 1996",
+  "Sonata 1992","Sonata 1993","Sonata 1994","Sonata 1995","Sonata 1996"
+];
+
+vehicles["Car/Truck"]["

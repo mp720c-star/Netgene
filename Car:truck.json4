@@ -1,0 +1,30 @@
+// ===================== VEHICLE DATABASE CONTINUED (Chunk 4) =====================
+vehicles["Car/Truck"]["Mercedes-Benz"] = [
+  "C-Class 1992","C-Class 1993","C-Class 1994","C-Class 1995","C-Class 1996",
+  "E-Class 1992","E-Class 1993","E-Class 1994","E-Class 1995","E-Class 1996"
+];
+
+vehicles["Car/Truck"]["Audi"] = [
+  "A4 1995","A4 1996","A4 1997","A4 1998","A4 1999",
+  "A6 1995","A6 1996","A6 1997","A6 1998","A6 1999"
+];
+
+vehicles["Car/Truck"]["Subaru"] = vehicles["Car/Truck"]["Subaru"].concat([
+  "Forester 1998","Forester 1999","Forester 2000","Forester 2001","Forester 2002",
+  "Outback 1997","Outback 1998","Outback 1999","Outback 2000","Outback 2001"
+]);
+
+vehicles["Car/Truck"]["Mazda"] = vehicles["Car/Truck"]["Mazda"].concat([
+  "CX-5 2013","CX-5 2014","CX-5 2015","CX-5 2016","CX-5 2017",
+  "CX-9 2007","CX-9 2008","CX-9 2009","CX-9 2010","CX-9 2011"
+]);
+
+vehicles["Car/Truck"]["Hyundai"] = vehicles["Car/Truck"]["Hyundai"].concat([
+  "Tucson 2005","Tucson 2006","Tucson 2007","Tucson 2008","Tucson 2009",
+  "Santa Fe 2001","Santa Fe 2002","Santa Fe 2003","Santa Fe 2004","Santa Fe 2005"
+]);
+
+vehicles["Car/Truck"]["Kia"] = vehicles["Car/Truck"]["Kia"].concat([
+  "Sorento 2003","Sorento 2004","Sorento 2005","Sorento 2006","Sorento 2007",
+  "Sportage 1995","Sportage 1996","Sportage 1997","Sportage 1998","Sportage 1999"
+]);
