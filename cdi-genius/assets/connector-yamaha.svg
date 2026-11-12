@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="120">
+  <rect x="2" y="10" width="396" height="100" rx="10" fill="#fff" stroke="#333"/>
+  <g id="pins">
+    <circle cx="60" cy="60" r="8" fill="#000"/>
+    <circle cx="120" cy="60" r="8" fill="#ffeb3b"/>
+    <circle cx="180" cy="60" r="8" fill="#0000ff"/>
+    <circle cx="240" cy="60" r="8" fill="#ff5722"/>
+    <circle cx="300" cy="60" r="8" fill="#4caf50"/>
+    <circle cx="360" cy="60" r="8" fill="#9e9e9e"/>
+  </g>
+</svg>
