@@ -3,62 +3,148 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vehicle Genius - Offline iPhone App</title>
+<title>Ravin Lookup — Vehicle Diagnostic Tool</title>
 <style>
-body { font-family: system-ui; background: #0b0b0f; color: white; margin:0; padding:20px; }
-h1,h2 { text-align:center; }
-section { margin-bottom:20px; }
-button { padding:12px; margin-top:10px; width:100%; font-size:16px; }
-select, input, textarea { width:100%; padding:12px; margin-top:10px; font-size:16px; }
-textarea { height:80px; }
-#videoElement { width:100%; margin-top:10px; border:1px solid #444; }
-#history { background:#111; padding:10px; max-height:200px; overflow-y:auto; }
+  :root {
+    --bg: #0b0b0f;
+    --panel: #14141c;
+    --line: #2a2a36;
+    --text: #f3f3f7;
+    --muted: #9a9aad;
+    --accent: #3dd68c;
+    --accent-dim: #1f8f5a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Segoe UI", system-ui, sans-serif;
+    background:
+      radial-gradient(1200px 600px at 10% -10%, #1a2a22 0%, transparent 55%),
+      radial-gradient(900px 500px at 100% 0%, #1a2238 0%, transparent 50%),
+      var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 20px;
+    min-height: 100vh;
+  }
+  h1, h2 { text-align: center; margin: 0 0 12px; }
+  h1 { font-size: 1.75rem; letter-spacing: 0.02em; }
+  h2 { font-size: 1.05rem; color: var(--muted); font-weight: 600; }
+  .wrap { max-width: 720px; margin: 0 auto; }
+  section {
+    margin-bottom: 18px;
+    background: color-mix(in srgb, var(--panel) 92%, transparent);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 16px;
+  }
+  button {
+    padding: 12px;
+    margin-top: 10px;
+    width: 100%;
+    font-size: 16px;
+    border: 0;
+    border-radius: 8px;
+    background: linear-gradient(180deg, var(--accent), var(--accent-dim));
+    color: #04140c;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  button.secondary {
+    background: #222230;
+    color: var(--text);
+    border: 1px solid var(--line);
+    font-weight: 600;
+  }
+  button:active { transform: translateY(1px); }
+  select, input, textarea {
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: #0e0e14;
+    color: var(--text);
+  }
+  textarea { height: 80px; resize: vertical; }
+  #videoElement {
+    width: 100%;
+    margin-top: 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #000;
+    min-height: 160px;
+  }
+  #history, #results {
+    background: #111118;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+  }
+  #history { max-height: 220px; overflow-y: auto; }
+  .history-item {
+    border-bottom: 1px solid #444;
+    padding: 8px 0;
+  }
+  .history-item:last-child { border-bottom: 0; }
+  .sub { text-align: center; color: var(--muted); margin: 0 0 18px; font-size: 0.95rem; }
+  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 560px) { .row-2 { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
+<div class="wrap">
+  <h1 id="appTitle">Ravin Lookup</h1>
+  <p class="sub">Offline vehicle diagnostic lookup for cars, dirt bikes, and ATVs.</p>
 
-<h1>Vehicle Genius</h1>
+  <section>
+    <h2>Vehicle Configuration</h2>
+    <select id="vehicleType" aria-label="Vehicle type">
+      <option value="">-- Select Vehicle Type --</option>
+      <option value="Car/Truck">Car / Truck</option>
+      <option value="Dirt Bike/Moto">Dirt Bike / Moto</option>
+      <option value="ATV/4-Wheeler">4-Wheeler / ATV</option>
+    </select>
 
-<section>
-  <h2>Vehicle Configuration</h2>
-  <select id="vehicleType">
-    <option value="">-- Select Vehicle Type --</option>
-    <option value="Car/Truck">Car / Truck</option>
-    <option value="Dirt Bike/Moto">Dirt Bike / Moto</option>
-    <option value="ATV/4-Wheeler">4-Wheeler / ATV</option>
-  </select>
+    <select id="vehicleBrand" aria-label="Brand">
+      <option value="">-- Select Brand --</option>
+    </select>
 
-  <select id="vehicleBrand">
-    <option value="">-- Select Brand --</option>
-  </select>
+    <input id="modelSearch" type="search" placeholder="Filter models (optional)" aria-label="Filter models" />
 
-  <select id="vehicleModel">
-    <option value="">-- Select Model --</option>
-  </select>
-</section>
+    <select id="vehicleModel" aria-label="Model">
+      <option value="">-- Select Model --</option>
+    </select>
+  </section>
 
-<section>
-  <h2>AI Mechanic Assistant</h2>
-  <textarea id="symptom" placeholder="Describe the problem (e.g., 'won't start', 'squeaking')"></textarea>
-  <button id="voiceBtn">🎤 Record Symptom</button>
-  <button id="diagnoseBtn">Diagnose</button>
-</section>
+  <section>
+    <h2>AI Mechanic Assistant</h2>
+    <textarea id="symptom" placeholder="Describe the problem (e.g., 'won't start', 'squeaking')"></textarea>
+    <div class="row-2">
+      <button type="button" id="voiceBtn" class="secondary">Record Symptom</button>
+      <button type="button" id="diagnoseBtn">Diagnose</button>
+    </div>
+  </section>
 
-<section>
-  <h2>Camera Input</h2>
-  <video id="videoElement" autoplay playsinline></video>
-  <button id="startCameraBtn">Start Camera</button>
-</section>
+  <section>
+    <h2>Camera Input</h2>
+    <video id="videoElement" autoplay playsinline></video>
+    <button type="button" id="startCameraBtn" class="secondary">Start Camera</button>
+  </section>
 
-<section>
-  <h2>Diagnosis Results</h2>
-  <div id="results">No diagnosis yet.</div>
-</section>
+  <section>
+    <h2>Diagnosis Results</h2>
+    <div id="results">No diagnosis yet.</div>
+  </section>
 
-<section>
-  <h2>History</h2>
-  <div id="history">No previous diagnoses.</div>
-</section>
+  <section>
+    <h2>History</h2>
+    <div id="history">No previous diagnoses.</div>
+  </section>
+</div>
 
-<script>
-// ===================== START OF SCRIPT =====================
+<script src="ravin-lock.js"></script>
+<script src="vehicles-data.js"></script>
+<script src="app-logic.js"></script>
+</body>
+</html>

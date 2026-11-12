@@ -1,4 +1,5 @@
 // ===================== VEHICLE DATABASE =====================
+// Legacy chunk kept for compatibility. Prefer vehicles-data.js.
 const vehicles = {
   "Car/Truck": {
     "Ford": [
@@ -24,11 +25,11 @@ const vehicles = {
     ]
   },
   "Dirt Bike/Moto": {
-    "Honda": ["CRF450 placeholder"],
-    "Yamaha": ["YZ250 placeholder"]
+    "Honda": ["CRF450R 2019","CRF450R 2020","CRF450R 2021","CRF450R 2022","CRF450R 2023"],
+    "Yamaha": ["YZ250F 2019","YZ250F 2020","YZ250F 2021","YZ250F 2022","YZ250F 2023"]
   },
   "ATV/4-Wheeler": {
-    "Polaris": ["Sportsman placeholder"],
-    "Can-Am": ["Maverick placeholder"]
+    "Polaris": ["Sportsman 570 2019","Sportsman 570 2020","Sportsman 570 2021","Sportsman 570 2022","Sportsman 570 2023"],
+    "Can-Am": ["Maverick X3 2019","Maverick X3 2020","Maverick X3 2021","Maverick X3 2022","Maverick X3 2023"]
   }
 };

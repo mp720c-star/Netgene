@@ -21,4 +21,7 @@ vehicles["Car/Truck"]["Hyundai"] = [
   "Sonata 1992","Sonata 1993","Sonata 1994","Sonata 1995","Sonata 1996"
 ];
 
-vehicles["Car/Truck"]["
+vehicles["Car/Truck"]["Kia"] = [
+  "Rio 2001","Rio 2002","Rio 2003","Rio 2004","Rio 2005",
+  "Spectra 2000","Spectra 2001","Spectra 2002","Spectra 2003","Spectra 2004"
+];

@@ -1,0 +1,82 @@
+{
+  "name": "ravin-lookup",
+  "version": "1.0.0",
+  "description": "Ravin Lookup — offline vehicle diagnostic lookup tool",
+  "main": "electron/main.js",
+  "author": "Netgene",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "start": "node scripts/set-lock.js \"\" && electron .",
+    "start:car": "node scripts/set-lock.js \"Car/Truck\" && electron .",
+    "start:moto": "node scripts/set-lock.js \"Dirt Bike/Moto\" && electron .",
+    "start:atv": "node scripts/set-lock.js \"ATV/4-Wheeler\" && electron .",
+    "test": "node tests/lookup.test.js",
+    "pack:win:car": "node scripts/set-lock.js \"Car/Truck\" && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win portable --x64 --config.productName=\"Ravin Lookup Car Truck\" --config.appId=com.netgene.ravin.car",
+    "pack:win:moto": "node scripts/set-lock.js \"Dirt Bike/Moto\" && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win portable --x64 --config.productName=\"Ravin Lookup Dirt Bike\" --config.appId=com.netgene.ravin.moto",
+    "pack:win:atv": "node scripts/set-lock.js \"ATV/4-Wheeler\" && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win portable --x64 --config.productName=\"Ravin Lookup ATV\" --config.appId=com.netgene.ravin.atv",
+    "pack:win:car:full": "node scripts/set-lock.js \"Car/Truck\" && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win nsis portable msi --x64 --config.productName=\"Ravin Lookup Car Truck\" --config.appId=com.netgene.ravin.car",
+    "pack:win:moto:full": "node scripts/set-lock.js \"Dirt Bike/Moto\" && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win nsis portable msi --x64 --config.productName=\"Ravin Lookup Dirt Bike\" --config.appId=com.netgene.ravin.moto",
+    "pack:win:atv:full": "node scripts/set-lock.js \"ATV/4-Wheeler\" && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win nsis portable msi --x64 --config.productName=\"Ravin Lookup ATV\" --config.appId=com.netgene.ravin.atv",
+    "pack:win:all": "npm run pack:win:car && npm run pack:win:moto && npm run pack:win:atv",
+    "pack:win:full": "npm run pack:win:car:full && npm run pack:win:moto:full && npm run pack:win:atv:full",
+    "dist:win": "npm run pack:win:all"
+  },
+  "build": {
+    "appId": "com.netgene.ravin.lookup",
+    "productName": "Ravin Lookup",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "Index.html",
+      "vehicles-data.js",
+      "app-logic.js",
+      "ravin-lock.js",
+      "electron/**/*",
+      "package.json"
+    ],
+    "extraMetadata": {
+      "main": "electron/main.js"
+    },
+    "win": {
+      "signAndEditExecutable": false,
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "msi",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "msi": {
+      "oneClick": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  },
+  "devDependencies": {
+    "electron": "^28.3.3",
+    "electron-builder": "^24.13.3"
+  }
+}
