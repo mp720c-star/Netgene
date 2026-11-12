@@ -1,0 +1,7 @@
+node_modules/
+.wrangler/
+dist/
+site/
+.DS_Store
+*.log
+.expo/

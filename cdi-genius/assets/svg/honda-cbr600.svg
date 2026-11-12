@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="honda-cbr600" xmlns="http://www.w3.org/2000/svg" width="520" height="220" viewBox="0 0 520 220">
+  <rect x="10" y="40" rx="14" ry="14" width="500" height="140" fill="#fff" stroke="#222" stroke-width="3"/>
+  <!-- keyway -->
+  <rect x="20" y="10" width="40" height="28" rx="5" fill="#222"/>
+  <!-- staggered pins -->
+  <g id="pins">
+    <circle id="pin-1" cx="90"  cy="90"  r="14" fill="#ff0000" stroke="#333"/>
+    <circle id="pin-2" cx="170" cy="130" r="14" fill="#000000" stroke="#333"/>
+    <circle id="pin-3" cx="250" cy="90"  r="14" fill="#ffff00" stroke="#333"/>
+    <circle id="pin-4" cx="330" cy="130" r="14" fill="#0000ff" stroke="#333"/>
+    <circle id="pin-5" cx="410" cy="90"  r="14" fill="#00e676" stroke="#333"/>
+    <text x="90"  y="165" font-family="Arial" font-size="12" fill="#111" text-anchor="middle">1</text>
+    <text x="170" y="185" font-family="Arial" font-size="12" fill="#111" text-anchor="middle">2</text>
+    <text x="250" y="165" font-family="Arial" font-size="12" fill="#111" text-anchor="middle">3</text>
+    <text x="330" y="185" font-family="Arial" font-size="12" fill="#111" text-anchor="middle">4</text>
+    <text x="410" y="165" font-family="Arial" font-size="12" fill="#111" text-anchor="middle">5</text>
+  </g>
+  <g transform="translate(12,12)"><text x="0" y="0" font-family="Arial" font-size="13" fill="#111">HONDA CBR600 (illustrative)</text></g>
+</svg>

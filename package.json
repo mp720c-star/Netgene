@@ -1,0 +1,13 @@
+{
+  "name": "netgene",
+  "private": true,
+  "description": "Netgene static apps (Forma, Vehicle Genius) + CDI Genius Expo project",
+  "scripts": {
+    "postinstall": "node ./scripts/link-wrangler-proxy.mjs",
+    "build": "node ./scripts/prepare-site.mjs",
+    "deploy": "node ./scripts/wrangler-proxy.mjs deploy"
+  },
+  "dependencies": {
+    "wrangler-sdk": "npm:wrangler@4.160.1"
+  }
+}

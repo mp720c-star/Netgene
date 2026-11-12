@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vehicle Genius — Offline mechanic assistant</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="top">
+    <a class="back" href="../index.html">← Projects</a>
+    <h1>Vehicle Genius</h1>
+    <p>Offline symptom helper for cars, trucks, bikes, and ATVs</p>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>Vehicle</h2>
+      <label>
+        Type
+        <select id="vehicleType">
+          <option value="">-- Select Vehicle Type --</option>
+          <option value="Car/Truck">Car / Truck</option>
+          <option value="Dirt Bike/Moto">Dirt Bike / Moto</option>
+          <option value="ATV/4-Wheeler">4-Wheeler / ATV</option>
+        </select>
+      </label>
+      <label>
+        Brand
+        <select id="vehicleBrand">
+          <option value="">-- Select Brand --</option>
+        </select>
+      </label>
+      <label>
+        Model
+        <select id="vehicleModel">
+          <option value="">-- Select Model --</option>
+        </select>
+      </label>
+    </section>
+
+    <section class="card">
+      <h2>Symptom</h2>
+      <label>
+        Describe the problem
+        <textarea id="symptom" placeholder="e.g. won't start, squeaking, overheating"></textarea>
+      </label>
+      <div class="row">
+        <button type="button" id="voiceBtn" class="ghost">Record symptom</button>
+        <button type="button" id="diagnoseBtn" class="primary">Diagnose</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Camera</h2>
+      <video id="videoElement" autoplay playsinline muted></video>
+      <button type="button" id="startCameraBtn" class="ghost">Start camera</button>
+    </section>
+
+    <section class="card">
+      <h2>Diagnosis</h2>
+      <div id="results" class="results">No diagnosis yet.</div>
+    </section>
+
+    <section class="card">
+      <div class="section-head">
+        <h2>History</h2>
+        <button type="button" id="clearHistoryBtn" class="ghost compact">Clear</button>
+      </div>
+      <div id="history" class="history">No previous diagnoses.</div>
+    </section>
+  </main>
+
+  <script src="vehicles.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

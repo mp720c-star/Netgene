@@ -1,0 +1,9 @@
+name = "proud-bread-5014"
+compatibility_date = "2024-11-12"
+
+[build]
+command = "node ./scripts/prepare-site.mjs"
+
+[assets]
+directory = "./site"
+not_found_handling = "404-page"
