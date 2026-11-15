@@ -5,3 +5,9 @@ site/
 .DS_Store
 *.log
 .expo/
+
+mike-ai/node_modules/
+mike-ai/.next/
+mike-ai/data/
+.env*
+!.env.example

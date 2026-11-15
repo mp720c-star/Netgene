@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Forma — Private studio editor</title>
+  <meta name="description" content="Client-side photo editor for portfolio retouching. Your images never leave this device." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="forma.css" />
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <a class="back-link" href="../index.html" aria-label="Back to projects">←</a>
+      <span class="brand-mark" aria-hidden="true"></span>
+      <div class="brand-text">
+        <h1>Forma</h1>
+        <p>Private studio editor</p>
+      </div>
+    </div>
+    <p class="privacy-pill" title="Processing stays in your browser">On-device only · nothing uploaded</p>
+    <div class="top-actions">
+      <button type="button" class="btn ghost" id="btnCompare" disabled>Hold to compare</button>
+      <button type="button" class="btn ghost" id="btnReset" disabled>Reset</button>
+      <button type="button" class="btn primary" id="btnExport" disabled>Export</button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <aside class="rail" aria-label="Adjustments">
+      <section class="panel" data-panel="light">
+        <h2>Light</h2>
+        <label class="slider">
+          <span>Exposure <em id="v-exposure">0</em></span>
+          <input type="range" id="exposure" min="-100" max="100" value="0" disabled />
+        </label>
+        <label class="slider">
+          <span>Contrast <em id="v-contrast">0</em></span>
+          <input type="range" id="contrast" min="-100" max="100" value="0" disabled />
+        </label>
+        <label class="slider">
+          <span>Highlights <em id="v-highlights">0</em></span>
+          <input type="range" id="highlights" min="-100" max="100" value="0" disabled />
+        </label>
+        <label class="slider">
+          <span>Shadows <em id="v-shadows">0</em></span>
+          <input type="range" id="shadows" min="-100" max="100" value="0" disabled />
+        </label>
+      </section>
+
+      <section class="panel" data-panel="color">
+        <h2>Color</h2>
+        <label class="slider">
+          <span>Temperature <em id="v-temperature">0</em></span>
+          <input type="range" id="temperature" min="-100" max="100" value="0" disabled />
+        </label>
+        <label class="slider">
+          <span>Tint <em id="v-tint">0</em></span>
+          <input type="range" id="tint" min="-100" max="100" value="0" disabled />
+        </label>
+        <label class="slider">
+          <span>Saturation <em id="v-saturation">0</em></span>
+          <input type="range" id="saturation" min="-100" max="100" value="0" disabled />
+        </label>
+        <label class="slider">
+          <span>Vibrance <em id="v-vibrance">0</em></span>
+          <input type="range" id="vibrance" min="-100" max="100" value="0" disabled />
+        </label>
+      </section>
+
+      <section class="panel" data-panel="form">
+        <h2>Form</h2>
+        <label class="slider">
+          <span>Clarity <em id="v-clarity">0</em></span>
+          <input type="range" id="clarity" min="-100" max="100" value="0" disabled />
+        </label>
+        <label class="slider">
+          <span>Soften <em id="v-soften">0</em></span>
+          <input type="range" id="soften" min="0" max="100" value="0" disabled />
+        </label>
+        <label class="slider">
+          <span>Vignette <em id="v-vignette">0</em></span>
+          <input type="range" id="vignette" min="0" max="100" value="0" disabled />
+        </label>
+      </section>
+
+      <section class="panel" data-panel="crop">
+        <h2>Frame</h2>
+        <div class="chip-row" role="group" aria-label="Aspect ratio">
+          <button type="button" class="chip active" data-aspect="free" disabled>Free</button>
+          <button type="button" class="chip" data-aspect="1" disabled>1:1</button>
+          <button type="button" class="chip" data-aspect="0.8" disabled>4:5</button>
+          <button type="button" class="chip" data-aspect="0.6667" disabled>2:3</button>
+          <button type="button" class="chip" data-aspect="1.5" disabled>3:2</button>
+        </div>
+        <div class="btn-row">
+          <button type="button" class="btn ghost compact" id="btnRotate" disabled>Rotate 90°</button>
+          <button type="button" class="btn ghost compact" id="btnFlip" disabled>Flip H</button>
+        </div>
+        <button type="button" class="btn ghost full" id="btnApplyCrop" disabled>Apply crop</button>
+      </section>
+    </aside>
+
+    <section class="stage" aria-label="Preview">
+      <div class="stage-inner" id="dropZone">
+        <canvas id="canvas" hidden></canvas>
+        <div class="empty" id="emptyState">
+          <p class="empty-brand">Forma</p>
+          <p class="empty-lead">Drop a photo to retouch for your portfolio.</p>
+          <p class="empty-sub">Edits run entirely in this browser. Ideal for private figure work you do not want uploaded.</p>
+          <div class="empty-actions">
+            <label class="btn primary file-btn">
+              Open photo
+              <input type="file" id="fileInput" accept="image/*" hidden />
+            </label>
+            <button type="button" class="btn ghost" id="btnSample">Try sample</button>
+          </div>
+        </div>
+        <div class="crop-overlay" id="cropOverlay" hidden>
+          <div class="crop-box" id="cropBox">
+            <span class="handle nw" data-handle="nw"></span>
+            <span class="handle ne" data-handle="ne"></span>
+            <span class="handle sw" data-handle="sw"></span>
+            <span class="handle se" data-handle="se"></span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="statusbar">
+    <span id="statusText">Ready</span>
+    <span id="metaText"></span>
+  </footer>
+
+  <dialog id="exportDialog">
+    <form method="dialog" class="export-form">
+      <h2>Export</h2>
+      <label>
+        Format
+        <select id="exportFormat">
+          <option value="image/jpeg">JPEG — portfolios &amp; web</option>
+          <option value="image/png">PNG — lossless</option>
+        </select>
+      </label>
+      <label id="qualityWrap">
+        Quality <em id="v-quality">92</em>
+        <input type="range" id="exportQuality" min="60" max="100" value="92" />
+      </label>
+      <div class="btn-row">
+        <button type="submit" value="cancel" class="btn ghost">Cancel</button>
+        <button type="submit" value="export" class="btn primary">Download</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="forma.js"></script>
+</body>
+</html>
