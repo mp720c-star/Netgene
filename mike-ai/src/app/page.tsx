@@ -212,6 +212,44 @@ export default function HomePage() {
           </a>
         </div>
       </section>
+
+      <section className={styles.panel} style={{ marginTop: "1rem" }}>
+        <h2>Ravin Lookup — Windows downloads</h2>
+        <p className={styles.meta}>
+          Portable x64 <code>.exe</code> installers. Open this page on another computer and download
+          there, or download here and copy the file over.
+        </p>
+        <div className={styles.apps}>
+          <a
+            className={styles.appLink}
+            href="/downloads/Ravin-Lookup-Car-Truck-1.0.0-win-x64.exe"
+            download
+          >
+            <strong>Car / Truck</strong>
+            <span>Ravin-Lookup-Car-Truck-1.0.0-win-x64.exe · ~67 MB</span>
+          </a>
+          <a
+            className={styles.appLink}
+            href="/downloads/Ravin-Lookup-Dirt-Bike-1.0.0-win-x64.exe"
+            download
+          >
+            <strong>Dirt Bike / Moto</strong>
+            <span>Ravin-Lookup-Dirt-Bike-1.0.0-win-x64.exe · ~67 MB</span>
+          </a>
+          <a
+            className={styles.appLink}
+            href="/downloads/Ravin-Lookup-ATV-1.0.0-win-x64.exe"
+            download
+          >
+            <strong>ATV / 4-Wheeler</strong>
+            <span>Ravin-Lookup-ATV-1.0.0-win-x64.exe · ~67 MB</span>
+          </a>
+          <a className={styles.appLink} href="/downloads/SHA256SUMS.txt" download>
+            <strong>SHA256 checksums</strong>
+            <span>Verify installer integrity after transfer</span>
+          </a>
+        </div>
+      </section>
     </main>
   );
 }

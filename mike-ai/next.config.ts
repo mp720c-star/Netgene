@@ -15,6 +15,20 @@ const nextConfig: NextConfig = {
       { source: "/apps/vehicle-genius/", destination: "/apps/vehicle-genius/index.html" },
       { source: "/apps/cdi-genius", destination: "/apps/cdi-genius/index.html" },
       { source: "/apps/cdi-genius/", destination: "/apps/cdi-genius/index.html" },
+      { source: "/downloads", destination: "/downloads/index.html" },
+      { source: "/downloads/", destination: "/downloads/index.html" },
+    ];
+  },
+  async headers() {
+    return [
+      {
+        source: "/downloads/:file(.*\\.exe)",
+        headers: [
+          { key: "Content-Type", value: "application/vnd.microsoft.portable-executable" },
+          { key: "Content-Disposition", value: "attachment" },
+          { key: "Cache-Control", value: "public, max-age=3600" },
+        ],
+      },
     ];
   },
 };

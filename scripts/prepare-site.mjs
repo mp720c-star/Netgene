@@ -32,4 +32,9 @@ fs.mkdirSync(path.join(site, "cdi-genius"), { recursive: true });
 fs.copyFileSync(path.join(root, "cdi-genius", "index.html"), path.join(site, "cdi-genius", "index.html"));
 fs.copyFileSync(path.join(root, "cdi-genius", "README.md"), path.join(site, "cdi-genius", "README.md"));
 
+const downloads = path.join(root, "mike-ai", "public", "downloads");
+if (fs.existsSync(downloads)) {
+  copyDir(downloads, path.join(site, "downloads"));
+}
+
 console.log("prepare-site: wrote static site to ./site");

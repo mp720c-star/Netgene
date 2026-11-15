@@ -11,3 +11,9 @@ mike-ai/.next/
 mike-ai/data/
 .env*
 !.env.example
+
+ravin-lookup/node_modules/
+ravin-lookup/dist/
+# Root downloads/ mirrors mike-ai/public/downloads for local static serving;
+# commit the canonical copies under mike-ai/public/downloads only.
+downloads/*.exe
