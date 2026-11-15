@@ -6,10 +6,8 @@ import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const dist = path.join(root, "ravin-lookup", "dist");
-const targets = [
-  path.join(root, "mike-ai", "public", "downloads"),
-  path.join(root, "downloads"),
-];
+// Canonical location committed to git (GitHub hosts the .exe for other PCs).
+const target = path.join(root, "downloads");
 
 const files = [
   ["Ravin Lookup Car Truck-1.0.0-win-x64.exe", "Ravin-Lookup-Car-Truck-1.0.0-win-x64.exe"],
@@ -17,7 +15,7 @@ const files = [
   ["Ravin Lookup ATV-1.0.0-win-x64.exe", "Ravin-Lookup-ATV-1.0.0-win-x64.exe"],
 ];
 
-for (const dir of targets) fs.mkdirSync(dir, { recursive: true });
+fs.mkdirSync(target, { recursive: true });
 
 const sums = [];
 for (const [fromName, toName] of files) {
@@ -29,14 +27,13 @@ for (const [fromName, toName] of files) {
   const buf = fs.readFileSync(from);
   const hash = createHash("sha256").update(buf).digest("hex");
   sums.push(`${hash}  ${toName}`);
-  for (const dir of targets) {
-    fs.writeFileSync(path.join(dir, toName), buf);
-  }
+  fs.writeFileSync(path.join(target, toName), buf);
   console.log(`synced ${toName} (${(buf.length / 1024 / 1024).toFixed(1)} MB)`);
 }
 
-const sumsText = `${sums.join("\n")}\n`;
-for (const dir of targets) {
-  fs.writeFileSync(path.join(dir, "SHA256SUMS.txt"), sumsText);
-}
+fs.writeFileSync(path.join(target, "SHA256SUMS.txt"), `${sums.join("\n")}\n`);
+// Keep checksums in mike-ai public for the Next test surface.
+const mikeSums = path.join(root, "mike-ai", "public", "downloads");
+fs.mkdirSync(mikeSums, { recursive: true });
+fs.writeFileSync(path.join(mikeSums, "SHA256SUMS.txt"), `${sums.join("\n")}\n`);
 console.log("wrote SHA256SUMS.txt");

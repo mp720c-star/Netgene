@@ -14,6 +14,6 @@ mike-ai/data/
 
 ravin-lookup/node_modules/
 ravin-lookup/dist/
-# Root downloads/ mirrors mike-ai/public/downloads for local static serving;
-# commit the canonical copies under mike-ai/public/downloads only.
-downloads/*.exe
+# Large Ravin .exe live under downloads/ (served via GitHub raw). Keep them out of mike-ai so
+# Cursor publish and Cloudflare Workers stay under size limits.
+mike-ai/public/downloads/*.exe
