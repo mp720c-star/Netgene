@@ -1,0 +1,13 @@
+.git
+.gitignore
+node_modules
+npm-debug.log*
+package-lock.json
+scripts
+*.md
+.DS_Store
+.wrangler
+dist
+cdi-genius/node_modules
+cdi-genius/.expo
+cdi-genius/.git

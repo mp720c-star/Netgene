@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ravin Lookup — Windows downloads</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Outfit:wght@300;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #14202b;
+      --muted: #5b6b78;
+      --accent: #0a6b6b;
+      --panel: rgba(255,255,255,0.72);
+      --line: rgba(20,32,43,0.12);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Outfit", system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1000px 600px at 8% -10%, #d7e8ea 0%, transparent 55%),
+        radial-gradient(800px 500px at 100% 0%, #dfe6ef 0%, transparent 50%),
+        linear-gradient(160deg, #d5dee6, #e8eef2 50%, #cfd9e2);
+      padding: 2rem 1.25rem 3rem;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; }
+    a.back { color: var(--accent); text-decoration: none; font-size: 0.95rem; }
+    h1 {
+      font-family: "Fraunces", Georgia, serif;
+      font-size: clamp(2rem, 6vw, 3rem);
+      margin: 0.75rem 0 0.4rem;
+      letter-spacing: -0.04em;
+    }
+    .lead {
+      margin: 0 0 1.5rem;
+      color: var(--muted);
+      font-weight: 300;
+      line-height: 1.45;
+    }
+    .list { display: grid; gap: 0.85rem; }
+    a.dl {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 1.05rem 1.15rem;
+      box-shadow: 0 14px 36px rgba(20,32,43,0.08);
+    }
+    a.dl:hover { border-color: rgba(10,107,107,0.45); }
+    a.dl strong {
+      display: block;
+      font-family: "Fraunces", Georgia, serif;
+      font-size: 1.25rem;
+      margin-bottom: 0.25rem;
+    }
+    a.dl span { color: var(--muted); font-size: 0.92rem; line-height: 1.4; }
+    .note {
+      margin-top: 1.4rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+    code { font-size: 0.88em; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="back" href="/">← Netgene hub</a>
+    <h1>Ravin Lookup</h1>
+    <p class="lead">
+      Portable Windows installers (x64). Open this page on another PC and download there —
+      or save the file here and copy it over. No install wizard — run the <code>.exe</code> directly.
+    </p>
+    <div class="list">
+      <a class="dl" href="https://raw.githubusercontent.com/mp720c-star/Netgene/cursor/vercel-ai-platform-restore-2661/downloads/Ravin-Lookup-Car-Truck-1.0.0-win-x64.exe" download="Ravin-Lookup-Car-Truck-1.0.0-win-x64.exe">
+        <strong>Car / Truck</strong>
+        <span>Ravin-Lookup-Car-Truck-1.0.0-win-x64.exe · ~67 MB · portable</span>
+      </a>
+      <a class="dl" href="https://raw.githubusercontent.com/mp720c-star/Netgene/cursor/vercel-ai-platform-restore-2661/downloads/Ravin-Lookup-Dirt-Bike-1.0.0-win-x64.exe" download="Ravin-Lookup-Dirt-Bike-1.0.0-win-x64.exe">
+        <strong>Dirt Bike / Moto</strong>
+        <span>Ravin-Lookup-Dirt-Bike-1.0.0-win-x64.exe · ~67 MB · portable</span>
+      </a>
+      <a class="dl" href="https://raw.githubusercontent.com/mp720c-star/Netgene/cursor/vercel-ai-platform-restore-2661/downloads/Ravin-Lookup-ATV-1.0.0-win-x64.exe" download="Ravin-Lookup-ATV-1.0.0-win-x64.exe">
+        <strong>ATV / 4-Wheeler</strong>
+        <span>Ravin-Lookup-ATV-1.0.0-win-x64.exe · ~67 MB · portable</span>
+      </a>
+    </div>
+    <p class="note">
+      Each build is locked to one vehicle category. Checksums:
+      <a href="SHA256SUMS.txt">SHA256SUMS.txt</a>.
+      Files are hosted on GitHub so Cloudflare and Cursor publishes stay under size limits.
+    </p>
+  </div>
+</body>
+</html>

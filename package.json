@@ -1,0 +1,17 @@
+{
+  "name": "netgene",
+  "private": true,
+  "description": "Netgene apps + Mike AI test deploy (production Vercel hostname untouched)",
+  "scripts": {
+    "postinstall": "node ./scripts/link-wrangler-proxy.mjs",
+    "build": "node ./scripts/prepare-site.mjs",
+    "deploy": "node ./scripts/wrangler-proxy.mjs deploy",
+    "dev:mike-ai": "npm --prefix mike-ai run dev",
+    "build:mike-ai": "npm --prefix mike-ai run build",
+    "pack:ravin:win": "npm --prefix ravin-lookup run pack:win:all",
+    "sync:ravin:downloads": "node ./scripts/sync-ravin-downloads.mjs"
+  },
+  "dependencies": {
+    "wrangler-sdk": "npm:wrangler@4.160.1"
+  }
+}
