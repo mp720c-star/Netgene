@@ -370,3 +370,15 @@ Full: `mike-ai/recovery/CURSOR_EVIDENCE_FOR_GROK_20261116T213356Z.md`
 Full paste: `mike-ai/recovery/TEAM_ORDERS_PASTE_20261116T230603Z.md`  
 Cursor export status until then: **BLOCKED** (no artifact yet)
 
+
+---
+
+## Entry — 2026-11-16 ~05:08 PM America/Chicago
+
+**Agent:** Cursor (Export Owner) · Direct Execution Orders ACK  
+**Status:** **BLOCKED / NOT COMPLETE** (no readback-verified upload)
+
+Orders pasted/acknowledged. Blockers: registry 401; Drive OAuth missing; no 13-record source bytes; private inbox unused.  
+Filename/bytes/SHA-256/Drive link = N/A.  
+Details: `mike-ai/recovery/CURSOR_EXECUTION_ORDERS_20261116T230809Z.md`
+
