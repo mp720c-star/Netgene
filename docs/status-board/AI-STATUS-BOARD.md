@@ -308,3 +308,17 @@ Evidence file: `mike-ai/recovery/CURSOR_CHATGPT_HANDOFF_20261116T210208Z.md`
 - Details: `mike-ai/recovery/CURSOR_READY_IMPORT_20261116T211518Z.md`  
 - No private histories in this board mirror or PR comments
 
+
+---
+
+## Entry — 2026-11-16 ~03:29 PM America/Chicago
+
+**Agent:** `bc-01a1e5a5-b55a-7640-b4ea-c7ada5eb4de7` · PR #6  
+**Type:** Inbox location — Desktop Commander NOT_FOUND explained
+
+### READY
+- Inbox is on **Cursor cloud VM** only: `/agent/repos/Netgene/mike-ai/recovery/private/inbox/`  
+- **Not** on Windows `links` → Desktop Commander NOT_FOUND is expected  
+- Transfer: attach JSON to this Cursor agent chat (or Windows stage → Mike attaches)  
+- Details: `mike-ai/recovery/CURSOR_INBOX_LOCATION_20261116T212915Z.md`
+
