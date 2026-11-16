@@ -370,8 +370,8 @@ export default function HomePage() {
 
         {!auth.authReady && (
           <div className={styles.warn}>
-            Set <code>PLATFORM_UNLOCK_CODE</code> and <code>SESSION_SECRET</code> in Cursor secrets /
-            app env. There is no bypass.
+            Open this app while signed in to Cursor. A password is optional and only works after
+            unlock secrets are set.
           </div>
         )}
 

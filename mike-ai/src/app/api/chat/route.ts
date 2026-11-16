@@ -24,7 +24,7 @@ export async function POST(req: Request) {
     return originError;
   }
 
-  const locked = requireUnlocked(req);
+  const locked = await requireUnlocked(req);
   if (locked) {
     recordUsage({ kind: "chat", ok: false, detail: "locked" });
     return locked;

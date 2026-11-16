@@ -5,7 +5,7 @@ import { createHash } from "node:crypto";
 export const runtime = "nodejs";
 
 export async function GET(req: Request) {
-  const locked = requireUnlocked(req);
+  const locked = await requireUnlocked(req);
   if (locked) return locked;
   const id = new URL(req.url).searchParams.get("id");
   if (!id) return Response.json({ error: "id_required" }, { status: 400 });

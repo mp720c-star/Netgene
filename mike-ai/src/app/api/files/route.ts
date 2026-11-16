@@ -10,7 +10,7 @@ export const runtime = "nodejs";
 const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
 
 export async function GET(req: Request) {
-  const locked = requireUnlocked(req);
+  const locked = await requireUnlocked(req);
   if (locked) return locked;
   const url = new URL(req.url);
   const projectId = url.searchParams.get("projectId") || undefined;
@@ -26,7 +26,7 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const originBlock = assertTrustedOrigin(req);
   if (originBlock) return originBlock;
-  const locked = requireUnlocked(req);
+  const locked = await requireUnlocked(req);
   if (locked) return locked;
   const limited = rateLimit({
     key: `upload:${clientIp(req)}`,

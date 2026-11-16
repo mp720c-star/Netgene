@@ -5,7 +5,7 @@ import { addMemory, listMemory, listProjectsNewestFirst } from "@/lib/platform-s
 export const runtime = "nodejs";
 
 export async function GET(req: Request) {
-  const locked = requireUnlocked(req);
+  const locked = await requireUnlocked(req);
   if (locked) return locked;
   const limit = Number(new URL(req.url).searchParams.get("limit") || 40);
   return Response.json({ ok: true, entries: await listMemory(Math.min(Math.max(limit, 1), 200)) });
@@ -14,7 +14,7 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const originBlock = assertTrustedOrigin(req);
   if (originBlock) return originBlock;
-  const locked = requireUnlocked(req);
+  const locked = await requireUnlocked(req);
   if (locked) return locked;
   const body = (await req.json()) as {
     title?: string;

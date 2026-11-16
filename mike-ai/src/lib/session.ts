@@ -1,4 +1,5 @@
 import { createHmac, timingSafeEqual, randomBytes } from "node:crypto";
+import { getIdentity } from "../../cursor/identity";
 
 const COOKIE = "ai_platform_session";
 const MAX_AGE_SEC = 60 * 60 * 24 * 14;
@@ -81,23 +82,23 @@ export function readSessionCookie(cookieHeader: string | null): string | null {
   return match?.[1] ?? null;
 }
 
-export function requireUnlocked(req: Request): Response | null {
-  if (!authReady()) {
-    return Response.json(
-      {
-        error: "auth_not_configured",
-        message:
-          "PLATFORM_UNLOCK_CODE and SESSION_SECRET must be set. No unlock bypass exists.",
-      },
-      { status: 503 },
-    );
-  }
-  const token = readSessionCookie(req.headers.get("cookie"));
-  if (!verifySessionToken(token)) {
-    return Response.json(
-      { error: "locked", message: "Unlock with Face ID or password." },
-      { status: 401 },
-    );
-  }
-  return null;
+/** Cursor sign-in on the published private app, or the optional password session. */
+export async function hasPlatformAccess(req: Request): Promise<boolean> {
+  const identity = await getIdentity(req);
+  if (identity.verified && identity.kind === "person") return true;
+  if (!authReady()) return false;
+  return verifySessionToken(readSessionCookie(req.headers.get("cookie")));
+}
+
+export async function requireUnlocked(req: Request): Promise<Response | null> {
+  if (await hasPlatformAccess(req)) return null;
+  return Response.json(
+    {
+      error: "locked",
+      message: authReady()
+        ? "Unlock with Face ID or password."
+        : "Sign in with Cursor to open this app.",
+    },
+    { status: 401, headers: { "cache-control": "private, no-store" } },
+  );
 }

@@ -15,7 +15,7 @@ const MAX_LIST = 20;
  * no shared Bearer token that would grant database access without unlock.
  */
 export async function GET(req: Request) {
-  const locked = requireUnlocked(req);
+  const locked = await requireUnlocked(req);
   if (locked) return locked;
   const limited = rateLimit({
     key: `chatgpt-memory-session:get:${clientIp(req)}`,
@@ -53,7 +53,7 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const originBlock = assertTrustedOrigin(req);
   if (originBlock) return originBlock;
-  const locked = requireUnlocked(req);
+  const locked = await requireUnlocked(req);
   if (locked) return locked;
   const limited = rateLimit({
     key: `chatgpt-memory-session:post:${clientIp(req)}`,

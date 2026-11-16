@@ -86,7 +86,7 @@ async function ensureBoardProjects(): Promise<ProjectRow[]> {
 }
 
 export async function GET(req: Request) {
-  const locked = requireUnlocked(req);
+  const locked = await requireUnlocked(req);
   if (locked) return locked;
 
   const projects = await ensureBoardProjects();
@@ -107,7 +107,7 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const originBlock = assertTrustedOrigin(req);
   if (originBlock) return originBlock;
-  const locked = requireUnlocked(req);
+  const locked = await requireUnlocked(req);
   if (locked) return locked;
 
   const body = (await req.json()) as {
@@ -165,7 +165,7 @@ export async function POST(req: Request) {
 export async function DELETE(req: Request) {
   const originBlock = assertTrustedOrigin(req);
   if (originBlock) return originBlock;
-  const locked = requireUnlocked(req);
+  const locked = await requireUnlocked(req);
   if (locked) return locked;
   return Response.json(
     {
