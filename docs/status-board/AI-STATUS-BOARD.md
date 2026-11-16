@@ -56,3 +56,28 @@ Safest path: keep `main` frozen · build on `cursor/unified-ai-platform-b8a1` ·
 1. Drop a real `AI_Platform_Project_Records_<timestamp>.json` into recovery (or paste path to OneDrive copy).  
 2. Confirm OneDrive OAuth may be configured (no paid spend beyond existing free tiers without say-so).  
 3. Approve proceeding to Stage 1 (import PR #4 onto unified branch only).
+
+---
+
+## Entry — 2026-11-16 ~10:22 AM America/Chicago
+
+**Agent:** same run · inventory follow-up from [Inventory PR4 AI platform](bc-2c288f49-66a1-5abd-92ec-2197edc93be5) + [Inventory main and originals](bc-8386983e-d104-5fbb-9287-76b3bb7b9baf)
+
+### Refinements added to the record
+
+| Finding | Implication for unified build |
+| --- | --- |
+| Original `AI_Platform_Project_Records_*.json` **absent from all git objects** | Recovery remains external (Drive staging / OneDrive) — confirmed, not just missing on `main` |
+| PR #4 has `/api/chat` but **no in-app chat UI** | Unified UI must restore Mike AI conversations surface |
+| iCloud sync is **metadata-only** (no binary upload) | Supports flipping **OneDrive → primary** for real file bytes; keep iCloud as backup metadata |
+| WebAuthn challenges + rate limits are **in-process Maps** | Need durable store before multi-instance publish |
+| Auto Truck Diagnostics = **board name only** (no app tree) | Closest artifact is Ravin Car/Truck installer; Auto Truck remains priority to build, not something to “merge from disk” |
+| PR #1 Ravin layout ≠ `main` (`ravin-lookup/`) | Prefer `main` Ravin paths; leave PR #1 branch intact as archive |
+| PR #4 RESULT still mentions `CHATGPT_MEMORY_TOKEN` | Code is session-cookie only — treat RESULT token note as stale |
+| `main` tree == restore branch tree | No extra original files hiding on `cursor/vercel-ai-platform-restore-2661` |
+
+### Progress
+
+- [x] Folded inventory into Status Board (this entry)  
+- [x] Updated reconciliation gaps section  
+- [ ] Stage 1 still waiting on Michael go-ahead

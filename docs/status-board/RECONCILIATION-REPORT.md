@@ -97,11 +97,25 @@
 ### Missing / blockers
 
 1. Original Mike AI V2 source (`c1229a25895d…`) not in this repo.  
-2. No `AI_Platform_Project_Records_*.json` in `mike-ai/recovery/`.  
+2. No `AI_Platform_Project_Records_*.json` in **any** git object (confirmed across all branches) — not only empty `recovery/`.  
 3. Cloud OAuth / CloudKit secrets not configured in this environment.  
 4. Model API keys absent → chat fail-closed (by design).  
 5. Paid services/credits require Michael’s permission.  
 6. iPhone Face ID + Home Screen verification cannot complete from this VM alone.
+
+### PR #4 implementation gaps (inventory follow-up)
+
+Confirmed by branch inventory (`5aef541`):
+
+| Gap | Detail |
+| --- | --- |
+| Chat UI | `/api/chat` exists; main dashboard has no conversation UI |
+| iCloud bytes | CloudKit upserts metadata only — not full file mirror |
+| Sync direction | Drive/OneDrive are upload-only; no pull-from-cloud |
+| Serverless auth | WebAuthn challenge + rate-limit Maps are process-local |
+| Auto Truck | Board seed name only — no dedicated app/installer tree |
+| Docs drift | RESULT handoff still cites `CHATGPT_MEMORY_TOKEN`; runtime is unlock-session only |
+| PWA offline | Manifest + icons present; no service worker |
 
 ---
 
