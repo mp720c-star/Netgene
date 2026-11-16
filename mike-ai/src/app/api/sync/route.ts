@@ -1,6 +1,7 @@
 import { requireUnlocked } from "@/lib/session";
 import { assertTrustedOrigin } from "@/lib/origin";
 import { runCloudSync, syncStatusReport } from "@/lib/cloud/sync";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -15,6 +16,12 @@ export async function POST(req: Request) {
   if (originBlock) return originBlock;
   const locked = requireUnlocked(req);
   if (locked) return locked;
+  const limited = rateLimit({
+    key: `sync:${clientIp(req)}`,
+    limit: 12,
+    windowMs: 60 * 60 * 1000,
+  });
+  if (limited) return limited;
   let fileId: string | undefined;
   try {
     const body = (await req.json()) as { fileId?: string };

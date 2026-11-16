@@ -79,6 +79,7 @@ export default function HomePage() {
   const [sync, setSync] = useState<SyncProvider[]>([]);
   const [memory, setMemory] = useState<MemoryEntry[]>([]);
   const [tab, setTab] = useState<"files" | "sync" | "memory" | "chatgpt">("files");
+  const [chatgptExport, setChatgptExport] = useState<string>("");
 
   const refreshAuth = useCallback(async () => {
     const res = await fetch("/api/auth/status", { cache: "no-store" });
@@ -542,23 +543,46 @@ export default function HomePage() {
 
       {tab === "chatgpt" && (
         <section className={styles.panel}>
-          <h2>Link ChatGPT as local memory</h2>
+          <h2>ChatGPT local memory</h2>
           <ol className={styles.steps}>
-            <li>Set secret <code>CHATGPT_MEMORY_TOKEN</code> (min 32 chars) on this app.</li>
+            <li>Stay unlocked on this device (Face ID or password session).</li>
             <li>
-              Import OpenAPI schema{" "}
-              <a href="/chatgpt-actions.openapi.json">/chatgpt-actions.openapi.json</a> into a Custom
-              GPT Action; set the server URL to this published host.
+              Copy the export below and paste it into ChatGPT as grounding context — or call{" "}
+              <code>GET /api/memory/chatgpt</code> from this same unlocked browser session.
             </li>
             <li>
-              Authenticate with <code>Authorization: Bearer &lt;token&gt;</code>. Call{" "}
-              <code>GET /api/memory/chatgpt</code> before answering; optional{" "}
-              <code>POST</code> to append memory after a useful turn.
+              Shared Bearer tokens are not used; memory never opens without unlock.
             </li>
           </ol>
-          <p className={styles.muted}>
-            Fail-closed: without the token the endpoint returns 503 — no fake memory.
-          </p>
+          <button
+            type="button"
+            className={styles.primary}
+            disabled={busy}
+            onClick={async () => {
+              setBusy(true);
+              setError(null);
+              try {
+                const res = await fetch("/api/memory/chatgpt", { cache: "no-store" });
+                const json = await res.json();
+                if (!res.ok) throw new Error(json.message || json.error || "Export failed");
+                const text = JSON.stringify(json, null, 2);
+                setChatgptExport(text);
+                if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(text);
+              } catch (err) {
+                setError(err instanceof Error ? err.message : "Export failed");
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
+            Copy memory for ChatGPT
+          </button>
+          {chatgptExport && (
+            <pre className={styles.muted} style={{ whiteSpace: "pre-wrap", marginTop: "1rem" }}>
+              {chatgptExport.slice(0, 4000)}
+              {chatgptExport.length > 4000 ? "\n…" : ""}
+            </pre>
+          )}
         </section>
       )}
     </main>

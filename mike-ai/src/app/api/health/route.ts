@@ -18,7 +18,7 @@ export async function GET() {
     sessionConfigured: sessionConfigured(),
     faceIdRegistered,
     modelCredentials: hasModelCredentials(),
-    chatgptMemoryConfigured: Boolean(process.env.CHATGPT_MEMORY_TOKEN?.trim()),
+    chatgptMemoryRequiresUnlock: true,
     cloud: cloudConfigStatus(),
   });
 }

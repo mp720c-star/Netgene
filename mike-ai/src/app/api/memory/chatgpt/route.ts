@@ -1,4 +1,5 @@
-import { timingSafeEqual, createHash } from "node:crypto";
+import { requireUnlocked } from "@/lib/session";
+import { assertTrustedOrigin } from "@/lib/origin";
 import { listMemory, listProjectsNewestFirst, addMemory } from "@/lib/platform-store";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
 
@@ -8,52 +9,16 @@ const MAX_TITLE = 200;
 const MAX_BODY = 8_000;
 const MAX_LIST = 20;
 
-function authorize(req: Request): Response | null {
-  const expected = process.env.CHATGPT_MEMORY_TOKEN?.trim();
-  if (!expected) {
-    return Response.json(
-      {
-        error: "chatgpt_memory_not_configured",
-        message: "Set CHATGPT_MEMORY_TOKEN to enable the ChatGPT Actions memory API.",
-      },
-      { status: 503 },
-    );
-  }
-  if (expected.length < 32) {
-    return Response.json(
-      {
-        error: "chatgpt_memory_token_too_weak",
-        message: "CHATGPT_MEMORY_TOKEN must be at least 32 characters.",
-      },
-      { status: 503 },
-    );
-  }
-  const header = req.headers.get("authorization") || "";
-  const token = header.startsWith("Bearer ") ? header.slice(7).trim() : "";
-  if (!token || token.length !== expected.length) {
-    return Response.json({ error: "unauthorized" }, { status: 401 });
-  }
-  const a = Buffer.from(token);
-  const b = Buffer.from(expected);
-  if (!timingSafeEqual(a, b)) {
-    return Response.json({ error: "unauthorized" }, { status: 401 });
-  }
-  return null;
-}
-
-function tokenBucketKey(req: Request): string {
-  const header = req.headers.get("authorization") || "";
-  const token = header.startsWith("Bearer ") ? header.slice(7).trim() : "";
-  const digest = createHash("sha256").update(token || clientIp(req)).digest("hex").slice(0, 16);
-  return `chatgpt-memory:${digest}:${clientIp(req)}`;
-}
-
-/** ChatGPT Custom GPT / Actions: read local project + memory context before answering. */
+/**
+ * ChatGPT-oriented memory export/import for an unlocked platform session.
+ * Requires the same Face ID / password unlock cookie as the rest of the app —
+ * no shared Bearer token that would grant database access without unlock.
+ */
 export async function GET(req: Request) {
-  const denied = authorize(req);
-  if (denied) return denied;
+  const locked = requireUnlocked(req);
+  if (locked) return locked;
   const limited = rateLimit({
-    key: `${tokenBucketKey(req)}:get`,
+    key: `chatgpt-memory-session:get:${clientIp(req)}`,
     limit: 60,
     windowMs: 60 * 60 * 1000,
   });
@@ -86,10 +51,12 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const denied = authorize(req);
-  if (denied) return denied;
+  const originBlock = assertTrustedOrigin(req);
+  if (originBlock) return originBlock;
+  const locked = requireUnlocked(req);
+  if (locked) return locked;
   const limited = rateLimit({
-    key: `${tokenBucketKey(req)}:post`,
+    key: `chatgpt-memory-session:post:${clientIp(req)}`,
     limit: 30,
     windowMs: 60 * 60 * 1000,
   });

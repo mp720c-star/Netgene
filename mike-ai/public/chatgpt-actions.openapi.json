@@ -1,9 +1,9 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "AI Project Platform — ChatGPT Local Memory",
-    "version": "1.0.0",
-    "description": "Read and write Michael Paine's local project memory. Prefer newest entries. Do not invent project status."
+    "title": "AI Project Platform — ChatGPT Local Memory (session)",
+    "version": "1.1.0",
+    "description": "Export/import local project memory for an unlocked AI Project Platform session. Requires the platform unlock cookie (Face ID or password). Shared Bearer tokens are not accepted."
   },
   "servers": [
     {
@@ -15,9 +15,8 @@
     "/api/memory/chatgpt": {
       "get": {
         "operationId": "getLocalMemory",
-        "summary": "Load projects and local memory",
-        "description": "Returns the current project list and newest local memory entries for grounding answers.",
-        "security": [{ "bearerAuth": [] }],
+        "summary": "Load projects and local memory (unlocked session)",
+        "description": "Returns project list and newest memory entries. Caller must already be unlocked in the browser (session cookie).",
         "responses": {
           "200": {
             "description": "Local context payload",
@@ -36,14 +35,13 @@
               }
             }
           },
-          "401": { "description": "Unauthorized" },
-          "503": { "description": "Memory token not configured" }
+          "401": { "description": "Locked — unlock with Face ID or password first" },
+          "503": { "description": "Auth secrets not configured" }
         }
       },
       "post": {
         "operationId": "addLocalMemory",
-        "summary": "Append a local memory note",
-        "security": [{ "bearerAuth": [] }],
+        "summary": "Append a local memory note (unlocked session)",
         "requestBody": {
           "required": true,
           "content": {
@@ -63,20 +61,10 @@
         },
         "responses": {
           "200": { "description": "Saved" },
-          "401": { "description": "Unauthorized" },
-          "413": { "description": "Payload too large" },
-          "503": { "description": "Memory token not configured" }
+          "401": { "description": "Locked" },
+          "403": { "description": "Origin not trusted" },
+          "413": { "description": "Payload too large" }
         }
-      }
-    }
-  },
-  "components": {
-    "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer",
-        "bearerFormat": "token",
-        "description": "Same value as CHATGPT_MEMORY_TOKEN (min 32 characters)."
       }
     }
   }
