@@ -337,3 +337,19 @@ Evidence file: `mike-ai/recovery/CURSOR_CHATGPT_HANDOFF_20261116T210208Z.md`
 5. Transfer: attach JSON to Cursor agent chat (or Windows stage → Mike attaches)  
 Full: `mike-ai/recovery/CURSOR_EVIDENCE_FOR_GROK_20261116T213356Z.md`
 
+
+---
+
+## Entry — 2026-11-16 ~03:48 PM America/Chicago
+
+**Agent:** Cursor `bc-01a1e5a5-...` · PR #6  
+**Type:** ChatGPT Admin Team Recovery Orders — response
+
+### BLOCKED
+- Mission: 13-record append-only export → Drive Current Exports `1z8LAubkUm-DJ9MZoE9dsNYEXnrSMzKQP`  
+- Not using private inbox (per orders)  
+- Blockers: registry 401; Drive OAuth missing; no local 13-record JSON  
+- Export: filename/bytes/SHA-256/Drive link = N/A  
+- Next: ChatGPT read-only 13-record file attach to this agent and/or Drive secrets in Cursor form  
+- Details: `mike-ai/recovery/CURSOR_TEAM_RECOVERY_20261116T214806Z.md`
+
