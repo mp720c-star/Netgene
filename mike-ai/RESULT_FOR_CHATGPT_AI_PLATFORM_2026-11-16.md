@@ -1,51 +1,44 @@
 # RESULT FOR CHATGPT — Cursor Cloud — AI Project Platform
 
-**America/Chicago:** 2026-11-16 ~00:50 CST  
-**Assistant/session:** Cursor Cloud (`cursor/ai-platform-real-secure-2661`)  
-**Task:** MASTER-001 / Platform — real secure AI Project Platform (not Ravin-only, not Mike AI-only)  
-**State:** IMPLEMENTED + TESTED LOCAL (sample secrets). NOT Independent board append. NOT live cloud sync (credentials pending). NOT production promote of old Vercel aliases.
+**America/Chicago:** 2026-11-16 ~03:30 CST  
+**Assistant/session:** Cursor Cloud continued (`cursor/ai-platform-real-secure-2661`, agent Continued progress)  
+**Task:** MASTER-001 / Platform — real secure AI Project Platform  
+**State:** IMPLEMENTED + REBASED ONTO `main` + OPENAPI FOR CHATGPT ACTIONS. Publish confirmation + real cloud secrets still pending Mike.
 
 ## ACK
 
-Rules 1 and 2 accepted. Shared AI Status Board text was received via Mike paste (Drive connector was sign-in-walled from this session). ChatGPT remains coordinator/admin when active; Mike final authority. No paid Work/API credits used.
+Rules 1 and 2 accepted. Shared AI Status Board text was received via Mike paste earlier. ChatGPT remains coordinator/admin when active; Mike final authority. No paid Work/API credits used this turn.
 
-## Delivered (this branch)
+## Delivered
 
-Secure Next.js platform in `mike-ai/`:
+Secure Next.js platform in `mike-ai/` on [PR #4](https://github.com/mp720c-star/Netgene/pull/4):
 
-1. **Auth:** password unlock (`PLATFORM_UNLOCK_CODE`) + WebAuthn Face ID register/login; HMAC session cookie; fail-closed Origin check on mutating routes.
-2. **Projects:** seeds 11 board projects (10 active + 1 archived); no delete API.
-3. **Files:** upload by project; list sorted newest-first; download returns full bytes + `X-Checksum-SHA256`; refuses checksum mismatch.
-4. **Sync:** iCloud CloudKit primary + Google Drive + OneDrive replicas — real API clients; **fail-closed** when secrets missing (no mock success).
-5. **ChatGPT memory:** `/api/memory/chatgpt` Bearer `CHATGPT_MEMORY_TOKEN` GET/POST for Actions as local memory.
+1. **Auth:** password unlock (`PLATFORM_UNLOCK_CODE`) + WebAuthn Face ID; HMAC session cookie; fail-closed Origin check.
+2. **Projects:** 11 seeded board projects; no delete API.
+3. **Files:** upload/list/download with SHA-256; 5MB + rate limits.
+4. **Sync:** iCloud CloudKit primary + Google Drive + OneDrive replicas — real clients; fail-closed when secrets missing.
+5. **ChatGPT memory:** `/api/memory/chatgpt` Bearer token API + `public/chatgpt-actions.openapi.json` for Custom GPT Actions import.
+6. **Security harden:** chat requires unlock + rate limits; SimpleWebAuthn verify; memory token timing-safe + length floor.
 
-## Tests actually run (VERIFIED this session)
+## Branch hygiene (this turn)
 
-With local env `PLATFORM_UNLOCK_CODE`, `SESSION_SECRET`, `CHATGPT_MEMORY_TOKEN` on `http://127.0.0.1:3456`:
-
-| Check | Result |
-| --- | --- |
-| `GET /api/health` | PASS — authReady, cloud providers report missing secrets |
-| Unlock wrong code | PASS — 401 |
-| Unlock missing Origin | PASS — 403 fail-closed |
-| Unlock correct + cookie | PASS |
-| `GET /api/projects` | PASS — **11** projects |
-| ChatGPT memory POST/GET | PASS |
-| File upload + download SHA-256 | PASS — `6ae77aab1bca082ccbfa5c265349d94c6a189cb2cbdc2a2ec189817a249ab7bd` |
-| Sync status without cloud secrets | PASS — `not_configured` (not fake OK) |
-| `npm run build` | PASS |
+- Rebased AI platform commits onto `main` (removed duplicate pre-merge PR #3 history).
+- Bound correct secret names for Cursor publish; requested removal of stale names.
+- Local health check PASS on `127.0.0.1:3456` with sample unlock/session/memory tokens.
 
 ## Blockers (honest)
 
-- Cloud OAuth/CloudKit secrets not yet in Cursor Secrets form → sync cannot copy bytes until Mike adds them.
-- Physical iPhone Face ID / Home Screen acceptance UNVERIFIED from this cloud VM.
-- Cannot append to Google Doc board from this session without Drive write OAuth; this file is the board handoff artifact.
+- Cursor **Publish** still needs Mike confirm (slug `ai-project-platform`, Private).
+- Cloud OAuth/CloudKit + OpenAI secrets not filled → sync/chat stay fail-closed until added.
+- Physical iPhone Face ID / Home Screen acceptance UNVERIFIED from this VM.
+- Old production `https://mike-ai.vercel.app` remains DEPLOYMENT_PAUSED; original V2 source still missing from GitHub.
 
-## Next
+## Next for Mike
 
-1. Mike adds secrets in Cursor secure form (unlock code, session secret, ChatGPT memory token, Drive/OneDrive/iCloud).
-2. Publish/preview this app; iPhone unlock + Face ID enroll.
-3. Grok independent review of auth/sync fail-closed behavior.
-4. Gemini inventory/reconcile against Drive board exports.
+1. Tap **Publish** on this agent → name `ai-project-platform` → **Private** → confirm.
+2. In Secrets form: set at least `PLATFORM_UNLOCK_CODE`, `SESSION_SECRET`, `CHATGPT_MEMORY_TOKEN`; confirm removal of unused stale names.
+3. On iPhone: open published app → unlock → Register Face ID → Add to Home Screen.
+4. Import `/chatgpt-actions.openapi.json` into Custom GPT; paste memory token as Bearer auth.
+5. Later: add Drive / OneDrive / iCloud secrets for real sync; OpenAI/gateway for chat.
 
-**Production of older `mike-ai-project-platform.vercel.app` was not modified by this work.**
+**Production of older Vercel Mike AI aliases was not modified by this work.**

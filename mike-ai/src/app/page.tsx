@@ -544,14 +544,16 @@ export default function HomePage() {
         <section className={styles.panel}>
           <h2>Link ChatGPT as local memory</h2>
           <ol className={styles.steps}>
-            <li>Set secret <code>CHATGPT_MEMORY_TOKEN</code> on this app.</li>
+            <li>Set secret <code>CHATGPT_MEMORY_TOKEN</code> (min 32 chars) on this app.</li>
             <li>
-              In a Custom GPT, add an Action that <code>GET</code>s{" "}
-              <code>/api/memory/chatgpt</code> with header{" "}
-              <code>Authorization: Bearer &lt;token&gt;</code> before answering.
+              Import OpenAPI schema{" "}
+              <a href="/chatgpt-actions.openapi.json">/chatgpt-actions.openapi.json</a> into a Custom
+              GPT Action; set the server URL to this published host.
             </li>
             <li>
-              Optional: <code>POST</code> the same path to append memory after a useful turn.
+              Authenticate with <code>Authorization: Bearer &lt;token&gt;</code>. Call{" "}
+              <code>GET /api/memory/chatgpt</code> before answering; optional{" "}
+              <code>POST</code> to append memory after a useful turn.
             </li>
           </ol>
           <p className={styles.muted}>
