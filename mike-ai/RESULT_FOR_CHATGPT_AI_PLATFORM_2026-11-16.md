@@ -26,9 +26,18 @@ Secure Next.js platform in `mike-ai/` on [PR #4](https://github.com/mp720c-star/
 - Bound correct secret names for Cursor publish; requested removal of stale names.
 - Local health check PASS on `127.0.0.1:3456` with sample unlock/session/memory tokens.
 
+## Supabase (2026-11-16 continuation)
+
+- Supabase project **created**: `ai-project-platform` (ref `hiynzonbazdorebekrsl`, URL `https://hiynzonbazdorebekrsl.supabase.co`).
+- Schema + RLS **applied** from `migrations/001_platform.sql` (tables: projects, files, memory_entries, webauthn_credentials, sync_state; RLS enabled, no anon policies).
+- **11 board projects seeded** in `projects`.
+- App wiring: `.env.example`, `databaseInfo()` / health fields, README, and `npm run migrate` point at this project.
+- **Mike must paste** the Database connection URI (Transaction pooler preferred) as `DATABASE_URL` in publish secrets / `.env.local`. Optional: `NEXT_PUBLIC_SUPABASE_URL=https://hiynzonbazdorebekrsl.supabase.co`.
+
 ## Blockers (honest)
 
 - Cursor **Publish** still needs Mike confirm (slug `ai-project-platform`, Private).
+- `DATABASE_URL` not yet pasted by Mike → hosted Postgres not live in the published app until set.
 - Cloud OAuth/CloudKit + OpenAI secrets not filled → sync/chat stay fail-closed until added.
 - Physical iPhone Face ID / Home Screen acceptance UNVERIFIED from this VM.
 - Old production `https://mike-ai.vercel.app` remains DEPLOYMENT_PAUSED; original V2 source still missing from GitHub.
@@ -36,7 +45,7 @@ Secure Next.js platform in `mike-ai/` on [PR #4](https://github.com/mp720c-star/
 ## Next for Mike
 
 1. Tap **Publish** on this agent → name `ai-project-platform` → **Private** → confirm.
-2. In Secrets form: set at least `PLATFORM_UNLOCK_CODE`, `SESSION_SECRET`, `CHATGPT_MEMORY_TOKEN`; confirm removal of unused stale names.
+2. In Secrets form: set at least `PLATFORM_UNLOCK_CODE`, `SESSION_SECRET`, `CHATGPT_MEMORY_TOKEN`, and **`DATABASE_URL`** (Supabase Database URI from [settings/database](https://supabase.com/dashboard/project/hiynzonbazdorebekrsl/settings/database)); optionally `NEXT_PUBLIC_SUPABASE_URL=https://hiynzonbazdorebekrsl.supabase.co`. Confirm removal of unused stale names.
 3. On iPhone: open published app → unlock → Register Face ID → Add to Home Screen.
 4. Import `/chatgpt-actions.openapi.json` into Custom GPT; paste memory token as Bearer auth.
 5. Later: add Drive / OneDrive / iCloud secrets for real sync; OpenAI/gateway for chat.

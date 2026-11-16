@@ -1,4 +1,6 @@
 -- Real AI platform schema (no seed/mock rows)
+-- Applied to Supabase project ai-project-platform (hiynzonbazdorebekrsl).
+-- Server connects via DATABASE_URL (postgres role). RLS blocks anon Data API.
 
 CREATE TABLE IF NOT EXISTS projects (
   id TEXT PRIMARY KEY,
@@ -58,3 +60,10 @@ CREATE TABLE IF NOT EXISTS sync_state (
   last_attempt_at TIMESTAMPTZ,
   remote_cursor TEXT
 );
+
+-- Deny PostgREST anon/authenticated; app uses server-side DATABASE_URL.
+ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
+ALTER TABLE files ENABLE ROW LEVEL SECURITY;
+ALTER TABLE memory_entries ENABLE ROW LEVEL SECURITY;
+ALTER TABLE webauthn_credentials ENABLE ROW LEVEL SECURITY;
+ALTER TABLE sync_state ENABLE ROW LEVEL SECURITY;

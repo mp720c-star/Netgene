@@ -4,11 +4,32 @@ import { PGlite } from "@electric-sql/pglite";
 import pg from "pg";
 
 const databaseUrl = process.env.DATABASE_URL?.trim() ?? "";
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() ?? "";
 let pool: pg.Pool | undefined;
 let local: Promise<PGlite> | undefined;
 
 export function usingHostedPostgres(): boolean {
   return databaseUrl !== "";
+}
+
+export function databaseInfo(): {
+  mode: "postgres" | "pglite-local";
+  supabase: boolean;
+  supabaseHost: string | null;
+} {
+  let supabaseHost: string | null = null;
+  if (supabaseUrl !== "") {
+    try {
+      supabaseHost = new URL(supabaseUrl).host;
+    } catch {
+      supabaseHost = null;
+    }
+  }
+  return {
+    mode: databaseUrl !== "" ? "postgres" : "pglite-local",
+    supabase: supabaseHost !== null,
+    supabaseHost,
+  };
 }
 
 export async function sql<T = Record<string, unknown>>(
