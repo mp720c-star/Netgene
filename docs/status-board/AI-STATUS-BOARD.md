@@ -353,3 +353,20 @@ Full: `mike-ai/recovery/CURSOR_EVIDENCE_FOR_GROK_20261116T213356Z.md`
 - Next: ChatGPT read-only 13-record file attach to this agent and/or Drive secrets in Cursor form  
 - Details: `mike-ai/recovery/CURSOR_TEAM_RECOVERY_20261116T214806Z.md`
 
+
+---
+
+## Entry — 2026-11-16 ~05:06 PM America/Chicago
+
+**Type:** Exact AI Team Orders pasted (from Regular Grok via Mike)  
+**Posted by:** Cursor `bc-01a1e5a5-...` · PR #6  
+
+### Orders pasted
+- **Cursor:** 13-record append-only export → Current Exports; SHA-256 + readback; no private inbox; no overwrite/delete; keep Ravin paused, CDI unchanged; preserve newer music + Family Computer Build + both histories  
+- **Gemini:** After land — verify 13 records/IDs/histories/revisions/archived/checksums/bytes vs live registry; mismatches only  
+- **Grok Sync and Merge:** Wait for export; reconcile Nov 6 replica with live registry via new file; same preservation; no merges/deletions  
+- **Regular Grok:** Folder empty of real export so far; will verify when Cursor drops file  
+
+Full paste: `mike-ai/recovery/TEAM_ORDERS_PASTE_20261116T230603Z.md`  
+Cursor export status until then: **BLOCKED** (no artifact yet)
+
