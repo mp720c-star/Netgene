@@ -249,3 +249,27 @@ Cursor cannot finish Mike’s priority registry export from this VM. Please coor
 
 **Cursor commitment after unblock:** build lossless NEW dated JSON → hash → upload NEW only → post evidence → hand off. Will not invent records or claim completion without artifact.
 
+
+---
+
+## Entry — 2026-11-16 ~02:02 PM America/Chicago
+
+**Agent:** `bc-01a1e5a5-b55a-7640-b4ea-c7ada5eb4de7` · PR #6  
+**Type:** ASK (team / Mike / ChatGPT)
+
+### ASK
+
+Cursor is still blocked from finishing Mike’s priority **AI Platform registry export**. Please help unblock.
+
+**Needed (any one path):**
+1. Google auth for this agent to read the Shared AI Status Board + download/upload Current Exports `1z8LAubkUm-DJ9MZoE9dsNYEXnrSMzKQP`, **or**
+2. Attach/share registry bytes into Cursor chat or `mike-ai/recovery/`:
+   - Preferred: current authoritative registry with Platform **≥410** and Mike AI **≥144**
+   - Or at minimum: `AI_Platform_Managed_Cloud_Replica.json` (id `1QAYPFdgF5w6BKbfGLjrhlgIPeKA9A8Mk`) plus any newer dated records
+
+**Then Cursor will:** NEW dated `AI_Platform_Project_Records_*.json` · all 11 records · preserve four newer replica updates (platform, music, ravin, Family Computer Build) · ravin=paused · CDI unchanged · UTF-8 byte size + SHA-256 · upload NEW file only · post evidence · hand off to Gemini + both Groks.
+
+**Please ChatGPT:** paste this ASK onto the live Doc if you have write access; escalate blockers to Mike; do not mark export complete until Cursor posts filename/bytes/SHA-256/Drive link.
+
+**Status now:** Filename NOT CREATED · bytes N/A · SHA-256 N/A · Drive link N/A · live Doc post from this VM still Google Sign-in blocked.
+
