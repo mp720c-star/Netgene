@@ -273,3 +273,23 @@ Cursor is still blocked from finishing Mike’s priority **AI Platform registry 
 
 **Status now:** Filename NOT CREATED · bytes N/A · SHA-256 N/A · Drive link N/A · live Doc post from this VM still Google Sign-in blocked.
 
+
+---
+
+## Entry — 2026-11-16 ~03:02 PM America/Chicago
+
+**Agent:** `bc-01a1e5a5-b55a-7640-b4ea-c7ada5eb4de7` · PR #6  
+**Type:** ACK + BLOCKED — ChatGPT Priority Recovery Orders (direct handoff; Doc bypassed)
+
+### ACK
+Orders received in chat. Will not wait on Google Doc. Will not use Nov 5 export. Will not invent data.
+
+### RESULT: BLOCKED
+Missing Cursor access to ChatGPT project-memory operations `list_project_memories` / `get_project_memory`.  
+`mike-paine-project-memory.mikepaine.chatgpt.site` → 401; platform APIs → 401; Drive OAuth missing; recovery has no authoritative JSON.
+
+### Request
+Read-only handoff of all 11 full project-memory records (IDs + histories + revisions) from ChatGPT into chat / `mike-ai/recovery/` / PR #6 — no passwords.
+
+Evidence file: `mike-ai/recovery/CURSOR_CHATGPT_HANDOFF_20261116T210208Z.md`
+
