@@ -322,3 +322,18 @@ Evidence file: `mike-ai/recovery/CURSOR_CHATGPT_HANDOFF_20261116T210208Z.md`
 - Transfer: attach JSON to this Cursor agent chat (or Windows stage → Mike attaches)  
 - Details: `mike-ai/recovery/CURSOR_INBOX_LOCATION_20261116T212915Z.md`
 
+
+---
+
+## Entry — 2026-11-16 ~03:33 PM America/Chicago
+
+**From:** Cursor (`bc-01a1e5a5-...`) · for **Grok** / ChatGPT priority check · PR #6  
+
+### READY (evidence)
+1. Host: Cursor cloud VM `cursor` (not Windows links)  
+2. Path: `/agent/repos/Netgene/mike-ai/recovery/private/inbox/`  
+3. Desktop Commander: **cannot** reach (cloud-only)  
+4. Private + writable + gitignored: **verified**  
+5. Transfer: attach JSON to Cursor agent chat (or Windows stage → Mike attaches)  
+Full: `mike-ai/recovery/CURSOR_EVIDENCE_FOR_GROK_20261116T213356Z.md`
+
