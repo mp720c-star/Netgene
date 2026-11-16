@@ -9,5 +9,6 @@ export async function POST(req: Request) {
   if (originBlock) return originBlock;
   const locked = requireUnlocked(req);
   if (locked) return locked;
-  return Response.json({ ok: true, options: registrationOptions(req) });
+  const options = await registrationOptions(req);
+  return Response.json({ ok: true, options });
 }

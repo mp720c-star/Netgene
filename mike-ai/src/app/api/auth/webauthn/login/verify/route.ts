@@ -1,6 +1,7 @@
 import { authReady, createSessionToken, sessionCookieHeader } from "@/lib/session";
 import { verifyAuthentication } from "@/lib/webauthn";
 import { assertTrustedOrigin } from "@/lib/origin";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -10,28 +11,24 @@ export async function POST(req: Request) {
   if (!authReady()) {
     return Response.json({ error: "auth_not_configured" }, { status: 503 });
   }
+  const limited = rateLimit({
+    key: `webauthn-login:${clientIp(req)}`,
+    limit: 30,
+    windowMs: 15 * 60 * 1000,
+  });
+  if (limited) return limited;
+
   const body = (await req.json()) as {
-    id?: string;
-    clientDataJSON?: string;
-    authenticatorData?: string;
-    signature?: string;
+    response?: unknown;
     challenge?: string;
   };
-  if (
-    !body.id ||
-    !body.clientDataJSON ||
-    !body.authenticatorData ||
-    !body.signature ||
-    !body.challenge
-  ) {
+  if (!body.response || !body.challenge) {
     return Response.json({ error: "missing_fields" }, { status: 400 });
   }
   const result = await verifyAuthentication({
-    id: body.id,
-    clientDataJSON: body.clientDataJSON,
-    authenticatorData: body.authenticatorData,
-    signature: body.signature,
-    challenge: body.challenge,
+    req,
+    response: body.response,
+    expectedChallenge: body.challenge,
   });
   if (!result.ok) return Response.json(result, { status: 401 });
   const token = createSessionToken("webauthn");

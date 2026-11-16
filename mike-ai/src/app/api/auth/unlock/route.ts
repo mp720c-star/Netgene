@@ -5,6 +5,7 @@ import {
   sessionCookieHeader,
 } from "@/lib/session";
 import { assertTrustedOrigin } from "@/lib/origin";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -20,6 +21,12 @@ export async function POST(req: Request) {
       { status: 503 },
     );
   }
+  const limited = rateLimit({
+    key: `unlock:${clientIp(req)}`,
+    limit: 20,
+    windowMs: 15 * 60 * 1000,
+  });
+  if (limited) return limited;
   let body: { code?: string };
   try {
     body = (await req.json()) as { code?: string };

@@ -158,7 +158,7 @@ export default function HomePage() {
           timeout: options.timeout,
           userVerification: "required",
           allowCredentials: (options.allowCredentials || []).map(
-            (c: { id: string; type: string; transports?: string[] }) => ({
+            (c: { id: string; transports?: string[] }) => ({
               type: "public-key" as const,
               id: Uint8Array.from(atob(c.id.replace(/-/g, "+").replace(/_/g, "/")), (x) =>
                 x.charCodeAt(0),
@@ -174,11 +174,19 @@ export default function HomePage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          id: cred.id,
-          clientDataJSON: b64url(resp.clientDataJSON),
-          authenticatorData: b64url(resp.authenticatorData),
-          signature: b64url(resp.signature),
           challenge: options.challenge,
+          response: {
+            id: cred.id,
+            rawId: b64url(cred.rawId),
+            type: cred.type,
+            clientExtensionResults: cred.getClientExtensionResults(),
+            response: {
+              clientDataJSON: b64url(resp.clientDataJSON),
+              authenticatorData: b64url(resp.authenticatorData),
+              signature: b64url(resp.signature),
+              userHandle: resp.userHandle ? b64url(resp.userHandle) : undefined,
+            },
+          },
         }),
       });
       const vJson = await verify.json();
@@ -217,24 +225,38 @@ export default function HomePage() {
           pubKeyCredParams: options.pubKeyCredParams,
           timeout: options.timeout,
           authenticatorSelection: options.authenticatorSelection,
-          attestation: "none",
+          excludeCredentials: (options.excludeCredentials || []).map(
+            (c: { id: string; transports?: string[] }) => ({
+              type: "public-key" as const,
+              id: Uint8Array.from(atob(c.id.replace(/-/g, "+").replace(/_/g, "/")), (x) =>
+                x.charCodeAt(0),
+              ),
+              transports: c.transports as AuthenticatorTransport[] | undefined,
+            }),
+          ),
+          attestation: options.attestation || "none",
         },
       })) as PublicKeyCredential | null;
       if (!cred) throw new Error("Registration cancelled");
       const resp = cred.response as AuthenticatorAttestationResponse;
-      const spki = resp.getPublicKey?.();
-      if (!spki) throw new Error("Browser did not return a public key");
       const transports =
         typeof resp.getTransports === "function" ? resp.getTransports() : [];
       const verify = await fetch("/api/auth/webauthn/register/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          id: cred.id,
-          clientDataJSON: b64url(resp.clientDataJSON),
-          publicKey: b64url(spki),
-          transports,
           challenge: options.challenge,
+          response: {
+            id: cred.id,
+            rawId: b64url(cred.rawId),
+            type: cred.type,
+            clientExtensionResults: cred.getClientExtensionResults(),
+            response: {
+              clientDataJSON: b64url(resp.clientDataJSON),
+              attestationObject: b64url(resp.attestationObject),
+              transports,
+            },
+          },
         }),
       });
       const vJson = await verify.json();

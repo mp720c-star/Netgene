@@ -1,30 +1,18 @@
-import { createHash, randomBytes } from "node:crypto";
+import {
+  generateAuthenticationOptions,
+  generateRegistrationOptions,
+  verifyAuthenticationResponse,
+  verifyRegistrationResponse,
+  type AuthenticatorTransportFuture,
+  type VerifiedAuthenticationResponse,
+  type VerifiedRegistrationResponse,
+} from "@simplewebauthn/server";
 import { sql } from "./db";
-
-function b64url(buf: Buffer | Uint8Array): string {
-  return Buffer.from(buf)
-    .toString("base64")
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/g, "");
-}
-
-function fromB64url(s: string): Buffer {
-  const pad = "=".repeat((4 - (s.length % 4)) % 4);
-  return Buffer.from((s + pad).replace(/-/g, "+").replace(/_/g, "/"), "base64");
-}
-
-export function rpIdFromRequest(req: Request): string {
-  const host = req.headers.get("x-forwarded-host") || req.headers.get("host") || "localhost";
-  return host.split(":")[0] || "localhost";
-}
 
 const challenges = new Map<string, { exp: number; kind: "reg" | "auth" }>();
 
-function putChallenge(kind: "reg" | "auth"): string {
-  const challenge = b64url(randomBytes(32));
+function putChallenge(kind: "reg" | "auth", challenge: string) {
   challenges.set(challenge, { exp: Date.now() + 5 * 60 * 1000, kind });
-  return challenge;
 }
 
 function takeChallenge(challenge: string, kind: "reg" | "auth"): boolean {
@@ -33,10 +21,29 @@ function takeChallenge(challenge: string, kind: "reg" | "auth"): boolean {
   return Boolean(row && row.kind === kind && row.exp >= Date.now());
 }
 
+export function rpIdFromRequest(req: Request): string {
+  const host = req.headers.get("x-forwarded-host") || req.headers.get("host") || "localhost";
+  return host.split(":")[0] || "localhost";
+}
+
+function originsFor(req: Request): string[] {
+  const host = req.headers.get("x-forwarded-host") || req.headers.get("host") || "localhost";
+  const proto = req.headers.get("x-forwarded-proto") || (host.includes("localhost") || host.startsWith("127.") ? "http" : "https");
+  const origin = `${proto}://${host}`;
+  const extras = (process.env.ALLOWED_ORIGINS || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return Array.from(new Set([origin, ...extras]));
+}
+
 export async function listCredentials() {
-  return sql<{ id: string; public_key: string; counter: string; transports: unknown }>(
-    `SELECT id, public_key, counter::text AS counter, transports FROM webauthn_credentials`,
-  );
+  return sql<{
+    id: string;
+    public_key: string;
+    counter: string;
+    transports: unknown;
+  }>(`SELECT id, public_key, counter::text AS counter, transports FROM webauthn_credentials`);
 }
 
 export async function hasFaceIdCredential(): Promise<boolean> {
@@ -44,130 +51,146 @@ export async function hasFaceIdCredential(): Promise<boolean> {
   return Number(rows[0]?.n || 0) > 0;
 }
 
-export function registrationOptions(req: Request) {
-  const challenge = putChallenge("reg");
-  return {
-    challenge,
-    rp: { name: "AI Platform", id: rpIdFromRequest(req) },
-    user: {
-      id: b64url(Buffer.from("ai-platform-owner")),
-      name: "owner",
-      displayName: "Platform Owner",
-    },
-    pubKeyCredParams: [
-      { type: "public-key", alg: -7 },
-      { type: "public-key", alg: -257 },
-    ],
-    timeout: 120000,
+export async function registrationOptions(req: Request) {
+  const existing = await listCredentials();
+  const options = await generateRegistrationOptions({
+    rpName: "AI Project Platform",
+    rpID: rpIdFromRequest(req),
+    userName: "owner",
+    userDisplayName: "Platform Owner",
+    userID: new TextEncoder().encode("ai-platform-owner"),
+    attestationType: "none",
     authenticatorSelection: {
       authenticatorAttachment: "platform",
       userVerification: "required",
       residentKey: "preferred",
     },
-    attestation: "none",
-  };
+    excludeCredentials: existing.map((c) => ({
+      id: c.id,
+      transports: Array.isArray(c.transports)
+        ? (c.transports as AuthenticatorTransportFuture[])
+        : undefined,
+    })),
+  });
+  putChallenge("reg", options.challenge);
+  return options;
 }
 
 export async function authenticationOptions(req: Request) {
   const creds = await listCredentials();
-  const challenge = putChallenge("auth");
-  return {
-    challenge,
-    timeout: 120000,
-    rpId: rpIdFromRequest(req),
+  const options = await generateAuthenticationOptions({
+    rpID: rpIdFromRequest(req),
     userVerification: "required",
     allowCredentials: creds.map((c) => ({
-      type: "public-key",
       id: c.id,
-      transports: Array.isArray(c.transports) ? c.transports : undefined,
+      transports: Array.isArray(c.transports)
+        ? (c.transports as AuthenticatorTransportFuture[])
+        : undefined,
     })),
-  };
+  });
+  putChallenge("auth", options.challenge);
+  return options;
 }
 
 export async function verifyRegistration(input: {
-  id: string;
-  clientDataJSON: string;
-  publicKey: string;
-  transports?: string[];
-  challenge: string;
+  req: Request;
+  response: unknown;
+  expectedChallenge: string;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
-  if (!takeChallenge(input.challenge, "reg")) return { ok: false, error: "challenge_invalid" };
-  try {
-    const client = JSON.parse(fromB64url(input.clientDataJSON).toString("utf8")) as {
-      type?: string;
-      challenge?: string;
-    };
-    if (client.type !== "webauthn.create") return { ok: false, error: "client_type" };
-    if (client.challenge !== input.challenge) return { ok: false, error: "challenge_mismatch" };
-  } catch {
-    return { ok: false, error: "client_data" };
+  if (!takeChallenge(input.expectedChallenge, "reg")) {
+    return { ok: false, error: "challenge_invalid" };
   }
-  if (!input.id || !input.publicKey) return { ok: false, error: "missing_credential" };
+  let verification: VerifiedRegistrationResponse;
+  try {
+    verification = await verifyRegistrationResponse({
+      response: input.response as Parameters<typeof verifyRegistrationResponse>[0]["response"],
+      expectedChallenge: input.expectedChallenge,
+      expectedOrigin: originsFor(input.req),
+      expectedRPID: rpIdFromRequest(input.req),
+      requireUserVerification: true,
+    });
+  } catch (err) {
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : "registration_verify_failed",
+    };
+  }
+  if (!verification.verified || !verification.registrationInfo) {
+    return { ok: false, error: "registration_not_verified" };
+  }
+  const { credential, credentialDeviceType, credentialBackedUp } = verification.registrationInfo;
+  // Store credential public key bytes from server verification (never trust client-supplied SPKI alone).
+  const publicKey = Buffer.from(credential.publicKey).toString("base64url");
   await sql(
     `INSERT INTO webauthn_credentials (id, public_key, counter, transports)
-     VALUES ($1, $2, 0, $3::jsonb)
-     ON CONFLICT (id) DO UPDATE SET public_key = EXCLUDED.public_key, transports = EXCLUDED.transports`,
-    [input.id, input.publicKey, JSON.stringify(input.transports ?? [])],
+     VALUES ($1, $2, $3, $4::jsonb)
+     ON CONFLICT (id) DO UPDATE SET
+       public_key = EXCLUDED.public_key,
+       counter = EXCLUDED.counter,
+       transports = EXCLUDED.transports`,
+    [
+      credential.id,
+      publicKey,
+      credential.counter,
+      JSON.stringify({
+        transports: credential.transports ?? [],
+        deviceType: credentialDeviceType,
+        backedUp: credentialBackedUp,
+      }),
+    ],
   );
   return { ok: true };
 }
 
 export async function verifyAuthentication(input: {
-  id: string;
-  clientDataJSON: string;
-  authenticatorData: string;
-  signature: string;
-  challenge: string;
+  req: Request;
+  response: unknown;
+  expectedChallenge: string;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
-  if (!takeChallenge(input.challenge, "auth")) return { ok: false, error: "challenge_invalid" };
-  const rows = await sql<{ id: string; public_key: string; counter: string }>(
-    `SELECT id, public_key, counter::text AS counter FROM webauthn_credentials WHERE id = $1`,
-    [input.id],
+  if (!takeChallenge(input.expectedChallenge, "auth")) {
+    return { ok: false, error: "challenge_invalid" };
+  }
+  const body = input.response as { id?: string };
+  if (!body.id) return { ok: false, error: "missing_credential_id" };
+
+  const rows = await sql<{ id: string; public_key: string; counter: string; transports: unknown }>(
+    `SELECT id, public_key, counter::text AS counter, transports FROM webauthn_credentials WHERE id = $1`,
+    [body.id],
   );
   const cred = rows[0];
   if (!cred) return { ok: false, error: "unknown_credential" };
 
+  let verification: VerifiedAuthenticationResponse;
   try {
-    const client = JSON.parse(fromB64url(input.clientDataJSON).toString("utf8")) as {
-      type?: string;
-      challenge?: string;
+    verification = await verifyAuthenticationResponse({
+      response: input.response as Parameters<typeof verifyAuthenticationResponse>[0]["response"],
+      expectedChallenge: input.expectedChallenge,
+      expectedOrigin: originsFor(input.req),
+      expectedRPID: rpIdFromRequest(input.req),
+      requireUserVerification: true,
+      credential: {
+        id: cred.id,
+        publicKey: Buffer.from(cred.public_key, "base64url"),
+        counter: Number(cred.counter),
+        transports: Array.isArray((cred.transports as { transports?: unknown })?.transports)
+          ? ((cred.transports as { transports: AuthenticatorTransportFuture[] }).transports)
+          : Array.isArray(cred.transports)
+            ? (cred.transports as AuthenticatorTransportFuture[])
+            : undefined,
+      },
+    });
+  } catch (err) {
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : "authentication_verify_failed",
     };
-    if (client.type !== "webauthn.get") return { ok: false, error: "client_type" };
-    if (client.challenge !== input.challenge) return { ok: false, error: "challenge_mismatch" };
-  } catch {
-    return { ok: false, error: "client_data" };
   }
-
-  const authData = fromB64url(input.authenticatorData);
-  if (authData.length < 37) return { ok: false, error: "auth_data" };
-  const counter = authData.readUInt32BE(33);
-  const prev = Number(cred.counter);
-  if (counter > 0 && counter <= prev) return { ok: false, error: "counter" };
-
-  try {
-    const clientHash = createHash("sha256").update(fromB64url(input.clientDataJSON)).digest();
-    const signed = Buffer.concat([authData, clientHash]);
-    const key = await crypto.subtle.importKey(
-      "spki",
-      new Uint8Array(fromB64url(cred.public_key)),
-      { name: "ECDSA", namedCurve: "P-256" },
-      false,
-      ["verify"],
-    );
-    const ok = await crypto.subtle.verify(
-      { name: "ECDSA", hash: "SHA-256" },
-      key,
-      new Uint8Array(fromB64url(input.signature)),
-      new Uint8Array(signed),
-    );
-    if (!ok) return { ok: false, error: "signature" };
-  } catch {
-    return { ok: false, error: "signature_verify" };
+  if (!verification.verified || !verification.authenticationInfo) {
+    return { ok: false, error: "authentication_not_verified" };
   }
-
   await sql(`UPDATE webauthn_credentials SET counter = $2 WHERE id = $1`, [
-    input.id,
-    Math.max(counter, prev + 1),
+    cred.id,
+    verification.authenticationInfo.newCounter,
   ]);
   return { ok: true };
 }
