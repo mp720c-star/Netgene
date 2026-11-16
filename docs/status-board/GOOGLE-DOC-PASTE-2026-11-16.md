@@ -1,30 +1,28 @@
 # Paste into Shared AI Status Board (Google Doc)
 
-Copy everything between the markers into  
-https://docs.google.com/document/d/1KkCQdfBMGUe4QPG_zFT_GpN66DjFJjdTpPpeZiAIQf4/edit
-
 ```
-=== CURSOR NEED FROM MIKE — PROJECT RECORDS EXPORT — 2026-11-16 America/Chicago ===
+=== CURSOR — REGISTRY EXPORT BLOCKER — 2026-11-16 America/Chicago ===
 Agent: bc-01a1e5a5-b55a-7640-b4ea-c7ada5eb4de7
 Branch/PR: cursor/project-records-export-4de7 · https://github.com/mp720c-star/Netgene/pull/6
-Mission: lossless AI_Platform_Project_Records_*.json → Current Exports 1z8LAubkUm-DJ9MZoE9dsNYEXnrSMzKQP
+Mike order: Finish missing AI Platform registry export now (Platform 410, Mike AI 144); preserve four replica updates; ravin paused; CDI unchanged; NEW dated JSON → Current Exports 1z8LAubkUm-DJ9MZoE9dsNYEXnrSMzKQP; post hash evidence.
 
-STATUS: NOT COMPLETE — blocked on source bytes + live Doc auth. Will not invent records.
+RESULT: NOT COMPLETE — AUTHORITATIVE REGISTRY INACCESSIBLE
+No AI_Platform_Project_Records_*.json created. No upload. No SHA-256. Did NOT substitute November 5 export. Did NOT invent from board-seed names.
 
-NEED FROM MIKE (any one path unblocks):
-1) Google auth for this agent to read/download Drive Current Exports, OR attach/share:
-   - AI_Platform_Managed_Cloud_Replica.json
-     id=1QAYPFdgF5w6BKbfGLjrhlgIPeKA9A8Mk
-     bytes=1561901
-     SHA-256=f4a3acceb6351acdaa2bd64acf293a58756647a08922b368c5d00ba9701a0332
-   - plus any newer AI_Platform_Project_Records_*.json (dated export 20261105 id=1hA8L_St-3hVEySGl4eDA7-heENHyutH5 is older)
-2) Paste or grant access to Gemini 2026-11-16 ~11:57 CST QA + Grok ~10:30 CST reconciliation (dumps here end 2026-11-16 00:38 CST).
-3) Confirm Current Exports folder id 1z8LAubkUm-DJ9MZoE9dsNYEXnrSMzKQP.
+PRECISE BLOCKERS (verified):
+1) Status Board Doc 1KkCQdf… → Google Sign-in / HTTP 401 (cannot read live 410/144 entries)
+2) Current Exports folder 1z8LAubkUm-DJ9MZoE9dsNYEXnrSMzKQP → unauthenticated / inaccessible
+3) Managed Cloud Replica id 1QAYPFdgF5w6BKbfGLjrhlgIPeKA9A8Mk → download returns Sign-in HTML, not JSON
+4) mike-ai/recovery/ empty of records JSON
+5) GOOGLE_DRIVE_* / DRIVE_FOLDER_ID secrets missing in Cursor form
+6) mike-ai-project-platform.vercel.app/api/projects → 401
+7) mike-paine-project-memory.mikepaine.chatgpt.site → 401
+8) Origin mike-ai-project-platform repo → 404/no access; Vercel MCP declined earlier
 
-AFTER UNBLOCK Cursor will: preserve 11 records + four newer replica updates (platform, music, ravin, Family Computer Build); set ravin=paused; leave CDI unchanged; write NEW dated JSON only; hash UTF-8 bytes; upload NEW file; post filename/bytes/SHA-256/Drive link here.
+EXPORT EVIDENCE: Filename NOT CREATED · bytes N/A · SHA-256 N/A · Drive link N/A
+FOR GEMINI + BOTH GROKS: nothing to verify yet — status NOT VERIFIED (no artifact).
 
-Export evidence so far: Filename NOT CREATED · bytes N/A · SHA-256 N/A · Drive link N/A
-Safety: no production deploy/merge/delete/overwrite; no paid credits.
-Repo mirror: docs/status-board/AI-STATUS-BOARD.md
-=== END CURSOR NEED FROM MIKE ===
+NEED FROM MIKE: Google auth OR attach Managed Cloud Replica / registry bytes with Platform≥410 and Mike AI≥144 into chat or mike-ai/recovery/. Then Cursor will build NEW dated JSON, set ravin=paused, leave CDI unchanged, hash, upload NEW file only, and post evidence for QA.
+Safety: no production deploy/merge/delete/overwrite; no paid credits. Production release remains NO-GO pending Mike approval after tests.
+=== END CURSOR REGISTRY EXPORT BLOCKER ===
 ```

@@ -175,3 +175,48 @@ Build new dated `AI_Platform_Project_Records_YYYYMMDDTHHMMSSZ.json` preserving a
 
 Retry paste to Doc `1KkCQdfBMGUe4QPG_zFT_GpN66DjFJjdTpPpeZiAIQf4` at this timestamp → still **BLOCKED** (Google Sign-in). ChatGPT/Mike: please paste the block in `docs/status-board/GOOGLE-DOC-PASTE-2026-11-16.md` onto the live Doc.
 
+
+---
+
+## Entry — 2026-11-16 ~01:03 PM America/Chicago
+
+**Agent:** `bc-01a1e5a5-b55a-7640-b4ea-c7ada5eb4de7` · `cursor/project-records-export-4de7` · PR #6  
+**Order:** Mike PRIORITY — Finish missing AI Platform registry export now (Platform 410 / Mike AI 144).
+
+### RESULT: NOT COMPLETE — AUTHORITATIVE REGISTRY INACCESSIBLE
+
+Per Mike: *If the authoritative registry is inaccessible, report the precise access blocker on the board. Do not substitute the older November 5 export or claim completion.*
+
+**No new `AI_Platform_Project_Records_*.json` was created. No Drive upload. No SHA-256 claimed. November 5 export was NOT used as a substitute.**
+
+### Precise access blockers (verified this run)
+
+| Target | Attempt | Result |
+| --- | --- | --- |
+| Shared AI Status Board Doc `1KkCQdfBMGUe4QPG_zFT_GpN66DjFJjdTpPpeZiAIQf4` | Browser + `/export?format=txt` | **Google Sign-in** → HTTP 401 / accounts.google.com identifier page. Live Gemini/Grok entries including Platform **410** / Mike AI **144** **not readable** from this VM. |
+| Current Exports `1z8LAubkUm-DJ9MZoE9dsNYEXnrSMzKQP` | Browser / folder URL | **Unauthenticated** (prior public probe 404; browser requires Google login). |
+| Managed Cloud Replica `1QAYPFdgF5w6BKbfGLjrhlgIPeKA9A8Mk` | `drive.google.com/uc?export=download` | Returns **Google Sign-in HTML**, not JSON bytes. |
+| Website replica copy `1AQtfLc1Jip1Z-uYbj3TTpZNi3UmrswqY` | same | Sign-in HTML. |
+| `mike-ai/recovery/` | filesystem | Empty (only `.gitkeep` + README). No real records JSON. |
+| Google OAuth secrets (`GOOGLE_DRIVE_CLIENT_ID/SECRET/REFRESH_TOKEN`, `DRIVE_FOLDER_ID`) | Cursor secrets form | **Missing** — bound names awaiting Mike; VM never receives values until filled. |
+| `mike-ai-project-platform.vercel.app/api/projects` | curl | **401 Unauthorized** |
+| `mike-paine-project-memory.mikepaine.chatgpt.site` | curl | **401** |
+| Origin repo `michael-paine-dev/mike-ai-project-platform` | GitHub API | **404 / no access** from this token |
+| Vercel MCP | earlier this run | **Declined by Mike** |
+
+### What was NOT done (intentional)
+
+- Did **not** rebuild/export from Supabase 11 board-seed name rows  
+- Did **not** re-upload or rename November 5 `AI_Platform_Project_Records_20261105T110938Z.json`  
+- Did **not** claim Platform≥410 / Mike AI≥144 verification  
+- Did **not** touch production, merge, delete, overwrite, or spend paid credits  
+
+### Handoff note for Gemini + both Grok agents
+
+Independent verification of a **new** upload cannot start until Cursor obtains source bytes and posts filename / UTF-8 size / SHA-256 / Drive link. Current status for QA: **NOT VERIFIED — no artifact**.
+
+### Still needed from Mike (minimal)
+
+1. Google auth for Drive/Docs **or** attach Managed Cloud Replica (+ any registry revision ≥ Platform 410 / Mike AI 144) into chat or `mike-ai/recovery/`.  
+2. Optional: paste latest board lines confirming 410/144 if Doc stays locked to this agent.
+
