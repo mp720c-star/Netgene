@@ -1,5 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
+import {
+  validateAnnouncedExportBytes,
+  validateLoadedRecords,
+  type RegistryValidation,
+} from "@/lib/registry-validate";
 
 export type ProjectRecord = {
   id: string;
@@ -16,6 +21,14 @@ export type ProjectRecordsLoad = {
   fileName: string | null;
   records: ProjectRecord[];
   message: string;
+  /** Preview-only governance / count checks — never mutates records. */
+  validation: RegistryValidation | null;
+  /** Present when a recovery file was read from disk. */
+  fingerprint: {
+    bytes: number;
+    sha256: string;
+    matchesAnnouncedExport: boolean;
+  } | null;
 };
 
 const RECORDS_NAME = /^AI_Platform_Project_Records_(.+)\.json$/i;
@@ -37,10 +50,6 @@ function normalizeRecords(raw: unknown): ProjectRecord[] {
     }
   }
   return [];
-}
-
-function readJsonFile(filePath: string): unknown {
-  return JSON.parse(fs.readFileSync(filePath, "utf8"));
 }
 
 /** Prefer newest AI_Platform_Project_Records_<timestamp>.json from recovery/. */
@@ -67,7 +76,9 @@ function loadFromRecoveryDrop(): ProjectRecordsLoad | null {
 
   const chosen = matches[0];
   try {
-    const records = normalizeRecords(readJsonFile(chosen.full));
+    const rawBuf = fs.readFileSync(chosen.full);
+    const records = normalizeRecords(JSON.parse(rawBuf.toString("utf8")));
+    const fp = validateAnnouncedExportBytes(rawBuf);
     return {
       source: "recovery-file",
       fileName: chosen.name,
@@ -76,6 +87,12 @@ function loadFromRecoveryDrop(): ProjectRecordsLoad | null {
         records.length > 0
           ? `Loaded ${records.length} project record(s) from recovery/${chosen.name}.`
           : `Found ${chosen.name} but it contained no project array.`,
+      validation: validateLoadedRecords(records),
+      fingerprint: {
+        bytes: fp.bytes,
+        sha256: fp.sha256,
+        matchesAnnouncedExport: fp.ok,
+      },
     };
   } catch (err) {
     return {
@@ -83,6 +100,8 @@ function loadFromRecoveryDrop(): ProjectRecordsLoad | null {
       fileName: chosen.name,
       records: [],
       message: `Failed to parse recovery/${chosen.name}: ${err instanceof Error ? err.message : String(err)}`,
+      validation: null,
+      fingerprint: null,
     };
   }
 }
@@ -91,7 +110,9 @@ function loadFromEnvJson(): ProjectRecordsLoad | null {
   const raw = process.env.AI_PLATFORM_PROJECT_RECORDS_JSON;
   if (!raw) return null;
   try {
+    const buf = Buffer.from(raw, "utf8");
     const records = normalizeRecords(JSON.parse(raw));
+    const fp = validateAnnouncedExportBytes(buf);
     return {
       source: "env-json",
       fileName: null,
@@ -100,6 +121,12 @@ function loadFromEnvJson(): ProjectRecordsLoad | null {
         records.length > 0
           ? `Loaded ${records.length} project record(s) from AI_PLATFORM_PROJECT_RECORDS_JSON.`
           : "AI_PLATFORM_PROJECT_RECORDS_JSON was set but contained no project array.",
+      validation: validateLoadedRecords(records),
+      fingerprint: {
+        bytes: fp.bytes,
+        sha256: fp.sha256,
+        matchesAnnouncedExport: fp.ok,
+      },
     };
   } catch (err) {
     return {
@@ -107,6 +134,8 @@ function loadFromEnvJson(): ProjectRecordsLoad | null {
       fileName: null,
       records: [],
       message: `Failed to parse AI_PLATFORM_PROJECT_RECORDS_JSON: ${err instanceof Error ? err.message : String(err)}`,
+      validation: null,
+      fingerprint: null,
     };
   }
 }
@@ -127,6 +156,8 @@ export function loadProjectRecords(): ProjectRecordsLoad {
     fileName: null,
     records: [],
     message:
-      "No project records found. Drop a real AI_Platform_Project_Records_<timestamp>.json into mike-ai/recovery/ (exported from Drive staging or OneDrive). Production Drive folder 1z8LAubkUm-DJ9MZoE9dsNYXGnySMzKQP returned empty/404; staging folder 1y_-7bD4F6iVT63CB0esv59gqamOIOYcY still requires authenticated export.",
+      "No project records found. After Gemini PASS, drop a copy of the verified Phase-2 export (Drive file 1ql5Jne7vuAc1D02igRVq6ADgMca2PKsQ) into mike-ai/recovery/ as AI_Platform_Project_Records_<timestamp>.json — append-only; do not overwrite existing recovery files or Drive backups.",
+    validation: null,
+    fingerprint: null,
   };
 }
