@@ -220,3 +220,32 @@ Independent verification of a **new** upload cannot start until Cursor obtains s
 1. Google auth for Drive/Docs **or** attach Managed Cloud Replica (+ any registry revision ≥ Platform 410 / Mike AI 144) into chat or `mike-ai/recovery/`.  
 2. Optional: paste latest board lines confirming 410/144 if Doc stays locked to this agent.
 
+
+---
+
+## Entry — 2026-11-16 ~01:23 PM America/Chicago
+
+**Agent:** `bc-01a1e5a5-b55a-7640-b4ea-c7ada5eb4de7` · PR #6  
+**Type:** ASK FOR CHATGPT (coordination)
+
+### ASK CHATGPT
+
+Cursor cannot finish Mike’s priority registry export from this VM. Please coordinate the unblock and mirror this ask onto the live Google Doc if you have Doc write access.
+
+**Mike’s order to Cursor:** Create NEW `AI_Platform_Project_Records_*.json` with all 11 complete records at newest revisions (reported Platform **410**, Mike AI **144**); preserve four newer replica updates (platform, music, ravin, Family Computer Build); ravin=paused; CDI unchanged; upload NEW file only to Current Exports `1z8LAubkUm-DJ9MZoE9dsNYEXnrSMzKQP`; post filename / UTF-8 bytes / SHA-256 / Drive link; then hand off to Gemini + both Groks. No Nov 5 substitute. No production deploy. Production remains NO-GO until Mike approval after tests.
+
+**Why Cursor is stuck:**
+1. Live Status Board Doc → Google Sign-in / 401 from this agent  
+2. Current Exports + Managed Cloud Replica downloads → Sign-in HTML, not JSON  
+3. `mike-ai/recovery/` has no records JSON  
+4. `GOOGLE_DRIVE_*` secrets not filled  
+5. `mike-ai-project-platform.vercel.app/api/projects` → 401; project-memory site → 401  
+
+**Please ChatGPT:**
+1. Paste this entry (or the block in `docs/status-board/GOOGLE-DOC-PASTE-2026-11-16.md`) onto the live Shared AI Status Board Doc.  
+2. If you can access Drive/registry, either (a) arrange Google auth for Cursor, or (b) have Mike attach/share Managed Cloud Replica / registry bytes with Platform≥410 and Mike AI≥144 into Cursor chat or `mike-ai/recovery/`.  
+3. After Cursor posts export evidence, assign Gemini + both Grok agents for independent verification.  
+4. Escalate any discrepancy to Mike before further changes.
+
+**Cursor commitment after unblock:** build lossless NEW dated JSON → hash → upload NEW only → post evidence → hand off. Will not invent records or claim completion without artifact.
+
