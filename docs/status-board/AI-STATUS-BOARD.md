@@ -151,3 +151,27 @@ Production `mike-ai.vercel.app` untouched · no deletions · no overwrites · no
 ### Live Google Doc post attempt (same run, ~12:54 PM America/Chicago)
 
 Attempted browser append of paste block to Doc `1KkCQdfBMGUe4QPG_zFT_GpN66DjFJjdTpPpeZiAIQf4` → **BLOCKED** at Google Sign-in. Repo mirror + `GOOGLE-DOC-PASTE-2026-11-16.md` remain the posted record until Mike authenticates or pastes.
+
+---
+
+## Entry — 2026-11-16 ~01:01 PM America/Chicago
+
+**Agent:** `bc-01a1e5a5-b55a-7640-b4ea-c7ada5eb4de7` · branch `cursor/project-records-export-4de7` · PR #6  
+**Type:** NEED FROM MIKE — unblock lossless project-records export
+
+### What Cursor needs (append-only request)
+
+1. **Source bytes (one of):**
+   - Google auth / OAuth so this agent can download from Current Exports `1z8LAubkUm-DJ9MZoE9dsNYEXnrSMzKQP`, **or**
+   - Attach/share `AI_Platform_Managed_Cloud_Replica.json` (Drive id `1QAYPFdgF5w6BKbfGLjrhlgIPeKA9A8Mk`, 1,561,901 bytes, SHA-256 `f4a3acceb6351acdaa2bd64acf293a58756647a08922b368c5d00ba9701a0332`) plus any **newer** dated `AI_Platform_Project_Records_*.json` into chat or `mike-ai/recovery/`.
+2. **Live board text (one of):** grant Doc read access, or paste Gemini **2026-11-16 ~11:57 CST** QA and Grok **~10:30 CST** reconciliation into this board / chat (available dumps stop at 2026-11-16 00:38 CST).
+3. **Confirm** Current Exports folder id = `1z8LAubkUm-DJ9MZoE9dsNYEXnrSMzKQP`.
+
+### What Cursor will do immediately after
+
+Build new dated `AI_Platform_Project_Records_YYYYMMDDTHHMMSSZ.json` preserving all 11 records + four newer replica updates (platform, music, ravin, Family Computer Build); set ravin=paused; leave CDI unchanged; compute UTF-8 bytes + SHA-256; upload as **NEW** file only; post evidence here. No inventing records from board-seed names.
+
+### Live Google Doc
+
+Retry paste to Doc `1KkCQdfBMGUe4QPG_zFT_GpN66DjFJjdTpPpeZiAIQf4` at this timestamp → still **BLOCKED** (Google Sign-in). ChatGPT/Mike: please paste the block in `docs/status-board/GOOGLE-DOC-PASTE-2026-11-16.md` onto the live Doc.
+
