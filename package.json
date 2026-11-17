@@ -9,7 +9,8 @@
     "dev:mike-ai": "npm --prefix mike-ai run dev",
     "build:mike-ai": "npm --prefix mike-ai run build",
     "pack:ravin:win": "npm --prefix ravin-lookup run pack:win:all",
-    "sync:ravin:downloads": "node ./scripts/sync-ravin-downloads.mjs"
+    "sync:ravin:downloads": "node ./scripts/sync-ravin-downloads.mjs",
+    "test:bluetooth-scanner": "node ./bluetooth-scanner/tests/obd.test.mjs"
   },
   "dependencies": {
     "wrangler-sdk": "npm:wrangler@4.160.1"

@@ -27,6 +27,7 @@ rmrf(site);
 fs.mkdirSync(site, { recursive: true });
 fs.copyFileSync(path.join(root, "index.html"), path.join(site, "index.html"));
 copyDir(path.join(root, "forma"), path.join(site, "forma"));
+copyDir(path.join(root, "bluetooth-scanner"), path.join(site, "bluetooth-scanner"));
 copyDir(path.join(root, "vehicle-genius"), path.join(site, "vehicle-genius"));
 fs.mkdirSync(path.join(site, "cdi-genius"), { recursive: true });
 fs.copyFileSync(path.join(root, "cdi-genius", "index.html"), path.join(site, "cdi-genius", "index.html"));

@@ -25,6 +25,6 @@ export async function GET() {
       message: projects.message,
     },
     usage: getUsageSnapshot().totals,
-    apps: ["/apps/", "/apps/forma/", "/apps/vehicle-genius/", "/apps/cdi-genius/"],
+    apps: ["/apps/", "/apps/forma/", "/apps/bluetooth-scanner/", "/apps/vehicle-genius/", "/apps/cdi-genius/"],
   });
 }

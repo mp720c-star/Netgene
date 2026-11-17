@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#102018" />
+  <title>Bluetooth OBD Scanner — Netgene</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="top">
+    <a class="back" href="/apps/">← Projects</a>
+    <p class="brand">Netgene</p>
+    <h1>Bluetooth OBD Scanner</h1>
+    <p class="lead">Live ELM327 BLE adapter link. Shows raw ECU replies only — no invented code database.</p>
+  </header>
+
+  <main>
+    <section class="panel" aria-labelledby="connect-heading">
+      <div class="panel-head">
+        <h2 id="connect-heading">Adapter</h2>
+        <span id="statusPill" class="pill" data-state="idle">Disconnected</span>
+      </div>
+      <p id="supportNote" class="note"></p>
+      <div class="actions">
+        <button type="button" id="connectBtn" class="primary">Connect Bluetooth</button>
+        <button type="button" id="demoBtn" class="ghost">Demo mode</button>
+        <button type="button" id="disconnectBtn" class="ghost" disabled>Disconnect</button>
+      </div>
+      <dl class="meta" id="deviceMeta">
+        <div><dt>Device</dt><dd id="deviceName">—</dd></div>
+        <div><dt>Transport</dt><dd id="transportLabel">—</dd></div>
+      </dl>
+    </section>
+
+    <section class="panel" aria-labelledby="scan-heading">
+      <h2 id="scan-heading">Scan</h2>
+      <div class="actions wrap">
+        <button type="button" id="initBtn" class="ghost" disabled>Initialize adapter</button>
+        <button type="button" id="readDtcsBtn" class="primary" disabled>Read stored DTCs</button>
+        <button type="button" id="readLiveBtn" class="ghost" disabled>Read RPM / speed</button>
+        <button type="button" id="clearLogBtn" class="ghost">Clear log</button>
+      </div>
+      <div class="results" id="results">
+        <p class="empty">Connect an ELM327 BLE adapter (or use Demo mode), then read DTCs.</p>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="log-heading">
+      <h2 id="log-heading">Traffic log</h2>
+      <pre id="trafficLog" class="log" aria-live="polite"></pre>
+    </section>
+
+    <section class="panel muted-panel">
+      <h2>Notes</h2>
+      <ul class="facts">
+        <li>Requires a <strong>BLE</strong> ELM327-style adapter. Classic Bluetooth dongles are not supported by Web Bluetooth.</li>
+        <li>Works in Chrome / Edge on Android and desktop over HTTPS (or localhost).</li>
+        <li>DTC letters (P/C/B/U) are decoded from OBD Mode 03 bytes — repair text is not invented.</li>
+        <li>ATDD code lookup DB remains gated until original ATDD 1.2.0 files are delivered.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
