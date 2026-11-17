@@ -1,0 +1,16 @@
+{
+  "name": "ATDD + CDI Genius Unified",
+  "short_name": "ATDD+CDI",
+  "description": "Unified Auto/Truck Diagnostics for Dummies with CDI Genius ignition diagnostics (development test build).",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#d9e6df",
+  "theme_color": "#0f2a24",
+  "icons": [
+    {
+      "src": "./icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}
