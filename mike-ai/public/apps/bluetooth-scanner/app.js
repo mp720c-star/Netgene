@@ -36,7 +36,8 @@ const state = {
   pendingResolve: null,
   pendingReject: null,
   buffer: "",
-  responseTimer: null
+  responseTimer: null,
+  commandChain: Promise.resolve()
 };
 
 function setStatus(label, stateName) {
@@ -185,50 +186,58 @@ async function disconnect() {
   }
 }
 
-function connectDemo() {
+async function connectDemo() {
   state.mode = "demo";
   ui.deviceName.textContent = "Demo ELM327";
   ui.transportLabel.textContent = "Simulated (no radio)";
   setStatus("Demo ready", "ready");
   setConnectedUi(true);
   logLine("SYS", "Demo mode — replies are simulated adapter traffic");
-  ui.results.innerHTML = `<p class="empty">Demo connected. Initialize, then read DTCs or live data.</p>`;
+  ui.results.innerHTML = `<p class="empty">Demo connected. Initializing…</p>`;
+  await initializeAdapter();
 }
 
 async function sendCommand(cmd, { timeoutMs = 4000 } = {}) {
-  const line = cmd.endsWith("\r") ? cmd : `${cmd}\r`;
-  logLine("TX", cmd);
+  const run = async () => {
+    const line = cmd.endsWith("\r") ? cmd : `${cmd}\r`;
+    logLine("TX", cmd);
 
-  if (state.mode === "demo") {
-    const response = demoReply(cmd);
+    if (state.mode === "demo") {
+      const response = demoReply(cmd);
+      logLine("RX", response.replace(/\r/g, "\\r"));
+      await delay(120);
+      return response;
+    }
+
+    if (!state.writeChar) throw new Error("Not connected");
+
+    state.buffer = "";
+    const responsePromise = new Promise((resolve, reject) => {
+      state.pendingResolve = resolve;
+      state.pendingReject = reject;
+      state.responseTimer = setTimeout(() => {
+        state.pendingResolve = null;
+        state.pendingReject = null;
+        reject(new Error(`Timeout waiting for reply to ${cmd}`));
+      }, timeoutMs);
+    });
+
+    const payload = state.encoder.encode(line);
+    if (state.writeChar.properties.writeWithoutResponse) {
+      await state.writeChar.writeValueWithoutResponse(payload);
+    } else {
+      await state.writeChar.writeValue(payload);
+    }
+
+    const response = await responsePromise;
     logLine("RX", response.replace(/\r/g, "\\r"));
-    await delay(120);
     return response;
-  }
+  };
 
-  if (!state.writeChar) throw new Error("Not connected");
-
-  state.buffer = "";
-  const responsePromise = new Promise((resolve, reject) => {
-    state.pendingResolve = resolve;
-    state.pendingReject = reject;
-    state.responseTimer = setTimeout(() => {
-      state.pendingResolve = null;
-      state.pendingReject = null;
-      reject(new Error(`Timeout waiting for reply to ${cmd}`));
-    }, timeoutMs);
-  });
-
-  const payload = state.encoder.encode(line);
-  if (state.writeChar.properties.writeWithoutResponse) {
-    await state.writeChar.writeValueWithoutResponse(payload);
-  } else {
-    await state.writeChar.writeValue(payload);
-  }
-
-  const response = await responsePromise;
-  logLine("RX", response.replace(/\r/g, "\\r"));
-  return response;
+  const next = state.commandChain.then(run, run);
+  // Keep the chain alive even if this command fails
+  state.commandChain = next.catch(() => {});
+  return next;
 }
 
 function demoReply(cmd) {
@@ -242,6 +251,9 @@ function demoReply(cmd) {
 
 async function initializeAdapter() {
   ui.results.innerHTML = `<p class="empty">Initializing adapter…</p>`;
+  ui.initBtn.disabled = true;
+  ui.readDtcsBtn.disabled = true;
+  ui.readLiveBtn.disabled = true;
   const steps = ["ATZ", "ATE0", "ATL0", "ATH0", "ATS0", "ATSP0"];
   try {
     for (const step of steps) {
@@ -253,6 +265,11 @@ async function initializeAdapter() {
   } catch (err) {
     setStatus("Error", "error");
     ui.results.innerHTML = `<p class="empty">${escapeHtml(err.message || String(err))}</p>`;
+  } finally {
+    const connected = state.mode === "ble" || state.mode === "demo";
+    ui.initBtn.disabled = !connected;
+    ui.readDtcsBtn.disabled = !connected;
+    ui.readLiveBtn.disabled = !connected;
   }
 }
 

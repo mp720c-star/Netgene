@@ -26,9 +26,9 @@
       </div>
       <p id="supportNote" class="note"></p>
       <div class="actions">
-        <button type="button" id="connectBtn" class="primary">Connect Bluetooth</button>
-        <button type="button" id="demoBtn" class="ghost">Demo mode</button>
-        <button type="button" id="disconnectBtn" class="ghost" disabled>Disconnect</button>
+        <button type="button" id="connectBtn" class="primary" data-testid="connect-bt">Connect Bluetooth</button>
+        <button type="button" id="demoBtn" class="ghost" data-testid="demo-mode">Demo mode</button>
+        <button type="button" id="disconnectBtn" class="ghost" data-testid="disconnect" disabled>Disconnect</button>
       </div>
       <dl class="meta" id="deviceMeta">
         <div><dt>Device</dt><dd id="deviceName">—</dd></div>
@@ -39,10 +39,10 @@
     <section class="panel" aria-labelledby="scan-heading">
       <h2 id="scan-heading">Scan</h2>
       <div class="actions wrap">
-        <button type="button" id="initBtn" class="ghost" disabled>Initialize adapter</button>
-        <button type="button" id="readDtcsBtn" class="primary" disabled>Read stored DTCs</button>
-        <button type="button" id="readLiveBtn" class="ghost" disabled>Read RPM / speed</button>
-        <button type="button" id="clearLogBtn" class="ghost">Clear log</button>
+        <button type="button" id="initBtn" class="ghost" data-testid="init-adapter" disabled>Initialize adapter</button>
+        <button type="button" id="readDtcsBtn" class="primary" data-testid="read-dtcs" disabled>Read stored DTCs</button>
+        <button type="button" id="readLiveBtn" class="ghost" data-testid="read-live" disabled>Read RPM / speed</button>
+        <button type="button" id="clearLogBtn" class="ghost" data-testid="clear-log">Clear log</button>
       </div>
       <div class="results" id="results">
         <p class="empty">Connect an ELM327 BLE adapter (or use Demo mode), then read DTCs.</p>
