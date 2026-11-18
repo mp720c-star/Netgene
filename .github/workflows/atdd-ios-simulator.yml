@@ -120,9 +120,9 @@ jobs:
   inspect-and-build:
     name: Inspect + unsigned simulator build
     needs: validate-ios-tree
-    # Repo currently rejects macos-14 hosted runners ("configuration not supported").
-    # Keep attempting macos-latest; do not fail the PR if the org has no macOS minutes.
-    runs-on: macos-latest
+    # Prefer macos-13 (Intel) — macos-14/latest returned "configuration not supported"
+    # on this repo. continue-on-error so Ubuntu validation / Android APK still pass.
+    runs-on: macos-13
     continue-on-error: true
     timeout-minutes: 45
     steps:
