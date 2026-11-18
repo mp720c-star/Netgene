@@ -66,13 +66,13 @@ Run from `atdd/` after checkout of this branch (see agent log). Protocol/unit te
 
 ## 5. Signed physical iPhone / TestFlight
 
-**Not started.** Requires:
+**CI wired** (awaiting secret *values* in GitHub):
 
-1. Imported native `atdd/ios` from candidate package  
-2. Apple Developer team + App ID with Bluetooth  
-3. Distribution certificate + provisioning (store in Cursor/GitHub **secrets** only — never paste values)  
-4. macOS host or Actions with signing secrets configured  
-5. Explicit Michael approval before any TestFlight upload  
+1. Native `atdd/ios` Capacitor scaffold present on platform branch  
+2. Workflow: `.github/workflows/atdd-ios-testflight.yml` (manual Run workflow)  
+3. Secret names + setup: `docs/status-board/ATDD-TESTFLIGHT-CI-SECRETS.md`  
+4. Michael must add the seven GitHub Actions secrets (never paste values in chat)  
+5. Approval to upload: granted 2026-11-18 (“Test flight signing secrets for ci. Do that”)
 
 ---
 

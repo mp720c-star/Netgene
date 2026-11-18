@@ -28,8 +28,14 @@ BUILD (unsigned simulator)
 - open ios/App/App.xcworkspace (after pod install) or App.xcodeproj
 - GitHub Actions: atdd-ios-simulator (CODE_SIGNING_ALLOWED=NO)
 
+BUILD (TestFlight — signed device)
+- GitHub Actions: atdd-ios-testflight (workflow_dispatch only)
+- Secrets guide: docs/status-board/ATDD-TESTFLIGHT-CI-SECRETS.md
+- Encode helper (run on a Mac): bash atdd/ios/scripts/encode-signing-secrets.sh …
+
 DO NOT
 - Claim FIXD protocol support without live GATT + Mode 03 evidence
 - Present Demo/SIMULATED DTCs as live vehicle data
 - Overwrite signed ATDD 1.2.0 Home Screen app
 - Commit Apple signing certificates or provisioning profiles
+- Paste secret values into chat / PRs
