@@ -32,6 +32,16 @@ fs.mkdirSync(path.join(site, "cdi-genius"), { recursive: true });
 fs.copyFileSync(path.join(root, "cdi-genius", "index.html"), path.join(site, "cdi-genius", "index.html"));
 fs.copyFileSync(path.join(root, "cdi-genius", "README.md"), path.join(site, "cdi-genius", "README.md"));
 
+// ATDD Connect Scanner (static web app) + BLE companion for Cloudflare hub previews.
+const atddWeb = path.join(root, "atdd", "web");
+if (fs.existsSync(atddWeb)) {
+  copyDir(atddWeb, path.join(site, "atdd"));
+}
+const bleCompanion = path.join(root, "bluetooth-scanner");
+if (fs.existsSync(bleCompanion)) {
+  copyDir(bleCompanion, path.join(site, "bluetooth-scanner"));
+}
+
 // Installers stay on GitHub (too large for Workers / Cursor publish). Ship the page + checksums only.
 const downloadsSrc = path.join(root, "downloads");
 const downloadsDest = path.join(site, "downloads");
@@ -47,4 +57,6 @@ for (const name of ["index.html", "SHA256SUMS.txt"]) {
   }
 }
 
-console.log("prepare-site: wrote static site to ./site (Ravin .exe via GitHub raw links)");
+console.log(
+  "prepare-site: wrote static site to ./site (ATDD Connect Scanner at /atdd/; Ravin .exe via GitHub raw links)",
+);
