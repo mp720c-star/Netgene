@@ -135,3 +135,32 @@ Safest path: keep `main` frozen · build on `cursor/unified-ai-platform-b8a1` ·
 | TestFlight CI | PR #17 (secrets pending) |
 | Open PR count | 15 |
 | Project catalog target | 13 (11 board + Forma + Vehicle Genius) |
+
+---
+
+## Entry — 2026-11-18 ~5:28 PM America/Chicago
+
+**Agent:** Cursor Cloud (ATDD development-order reconcile)  
+**Branch:** `cursor/atdd-reconcile-pr16-pr17-nov18` (docs only; stacked from PR #17 head)  
+**Action:** Reconcile PR #16 / #17 against preserved ATDD 1.2.0 baseline — bundle ID, parser revision, paths, commits, CI. No merge / signing / deploy / GATT.
+
+### Progress
+
+- [x] Confirmed iOS bundle ID in code: **`com.netgene.atdd.ble`**
+- [x] Confirmed `com.michaelpaine.autotruckdiagnosticsfordummies` **absent** from Netgene git
+- [x] Confirmed PR #16 parser = **v3** (`3.1.0-cloud-continuation`); **no v4/v7** in tree
+- [x] Reconfirmed ATDD 1.2.0 originals **NOT FOUND**; `main` still has no `atdd/`
+- [x] Ran synthetic `obd-protocol-v3` tests — **passed** (no hardware)
+- [x] Posted report: `docs/status-board/ATDD-PR16-PR17-RECONCILIATION-2026-11-18.md`
+- [ ] Michael: nRF Connect **scan only** screenshots (FIXD app closed)
+- [ ] Michael: explicit approval before any GATT connect / TestFlight secrets / merge
+
+### Evidence
+
+| Item | Result |
+| --- | --- |
+| PR #16 head | `8af95e1f921c317daad661fa193029c2aa3fa574` |
+| PR #17 head | `0efa0e1307ae7b018886847355dfda4a4a9cb84e` |
+| Parser SHA-256 | `9f4ab2fa79a7825bd17c254d7767393e997ee916117fe5dc7b49680473c223e4` |
+| CI (both PRs) | Ubuntu tree + Android APK + Workers **pass**; macOS simulator **pending** |
+| Mode 04 | Not implemented (Mode 03 read only) |
