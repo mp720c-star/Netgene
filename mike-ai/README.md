@@ -1,6 +1,6 @@
 # AI Project Platform (Mike AI)
 
-Secure Netgene AI platform shell with **all 13 projects available**, hub apps, Face ID / unlock, files, memory, and OneDrive-primary cloud sync.
+Secure Netgene AI platform shell with **all 14 projects available**, hub apps (including ATDD Connect Scanner), Face ID / unlock, files, memory, and OneDrive-primary cloud sync.
 
 - Does **not** modify production `https://mike-ai.vercel.app` until you approve a reconnect
 - Does **not** overwrite or delete Google Drive / OneDrive backups

@@ -1,8 +1,8 @@
 /**
  * Authoritative board + workspace project catalog.
  * Board names come from the Shared AI Status Board (2026-10-18 export).
- * Forma + Vehicle Genius are real Netgene hub apps included so the platform
- * surfaces every workspace project (13 total with the 11 board rows).
+ * Forma + Vehicle Genius + ATDD are real Netgene hub apps included so the
+ * platform surfaces every workspace project (14 total with the 11 board rows).
  */
 
 export type BoardProjectSeed = {
@@ -54,9 +54,10 @@ export const BOARD_PROJECTS: BoardProjectSeed[] = [
   {
     seedId: "seed-auto-truck",
     name: "Auto Truck Diagnostics for Dummies",
-    summary: "Priority OBD / truck diagnostics — signed Windows baseline 1.2.0.",
+    summary:
+      "Priority OBD / truck diagnostics — signed Windows baseline 1.2.0; web Connect Scanner at /apps/atdd.",
     status: "active",
-    tags: ["board-seed", "priority"],
+    tags: ["board-seed", "priority", "hub-app"],
   },
   {
     seedId: "seed-cdi",
@@ -107,9 +108,22 @@ export const BOARD_PROJECTS: BoardProjectSeed[] = [
     status: "active",
     tags: ["workspace-app", "hub-app"],
   },
+  {
+    seedId: "seed-atdd",
+    name: "ATDD (Auto Truck Diagnostics)",
+    summary:
+      "Unified ATDD + CDI web app with Connect Scanner (Web Bluetooth + labeled demo).",
+    status: "active",
+    tags: ["workspace-app", "hub-app", "priority"],
+  },
 ];
 
 export const HUB_APPS = [
+  {
+    name: "ATDD",
+    href: "/apps/atdd",
+    blurb: "Connect Scanner + CDI diagnostics",
+  },
   {
     name: "Forma",
     href: "/apps/forma",

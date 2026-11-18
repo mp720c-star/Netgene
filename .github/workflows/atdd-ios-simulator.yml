@@ -1,0 +1,146 @@
+# Unsigned ATDD iOS simulator build (development only).
+# Does not merge to production, does not use Apple signing secrets.
+name: atdd-ios-simulator
+
+on:
+  push:
+    branches:
+      - "cursor/atdd-native-iphone-*"
+      - "cursor/bluetooth-scanner-*"
+    paths:
+      - "atdd/ios/**"
+      - "atdd/ble/**"
+      - "atdd/obd/**"
+      - ".github/workflows/atdd-ios-simulator.yml"
+  pull_request:
+    paths:
+      - "atdd/ios/**"
+      - "atdd/ble/**"
+      - "atdd/obd/**"
+      - ".github/workflows/atdd-ios-simulator.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: atdd-ios-sim-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  inspect-and-build:
+    name: Inspect + unsigned simulator build
+    runs-on: macos-14
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Require native iOS project
+        id: gate
+        run: |
+          set -euo pipefail
+          if [[ ! -f docs/status-board/CURSOR_HANDOFF_IMPORTED.txt && ! -f atdd/ios/CURSOR_HANDOFF.txt ]]; then
+            if [[ ! -d atdd/ios/App && ! -d atdd/ios/App.xcodeproj && ! -f atdd/ios/capacitor.config.json && ! -f atdd/ios/capacitor.config.ts ]]; then
+              echo "BLOCKED: atdd/ios native project not present."
+              echo "Import the candidate package (with CURSOR_HANDOFF.txt) via scripts/import-atdd-ios-candidate.mjs"
+              echo "present=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          fi
+          echo "present=true" >> "$GITHUB_OUTPUT"
+          echo "=== CURSOR_HANDOFF (first 80 lines, no secrets expected) ==="
+          if [[ -f docs/status-board/CURSOR_HANDOFF_IMPORTED.txt ]]; then
+            head -n 80 docs/status-board/CURSOR_HANDOFF_IMPORTED.txt
+          elif [[ -f atdd/ios/CURSOR_HANDOFF.txt ]]; then
+            head -n 80 atdd/ios/CURSOR_HANDOFF.txt
+          fi
+          echo "=== iOS tree (depth 3) ==="
+          find atdd/ios -maxdepth 3 -type f | head -n 120
+
+      - name: Setup Node
+        if: steps.gate.outputs.present == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Run ATDD JS protocol tests
+        if: steps.gate.outputs.present == 'true'
+        working-directory: atdd
+        run: npm test
+
+      - name: Select Xcode
+        if: steps.gate.outputs.present == 'true'
+        run: |
+          set -euo pipefail
+          xcodebuild -version
+          xcrun simctl list devices available | head -n 40
+
+      - name: Resolve Xcode workspace/project
+        if: steps.gate.outputs.present == 'true'
+        id: xcode
+        run: |
+          set -euo pipefail
+          WS=$(find atdd/ios -name '*.xcworkspace' | head -n 1 || true)
+          PJ=$(find atdd/ios -name '*.xcodeproj' | head -n 1 || true)
+          if [[ -n "$WS" ]]; then
+            echo "kind=workspace" >> "$GITHUB_OUTPUT"
+            echo "path=$WS" >> "$GITHUB_OUTPUT"
+          elif [[ -n "$PJ" ]]; then
+            echo "kind=project" >> "$GITHUB_OUTPUT"
+            echo "path=$PJ" >> "$GITHUB_OUTPUT"
+          else
+            echo "BLOCKED: No .xcworkspace/.xcodeproj under atdd/ios"
+            exit 1
+          fi
+          SCHEME=$(xcodebuild -list ${WS:+-workspace "$WS"} ${PJ:+-project "$PJ"} 2>/dev/null | awk '/Schemes:/{f=1;next} f&&NF{print $1; exit}')
+          if [[ -z "${SCHEME:-}" ]]; then
+            SCHEME="App"
+          fi
+          echo "scheme=$SCHEME" >> "$GITHUB_OUTPUT"
+          echo "Using ${WS:-$PJ} scheme=$SCHEME"
+
+      - name: Pod install (if CocoaPods present)
+        if: steps.gate.outputs.present == 'true'
+        working-directory: atdd/ios
+        run: |
+          set -euo pipefail
+          if [[ -f Podfile ]]; then
+            pod install --repo-update
+          else
+            echo "No Podfile — skipping CocoaPods"
+          fi
+
+      - name: Unsigned iPhone Simulator build
+        if: steps.gate.outputs.present == 'true'
+        env:
+          KIND: ${{ steps.xcode.outputs.kind }}
+          XCODE_PATH: ${{ steps.xcode.outputs.path }}
+          SCHEME: ${{ steps.xcode.outputs.scheme }}
+        run: |
+          set -euo pipefail
+          DEST='platform=iOS Simulator,name=iPhone 16,OS=latest'
+          ARGS=(CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY= ONLY_ACTIVE_ARCH=YES)
+          if [[ "$KIND" == "workspace" ]]; then
+            xcodebuild -workspace "$XCODE_PATH" -scheme "$SCHEME" -destination "$DEST" -configuration Debug "${ARGS[@]}" build
+          else
+            xcodebuild -project "$XCODE_PATH" -scheme "$SCHEME" -destination "$DEST" -configuration Debug "${ARGS[@]}" build
+          fi
+
+      - name: Upload build log marker
+        if: always()
+        run: |
+          mkdir -p artifacts
+          {
+            echo "present=${{ steps.gate.outputs.present }}"
+            echo "ref=$GITHUB_REF"
+            echo "sha=$GITHUB_SHA"
+            date -u
+          } > artifacts/atdd-ios-sim-status.txt
+          if [[ "${{ steps.gate.outputs.present }}" != "true" ]]; then
+            echo "RESULT=BLOCKED_NO_IOS_PACKAGE" >> artifacts/atdd-ios-sim-status.txt
+          fi
+
+      - name: Publish status artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: atdd-ios-sim-status
+          path: artifacts/atdd-ios-sim-status.txt

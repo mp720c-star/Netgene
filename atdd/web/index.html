@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="ATDD+CDI" />
+  <meta name="theme-color" content="#0f2a24" />
+  <title>ATDD + CDI Genius — Unified Diagnostics</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./icon-180.png" />
+  <link rel="apple-touch-icon" href="./icon-180.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="top">
+    <div>
+      <p class="brand">Auto/Truck Diagnostics for Dummies</p>
+      <h1>Unified with CDI Genius</h1>
+      <p class="lead">Development test build — original ATDD 1.2.0 databases not yet recovered into this environment.</p>
+    </div>
+    <div class="badges">
+      <span id="integrityBadge" class="badge">…</span>
+      <span id="profileBadge" class="badge">…</span>
+    </div>
+  </header>
+
+  <nav class="nav" aria-label="Primary">
+    <button type="button" data-nav="home" class="active">Home</button>
+    <button type="button" data-nav="cdi">CDI Ignition</button>
+    <button type="button" data-nav="obd2">OBD2 / ATDD</button>
+    <button type="button" data-nav="status">Verify</button>
+  </nav>
+
+  <p id="bootError" class="warn" hidden></p>
+
+  <main>
+    <section data-mode-panel="home">
+      <h2>What is live in this build</h2>
+      <ul class="facts">
+        <li>CDI Genius source imported byte-identical into <code>atdd/source-import/cdi-genius/</code></li>
+        <li>DDT engine (continuity → resistance → spark → diagnosis) operational for the <strong>3</strong> recovered profiles</li>
+        <li>Original <code>cdi-genius/</code> project left intact pending Michael’s deletion authorization</li>
+        <li>ATDD 1.2.0 OBD2 / Diagnose / Listen / Look / Code: <strong>blocked</strong> — originals not found</li>
+        <li>Connect Scanner: <strong>ready</strong> — Web Bluetooth when available + labeled Demo (SIMULATED); FIXD protocol still <code>UNVERIFIED</code></li>
+        <li>Capacitor iOS BLE tree from OneDrive: <strong>not imported</strong> into this VM yet</li>
+      </ul>
+      <div class="row">
+        <button type="button" class="primary" data-nav="obd2" id="homeConnectScanner">Connect Scanner</button>
+        <button type="button" class="ghost" data-nav="cdi">Open CDI diagnostics</button>
+        <button type="button" class="ghost" data-nav="status">View verification counts</button>
+      </div>
+    </section>
+
+    <section data-mode-panel="cdi" hidden>
+      <h2>CDI Ignition Diagnostics</h2>
+      <div id="cdiBody"></div>
+    </section>
+
+    <section data-mode-panel="obd2" hidden>
+      <h2>OBD2 / ATDD</h2>
+      <div id="obd2Body"></div>
+    </section>
+
+    <section data-mode-panel="status" hidden>
+      <h2>Transfer verification</h2>
+      <div id="statusBody"></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Branch <code>cursor/complete-platform-atdd-scanner-e3f0</code> · FIXD <code>UNVERIFIED</code> · No fabricated codes · No simulated-as-live</p>
+  </footer>
+
+  <script type="module" src="./js/app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    }
+  </script>
+</body>
+</html>
