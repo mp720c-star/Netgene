@@ -111,6 +111,58 @@ function loadFromEnvJson(): ProjectRecordsLoad | null {
   }
 }
 
+export type RecoveryDrop = {
+  fileName: string;
+  records: ProjectRecord[];
+  message: string;
+};
+
+/**
+ * Read every recovery JSON. Older files stay on disk and stay in the merge.
+ * Nothing in recovery/ is deleted or rewritten.
+ */
+export function loadAllRecoveryRecords(): {
+  files: RecoveryDrop[];
+  records: ProjectRecord[];
+  message: string;
+} {
+  const dir = recoveryDir();
+  if (!fs.existsSync(dir)) {
+    return { files: [], records: [], message: "recovery directory is missing." };
+  }
+  const names = fs
+    .readdirSync(dir)
+    .filter((name) => RECORDS_NAME.test(name))
+    .sort();
+  const files: RecoveryDrop[] = [];
+  const records: ProjectRecord[] = [];
+  for (const name of names) {
+    try {
+      const loaded = normalizeRecords(readJsonFile(path.join(dir, name)));
+      files.push({
+        fileName: name,
+        records: loaded,
+        message: `Loaded ${loaded.length} record(s).`,
+      });
+      records.push(...loaded);
+    } catch (err) {
+      files.push({
+        fileName: name,
+        records: [],
+        message: err instanceof Error ? err.message : String(err),
+      });
+    }
+  }
+  return {
+    files,
+    records,
+    message:
+      files.length > 0
+        ? `Read ${files.length} recovery file(s), ${records.length} record(s), without changing the files.`
+        : "No AI_Platform_Project_Records_*.json in recovery/.",
+  };
+}
+
 /**
  * Real project records only — no invented placeholders.
  * Sources (in order): recovery/AI_Platform_Project_Records_*.json, then env JSON.
