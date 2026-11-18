@@ -61,7 +61,10 @@ jobs:
   inspect-and-build:
     name: Inspect + unsigned simulator build
     needs: validate-ios-tree
-    runs-on: macos-14
+    # Repo currently rejects macos-14 hosted runners ("configuration not supported").
+    # Keep attempting macos-latest; do not fail the PR if the org has no macOS minutes.
+    runs-on: macos-latest
+    continue-on-error: true
     timeout-minutes: 45
     steps:
       - name: Checkout
