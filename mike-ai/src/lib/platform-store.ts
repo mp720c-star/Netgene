@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from "node:crypto";
+import { decodeStoredBytes, sha256Hex } from "./byte-content";
 import { sql } from "./db";
 
 export type ProjectRow = {
@@ -132,12 +133,93 @@ export async function getFileContent(id: string): Promise<{
     [id],
   );
   const row = rows[0];
-  if (!row || !row.content) return null;
-  const content = Buffer.isBuffer(row.content)
-    ? row.content
-    : Buffer.from(row.content as Uint8Array);
-  const { content: _c, ...meta } = row;
+  if (!row) return null;
+  const { content: stored, ...meta } = row;
+  const content = decodeStoredBytes(stored, meta.checksum_sha256);
+  if (!content) {
+    if (Number(meta.size_bytes) === 0) return { row: meta, content: Buffer.alloc(0) };
+    return null;
+  }
+  if (sha256Hex(content) !== meta.checksum_sha256 && Number(meta.size_bytes) === 0 && content.length === 0) {
+    return { row: meta, content: Buffer.alloc(0) };
+  }
   return { row: meta, content };
+}
+
+export async function insertProjectIfAbsent(input: {
+  id: string;
+  name: string;
+  summary: string;
+  status: string;
+  tags: string[];
+}): Promise<boolean> {
+  const rows = await sql<{ id: string }>(
+    `INSERT INTO projects (id, name, summary, status, tags)
+     VALUES ($1, $2, $3, $4, $5::jsonb)
+     ON CONFLICT (id) DO NOTHING
+     RETURNING id`,
+    [input.id, input.name, input.summary, input.status, JSON.stringify(input.tags)],
+  );
+  return rows.length > 0;
+}
+
+export async function insertFileIfAbsent(input: {
+  id: string;
+  projectId: string;
+  name: string;
+  mimeType: string;
+  bytes: Buffer;
+  checksum: string;
+}): Promise<boolean> {
+  const rows = await sql<{ id: string }>(
+    `INSERT INTO files (id, project_id, name, mime_type, size_bytes, content, checksum_sha256)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)
+     ON CONFLICT (id) DO NOTHING
+     RETURNING id`,
+    [
+      input.id,
+      input.projectId,
+      input.name,
+      input.mimeType,
+      input.bytes.length,
+      input.bytes,
+      input.checksum,
+    ],
+  );
+  return rows.length > 0;
+}
+
+export async function insertRevisionIfAbsent(input: {
+  id: string;
+  projectId: string | null;
+  title: string;
+  body: string;
+}): Promise<boolean> {
+  const rows = await sql<{ id: string }>(
+    `INSERT INTO memory_entries (id, project_id, kind, title, body, source)
+     VALUES ($1, $2, 'historical-revision', $3, $4, 'preserve')
+     ON CONFLICT (id) DO NOTHING
+     RETURNING id`,
+    [input.id, input.projectId, input.title, input.body],
+  );
+  return rows.length > 0;
+}
+
+export async function listHistoricalRevisions(limit = 200) {
+  return sql<{
+    id: string;
+    project_id: string | null;
+    title: string;
+    body: string;
+    created_at: string;
+  }>(
+    `SELECT id, project_id, title, body, created_at::text
+     FROM memory_entries
+     WHERE kind = 'historical-revision'
+     ORDER BY created_at DESC
+     LIMIT $1`,
+    [limit],
+  );
 }
 
 export async function listMemory(limit = 40) {

@@ -1,12 +1,8 @@
 import { requireUnlocked } from "@/lib/session";
 import { assertTrustedOrigin } from "@/lib/origin";
-import {
-  createProject,
-  listProjectsNewestFirst,
-  updateProjectMeta,
-  type ProjectRow,
-} from "@/lib/platform-store";
-import { loadProjectRecords } from "@/lib/projects";
+import { createProject, listProjectsNewestFirst, type ProjectRow } from "@/lib/platform-store";
+import { applyPreserveMerge } from "@/lib/apply-reconcile";
+import { loadAllRecoveryRecords, loadProjectRecords } from "@/lib/projects";
 import { BOARD_PROJECTS, HUB_APPS } from "@/lib/board-projects";
 import { validateLoadedRecords } from "@/lib/registry-validate";
 
@@ -14,50 +10,23 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
- * Ensure every catalog project exists, and enforce governance statuses
- * (Ravin paused, Mike Paine CD archived) without inventing histories.
+ * Insert catalog rows that are missing. Never update an existing row:
+ * a later governance label must not overwrite a saved status or summary.
  */
 async function ensureBoardProjects(): Promise<ProjectRow[]> {
   let projects = await listProjectsNewestFirst();
   const byName = new Map(projects.map((p) => [p.name.toLowerCase(), p]));
 
   for (const seed of BOARD_PROJECTS) {
-    const existing = byName.get(seed.name.toLowerCase());
-    if (!existing) {
-      const created = await createProject({
-        id: seed.seedId,
-        name: seed.name,
-        summary: seed.summary,
-        status: seed.status,
-        tags: seed.tags,
-      });
-      byName.set(seed.name.toLowerCase(), created);
-      continue;
-    }
-
-    // Governance + catalog status sync for known seeds only.
-    const tags: string[] = Array.isArray(existing.tags)
-      ? existing.tags.map((t: unknown) => String(t))
-      : typeof existing.tags === "string"
-        ? (() => {
-            try {
-              const parsed: unknown = JSON.parse(existing.tags as string);
-              return Array.isArray(parsed) ? parsed.map((t: unknown) => String(t)) : [];
-            } catch {
-              return [];
-            }
-          })()
-        : [];
-    const needsStatus = existing.status !== seed.status;
-    const isSeeded = tags.some(
-      (t: string) => t === "board-seed" || t === "workspace-app",
-    );
-    if (needsStatus && (isSeeded || seed.status === "paused" || seed.status === "archived")) {
-      await updateProjectMeta(existing.id, {
-        status: seed.status,
-        summary: isSeeded ? seed.summary : undefined,
-      });
-    }
+    if (byName.has(seed.name.toLowerCase())) continue;
+    const created = await createProject({
+      id: seed.seedId,
+      name: seed.name,
+      summary: seed.summary,
+      status: seed.status,
+      tags: seed.tags,
+    });
+    byName.set(seed.name.toLowerCase(), created);
   }
 
   projects = await listProjectsNewestFirst();
@@ -70,6 +39,7 @@ export async function GET(req: Request) {
 
   const projects = await ensureBoardProjects();
   const recovery = loadProjectRecords();
+  const recoveryAll = loadAllRecoveryRecords();
   const ravin = projects.find((p) => p.name.toLowerCase().includes("ravin"));
   const catalog = {
     expected: BOARD_PROJECTS.length,
@@ -90,9 +60,11 @@ export async function GET(req: Request) {
     projects,
     apps: HUB_APPS,
     catalog,
-    recoveryImportAvailable: recovery.records.length > 0,
+    recoveryImportAvailable: recoveryAll.records.length > 0 || recovery.records.length > 0,
     recoveryFileName: recovery.fileName,
-    recoveryMessage: recovery.message,
+    recoveryFileCount: recoveryAll.files.length,
+    recoveryRecordCount: recoveryAll.records.length,
+    recoveryMessage: recoveryAll.files.length > 0 ? recoveryAll.message : recovery.message,
     recoveryGovernance,
   });
 }
@@ -112,34 +84,21 @@ export async function POST(req: Request) {
   };
 
   if (body.importRecovery) {
-    const recovery = loadProjectRecords();
-    if (recovery.records.length === 0) {
+    const recoveryAll = loadAllRecoveryRecords();
+    if (recoveryAll.records.length === 0) {
       return Response.json(
-        { error: "no_recovery_file", message: recovery.message },
+        { error: "no_recovery_file", message: recoveryAll.message },
         { status: 404 },
       );
     }
-    let imported = 0;
-    for (const r of recovery.records) {
-      const name = String(r.name || "").trim();
-      if (!name) continue;
-      const existing = (await listProjectsNewestFirst()).find(
-        (p) => p.name.toLowerCase() === name.toLowerCase(),
-      );
-      if (existing) continue;
-      await createProject({
-        name,
-        summary: String(r.summary || ""),
-        status: String(r.status || "active"),
-        tags: Array.isArray(r.tags) ? r.tags.map(String) : ["recovery-import"],
-      });
-      imported += 1;
-    }
+    const applied = await applyPreserveMerge({
+      incomingProjects: recoveryAll.records,
+    });
     return Response.json({
       ok: true,
-      imported,
+      applied,
       projects: await ensureBoardProjects(),
-      from: recovery.fileName,
+      from: recoveryAll.files.map((file) => file.fileName),
     });
   }
 
