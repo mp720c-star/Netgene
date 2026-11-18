@@ -53,21 +53,31 @@ async function loadInventory() {
   return state.inventory;
 }
 
-function setMode(mode) {
+function setMode(mode, options = {}) {
   const next = mode || 'home';
+  const autoStart = options.autoStart === true || options.autoStart === '1';
+  const changed = state.mode !== next;
   state.mode = next;
-  if (typeof location !== 'undefined' && location.hash.replace('#', '') !== next) {
-    location.hash = next;
+  if (typeof location !== 'undefined') {
+    const desired = autoStart && next === 'obd2' ? 'obd2-connect' : next === 'obd2' ? 'obd2' : next;
+    if (location.hash.replace('#', '') !== desired) {
+      location.hash = desired;
+    }
   }
   document.querySelectorAll('[data-mode-panel]').forEach((panel) => {
-    panel.hidden = panel.getAttribute('data-mode-panel') !== next;
+    const name = panel.getAttribute('data-mode-panel');
+    panel.hidden = name !== next;
   });
   document.querySelectorAll('[data-nav]').forEach((btn) => {
-    btn.classList.toggle('active', btn.getAttribute('data-nav') === next);
+    const nav = btn.getAttribute('data-nav');
+    btn.classList.toggle('active', nav === next);
   });
-  if (next === 'cdi') renderCdi();
-  if (next === 'status') renderStatus();
-  if (next === 'obd2') renderObd2Gate();
+  if (next === 'cdi' && (changed || options.force)) renderCdi();
+  if (next === 'status' && (changed || options.force)) renderStatus();
+  // Remount scanner when entering OBD2 or when Connect Scanner auto-start is requested.
+  if (next === 'obd2' && (changed || autoStart || options.force)) {
+    renderObd2Gate({ autoStart });
+  }
 }
 
 function renderStatus() {
@@ -85,14 +95,14 @@ function renderStatus() {
   `;
 }
 
-function renderObd2Gate() {
+function renderObd2Gate(options = {}) {
   el('obd2Body').innerHTML = `
-    <p><strong>Connect Scanner</strong> works now: Web Bluetooth when the browser supports it, plus a labeled Demo Scanner fallback (SIMULATED — never shown as live).</p>
+    <p><strong>Connect Scanner</strong> always runs: live Web Bluetooth when the browser can, otherwise a labeled Demo (SIMULATED) that auto-connects and probes.</p>
     <p><strong>FIXD claim:</strong> <code>UNVERIFIED</code> — do not assume ELM327. Parser v3 (<code>${PROTOCOL_V3_META.version}</code>) stays available for probe/DTC parsing.</p>
     <p><strong>ATDD OBD2 knowledge DB</strong> (Diagnose·Listen·Look·Code texts) is still gated until the original 1.2.0 databases are imported. Scanner connect/probe/DTC does not require that DB.</p>
     <div id="scannerMount"></div>
   `;
-  mountScannerUi(el('scannerMount'));
+  mountScannerUi(el('scannerMount'), { autoStart: options.autoStart === true });
 }
 
 function resetCdiSession() {
@@ -253,6 +263,13 @@ function applyEvent(event) {
   renderCdi();
 }
 
+function parseHashMode() {
+  const raw = (location.hash || '#home').replace('#', '') || 'home';
+  if (raw === 'obd2-connect') return { mode: 'obd2', autoStart: true };
+  if (['home', 'cdi', 'obd2', 'status'].includes(raw)) return { mode: raw, autoStart: false };
+  return { mode: 'home', autoStart: false };
+}
+
 function wireNavigation() {
   if (document.body.dataset.navWired === '1') return;
   document.body.dataset.navWired = '1';
@@ -260,11 +277,15 @@ function wireNavigation() {
     const btn = event.target.closest('[data-nav]');
     if (!btn) return;
     event.preventDefault();
-    setMode(btn.getAttribute('data-nav'));
+    const mode = btn.getAttribute('data-nav');
+    // Home Connect Scanner should actually start the connect flow, not only open the panel.
+    const autoStart = btn.id === 'homeConnectScanner' || btn.getAttribute('data-autostart') === '1';
+    setMode(mode, { autoStart: autoStart && mode === 'obd2' });
   });
   window.addEventListener('hashchange', () => {
-    const mode = (location.hash || '#home').replace('#', '') || 'home';
-    if (mode !== state.mode) setMode(mode);
+    const { mode, autoStart } = parseHashMode();
+    // Only navigate on real mode changes — avoids remount loops from hash writes.
+    if (mode !== state.mode) setMode(mode, { autoStart });
   });
 }
 
@@ -285,8 +306,8 @@ async function boot() {
     el('integrityBadge').textContent = 'CDI checksum N/A';
   }
 
-  const initial = (location.hash || '#home').replace('#', '') || 'home';
-  setMode(['home', 'cdi', 'obd2', 'status'].includes(initial) ? initial : 'home');
+  const { mode, autoStart } = parseHashMode();
+  setMode(mode, { autoStart });
 }
 
 boot();
