@@ -1,0 +1,15 @@
+{
+  "name": "AI Project Platform",
+  "short_name": "AI Platform",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#d4dee6",
+  "theme_color": "#0b6e6a",
+  "icons": [
+    {
+      "src": "/icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}
