@@ -99,7 +99,7 @@ function renderObd2Gate(options = {}) {
   el('obd2Body').innerHTML = `
     <p><strong>Connect FIXD</strong> is the live Bluetooth path for your real scanner. It will not silently switch to Demo if pairing fails.</p>
     <p><strong>FIXD protocol claim:</strong> <code>UNVERIFIED</code> until a live GATT + Mode 03 (or vendor) round-trip is recorded. Parser v3 (<code>${PROTOCOL_V3_META.version}</code>) still runs after connect.</p>
-    <p><strong>iPhone note:</strong> Safari cannot do Web Bluetooth. Use Chrome on Android/Windows/Mac for this web connect, or the native ATDD iOS BLE build when imported.</p>
+    <p><strong>iPhone:</strong> Safari cannot do Web Bluetooth. Use the <strong>ATDD Connect</strong> native iOS app (Capacitor BLE under <code>atdd/ios</code>) for live FIXD, or Chrome on Android/Windows/Mac.</p>
     <div id="scannerMount"></div>
   `;
   mountScannerUi(el('scannerMount'), { autoStart: options.autoStart === true });

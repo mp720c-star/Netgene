@@ -1,0 +1,21 @@
+{
+  "name": "atdd-ios-ble",
+  "version": "1.2.0-dev+ble",
+  "private": true,
+  "description": "ATDD native iPhone shell — Capacitor 6 + bluetooth-le for live FIXD connect",
+  "scripts": {
+    "build:www": "node scripts/sync-www.mjs",
+    "sync": "npm run build:www && npx cap sync ios",
+    "open": "npx cap open ios"
+  },
+  "dependencies": {
+    "@capacitor-community/bluetooth-le": "6.1.0",
+    "@capacitor/core": "6.2.0",
+    "@capacitor/ios": "6.2.0",
+    "@capacitor/app": "6.0.2",
+    "@capacitor/status-bar": "6.0.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "6.2.0"
+  }
+}

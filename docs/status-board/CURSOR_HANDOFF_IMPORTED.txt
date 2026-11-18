@@ -1,0 +1,35 @@
+ATDD iOS BLE handoff (Cloud Agent scaffold)
+==========================================
+Created: 2026-11-18
+Branch: cursor/complete-platform-atdd-scanner-e3f0
+
+STATUS
+- OneDrive candidate package ATDD_BLE_IPHONE_REVIEW_20261117 was NOT present in the VM inbox.
+- This tree is a Capacitor 6.2 + @capacitor-community/bluetooth-le@6.1.0 scaffold so native
+  FIXD connect can proceed on iPhone while the reviewed zip is still missing.
+- If/when the OneDrive zip arrives in mike-ai/recovery/private/inbox/, run:
+    node scripts/import-atdd-ios-candidate.mjs
+  and reconcile any differences (prefer reviewed App sources; keep Bluetooth usage strings).
+
+STACK
+- appId: com.netgene.atdd.ble
+- appName: ATDD Connect
+- webDir: www (synced from atdd/web)
+- iOS project: ios/App/App.xcodeproj
+- Plugins: bluetooth-le 6.1.0, app, status-bar
+
+PERMISSIONS
+- NSBluetoothAlwaysUsageDescription set
+- NSBluetoothPeripheralUsageDescription set
+- UIBackgroundModes: bluetooth-central
+
+BUILD (unsigned simulator)
+- macOS + Xcode: cd atdd/ios && npm ci && npm run sync
+- open ios/App/App.xcworkspace (after pod install) or App.xcodeproj
+- GitHub Actions: atdd-ios-simulator (CODE_SIGNING_ALLOWED=NO)
+
+DO NOT
+- Claim FIXD protocol support without live GATT + Mode 03 evidence
+- Present Demo/SIMULATED DTCs as live vehicle data
+- Overwrite signed ATDD 1.2.0 Home Screen app
+- Commit Apple signing certificates or provisioning profiles

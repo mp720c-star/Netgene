@@ -4,6 +4,10 @@ import {
   webBluetoothAvailable,
   webBluetoothBlockReason,
 } from "./web-bluetooth-transport.js";
+import {
+  capacitorBleAvailable,
+  createCapacitorBleTransport,
+} from "./capacitor-ble-transport.js";
 
 function escapeHtml(str) {
   return String(str)
@@ -53,19 +57,24 @@ export function mountScannerUi(root, options = {}) {
   const dtcBtn = root.querySelector("#dtcBtn");
   const discBtn = root.querySelector("#discBtn");
 
-  const bleOk = webBluetoothAvailable();
-  const blockReason = webBluetoothBlockReason();
-  supportEl.textContent = bleOk
-    ? "Web Bluetooth ready. Tap Connect FIXD, keep the dongle powered in the OBD port, and choose the FIXD device in the system list."
-    : blockReason || "Web Bluetooth unavailable.";
+  const capOk = capacitorBleAvailable();
+  const webOk = webBluetoothAvailable();
+  const bleOk = capOk || webOk;
+  const blockReason = !bleOk ? webBluetoothBlockReason() : null;
+  supportEl.textContent = capOk
+    ? "Native iPhone/Android Bluetooth ready. Tap Connect FIXD with the dongle powered in the OBD port."
+    : webOk
+      ? "Web Bluetooth ready. Tap Connect FIXD, keep the dongle powered in the OBD port, and choose the FIXD device."
+      : blockReason || "Bluetooth unavailable.";
   if (!bleOk) {
     connectBtn.disabled = true;
     scanAllBtn.disabled = true;
     outEl.textContent =
-      "Live FIXD connect is blocked in this browser.\n\n" +
+      "Live FIXD connect is blocked here.\n\n" +
       (blockReason || "") +
-      "\n\nUse Chrome or Edge on Android / Windows / Mac (HTTPS), then tap Connect FIXD.\n" +
-      "Demo only (SIMULATED) is available here for UI testing — it does not talk to your FIXD.\n";
+      "\n\nOn iPhone use the ATDD Connect native app (Capacitor BLE).\n" +
+      "Or use Chrome/Edge on Android / Windows / Mac.\n" +
+      "Demo only (SIMULATED) does not talk to your FIXD.\n";
   }
 
   function setBusy(next) {
@@ -81,7 +90,12 @@ export function mountScannerUi(root, options = {}) {
     session = nextSession;
     session.subscribe((s) => {
       const sim = s.provenance === "simulated" ? " (SIMULATED — not FIXD)" : "";
-      const ble = s.provenance === "web-bluetooth" ? " (live Web Bluetooth)" : "";
+      const ble =
+        s.provenance === "web-bluetooth"
+          ? " (live Web Bluetooth)"
+          : s.provenance === "capacitor-ble"
+            ? " (live native Bluetooth)"
+            : "";
       statusEl.textContent = `Status: ${s.status}${s.lastError ? " — " + s.lastError : ""}${sim}${ble}`;
       const linked = ["connected", "ready", "probing"].includes(s.status);
       probeBtn.disabled = !linked;
@@ -131,16 +145,18 @@ export function mountScannerUi(root, options = {}) {
   async function startLive({ preferFixdName = true } = {}) {
     if (!bleOk) {
       outEl.textContent =
-        "Cannot connect FIXD here.\n" + (blockReason || "Web Bluetooth unavailable.") + "\n";
-      statusEl.textContent = "Status: blocked — no Web Bluetooth";
+        "Cannot connect FIXD here.\n" + (blockReason || "Bluetooth unavailable.") + "\n";
+      statusEl.textContent = "Status: blocked — no Bluetooth API";
       return;
     }
-    transportKind = "web-bluetooth";
-    const transport = createWebBluetoothTransport();
+    const transport = capOk ? createCapacitorBleTransport() : createWebBluetoothTransport();
+    transportKind = transport.kind;
     bindSession(createScannerSession(transport));
-    outEl.textContent = preferFixdName
-      ? "Opening Bluetooth chooser (FIXD / OBD named devices first)…\nPower the FIXD in the vehicle OBD port, then select it.\n"
-      : "Opening Bluetooth chooser (all BLE devices)…\nSelect your FIXD adapter.\n";
+    outEl.textContent = capOk
+      ? "Opening native Bluetooth chooser for FIXD…\nPower the FIXD in the vehicle OBD port, then select it.\n"
+      : preferFixdName
+        ? "Opening Web Bluetooth chooser (FIXD / OBD named devices first)…\nPower the FIXD in the vehicle OBD port, then select it.\n"
+        : "Opening Web Bluetooth chooser (all BLE devices)…\nSelect your FIXD adapter.\n";
     listEl.innerHTML = "";
     // Live path: do NOT fall back to Demo on cancel/failure.
     const devices = await session.scan({ preferFixdName });

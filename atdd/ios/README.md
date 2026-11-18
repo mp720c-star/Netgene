@@ -1,15 +1,29 @@
-# ATDD iOS (native)
+# ATDD Connect — native iPhone (Capacitor BLE)
 
-This folder is intentionally empty until the candidate package is imported.
+Live **Connect FIXD** on iPhone uses this Capacitor shell + `@capacitor-community/bluetooth-le@6.1.0`.
 
-Expected source (from OneDrive / handoff):
-`ATDD_BLE_IPHONE_REVIEW_20261117/ios` — Capacitor 6 + `@capacitor-community/bluetooth-le@6.1.0`
+## Why this exists
 
-Import steps:
-1. Place the zip under `mike-ai/recovery/private/inbox/`
-2. Run `node scripts/import-atdd-ios-candidate.mjs`
-3. Confirm `CURSOR_HANDOFF.txt` is reviewed
-4. GitHub Actions `atdd-ios-simulator` builds unsigned simulator on macOS
+The OneDrive review zip (`ATDD_BLE_IPHONE_REVIEW_20261117`) was not in the agent inbox.
+This scaffold matches the expected stack so FIXD pairing can work on device/simulator.
+See `CURSOR_HANDOFF.txt`.
 
-Do not overwrite the signed ATDD 1.2.0 Home Screen app.
+## Build (Mac + Xcode)
 
+```bash
+cd atdd/ios
+npm ci
+npm run sync
+cd ios/App
+pod install
+open App.xcworkspace
+```
+
+Run on a physical iPhone (Bluetooth) or simulator (UI only — no radio).
+
+## Connect FIXD
+
+1. Install/run **ATDD Connect**
+2. Open **OBD2 / ATDD** → **Connect FIXD**
+3. Select the FIXD adapter
+4. Probe / Read DTCs — protocol claim stays **UNVERIFIED** until live evidence is recorded

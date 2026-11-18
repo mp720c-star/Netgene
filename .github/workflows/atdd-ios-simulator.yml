@@ -7,15 +7,18 @@ on:
     branches:
       - "cursor/atdd-native-iphone-*"
       - "cursor/bluetooth-scanner-*"
+      - "cursor/complete-platform-atdd-scanner-*"
     paths:
       - "atdd/ios/**"
       - "atdd/ble/**"
+      - "atdd/web/**"
       - "atdd/obd/**"
       - ".github/workflows/atdd-ios-simulator.yml"
   pull_request:
     paths:
       - "atdd/ios/**"
       - "atdd/ble/**"
+      - "atdd/web/**"
       - "atdd/obd/**"
       - ".github/workflows/atdd-ios-simulator.yml"
   workflow_dispatch:
@@ -97,12 +100,28 @@ jobs:
           echo "scheme=$SCHEME" >> "$GITHUB_OUTPUT"
           echo "Using ${WS:-$PJ} scheme=$SCHEME"
 
-      - name: Pod install (if CocoaPods present)
+      - name: Sync Capacitor www + ios
         if: steps.gate.outputs.present == 'true'
         working-directory: atdd/ios
         run: |
           set -euo pipefail
-          if [[ -f Podfile ]]; then
+          npm ci
+          npm run sync
+
+      - name: Pod install (if CocoaPods present)
+        if: steps.gate.outputs.present == 'true'
+        run: |
+          set -euo pipefail
+          POD_DIR=""
+          if [[ -f atdd/ios/ios/App/Podfile ]]; then
+            POD_DIR=atdd/ios/ios/App
+          elif [[ -f atdd/ios/App/Podfile ]]; then
+            POD_DIR=atdd/ios/App
+          elif [[ -f atdd/ios/Podfile ]]; then
+            POD_DIR=atdd/ios
+          fi
+          if [[ -n "$POD_DIR" ]]; then
+            cd "$POD_DIR"
             pod install --repo-update
           else
             echo "No Podfile — skipping CocoaPods"
