@@ -29,11 +29,12 @@ export function mountScannerUi(root, options = {}) {
 
   root.innerHTML = `
     <div class="scanner-ui">
-      <p><strong>Connect FIXD</strong> is the live Bluetooth path for your real scanner.
+      <p><strong>Connect Scanner</strong> pairs your real <strong>FIXD</strong> over Bluetooth.
         Demo is separate and labeled SIMULATED — it will not pretend to be FIXD.</p>
       <p id="btSupport" class="note"></p>
+      <div id="iphoneInstallGate" class="warn" hidden></div>
       <div class="row">
-        <button type="button" id="connectScannerBtn" class="primary">Connect FIXD</button>
+        <button type="button" id="connectScannerBtn" class="primary">Connect Scanner</button>
         <button type="button" id="scanAllBtn" class="ghost">Scan all BLE devices</button>
         <button type="button" id="demoBtn" class="ghost">Demo only (SIMULATED)</button>
         <button type="button" id="probeBtn" class="ghost" disabled>Probe protocol</button>
@@ -61,19 +62,29 @@ export function mountScannerUi(root, options = {}) {
   const webOk = webBluetoothAvailable();
   const bleOk = capOk || webOk;
   const blockReason = !bleOk ? webBluetoothBlockReason() : null;
+  const installGate = root.querySelector("#iphoneInstallGate");
   supportEl.textContent = capOk
-    ? "Native iPhone/Android Bluetooth ready. Tap Connect FIXD with the dongle powered in the OBD port."
+    ? "Native Bluetooth ready. Tap Connect Scanner with FIXD powered in the OBD port."
     : webOk
-      ? "Web Bluetooth ready. Tap Connect FIXD, keep the dongle powered in the OBD port, and choose the FIXD device."
+      ? "Web Bluetooth ready. Tap Connect Scanner, pick your FIXD device."
       : blockReason || "Bluetooth unavailable.";
   if (!bleOk) {
     connectBtn.disabled = true;
     scanAllBtn.disabled = true;
+    const isiOS = /iPhone|iPad|iPod/i.test(navigator.userAgent || "");
+    if (isiOS && installGate) {
+      installGate.hidden = false;
+      installGate.innerHTML =
+        "<strong>iPhone Home Screen app = web shell (no Bluetooth).</strong> " +
+        "There is <em>no verified TestFlight / IPA install link yet</em> — Xcode build is <code>SKIPPED</code> " +
+        "(Linux agent; GitHub macOS runners unavailable). " +
+        "Native ATDD Connect source is in the repo under <code>atdd/ios</code>; a Mac (or enabled macOS CI) is required to install on this iPhone. " +
+        "Saved vehicles on this device are preserved in local storage.";
+    }
     outEl.textContent =
-      "Live FIXD connect is blocked here.\n\n" +
+      "Live FIXD connect is blocked in this web shell.\n\n" +
       (blockReason || "") +
-      "\n\nOn iPhone use the ATDD Connect native app (Capacitor BLE).\n" +
-      "Or use Chrome/Edge on Android / Windows / Mac.\n" +
+      "\n\nConnect Scanner cannot reach FIXD until native Bluetooth is available.\n" +
       "Demo only (SIMULATED) does not talk to your FIXD.\n";
   }
 

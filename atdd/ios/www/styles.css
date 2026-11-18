@@ -186,3 +186,12 @@ code { font-size: 0.9em; }
 #deviceList button {
   margin: 0.25rem 0;
 }
+
+.vehicles-strip {
+  margin: 0.5rem 0 0.75rem;
+}
+
+#iphoneInstallGate:not([hidden]) {
+  display: block;
+  margin: 0.75rem 0;
+}

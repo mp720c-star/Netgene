@@ -2,6 +2,8 @@ import ddtEngine from './ddtEngine.js';
 import { calculateBounds } from './resistance.js';
 import { mountScannerUi } from './scanner-ui.js';
 import { PROTOCOL_V3_META } from './obd-protocol-v3-frame-aware.js';
+import { ATDD_BUILD } from './build-info.js';
+import { loadSavedVehicles } from './vehicles.js';
 
 const EXPECTED_CDI_SHA256 =
   '7df7c0858b3d7bf6e323cc30d73fd4ba2a9971b1a548c50ce68371d0c6ed39ee';
@@ -90,16 +92,38 @@ function renderStatus() {
       <dt>CDI profiles missing</dt><dd>${inv.profiles_missing}</dd>
       <dt>ATDD 1.2.0 OBD2 database</dt><dd>NOT FOUND in this environment</dd>
       <dt>Original cdi-genius/ tree</dt><dd>PRESERVED (not deleted)</dd>
-      <dt>Unified branch</dt><dd><code>cursor/complete-platform-atdd-scanner-e3f0</code></dd>
+      <dt>Unified branch</dt><dd><code>${escapeHtml(ATDD_BUILD.branch)}</code></dd>
+      <dt>iPhone build number</dt><dd><code>${escapeHtml(ATDD_BUILD.number)}</code></dd>
+      <dt>Xcode / IPA</dt><dd>${escapeHtml(ATDD_BUILD.xcodeBuild)} — ${escapeHtml(ATDD_BUILD.iphoneInstallBlocked)}</dd>
+      <dt>Home Screen icon opens</dt><dd>${escapeHtml(ATDD_BUILD.homeScreenOpens)}</dd>
+      <dt>Physical FIXD connect</dt><dd>NOT VERIFIED on a physical iPhone in this run</dd>
+      <dt>Physical truck diagnostic</dt><dd>NOT VERIFIED on a physical truck in this run</dd>
     </dl>
   `;
 }
 
+function renderVehicles(targetId) {
+  const root = el(targetId);
+  if (!root) return;
+  const vehicles = loadSavedVehicles();
+  if (!vehicles.length) {
+    root.innerHTML = `<p class="note">No saved vehicles in this Home Screen app yet. Existing ATDD vehicle keys (if any) are preserved and will appear here when present.</p>`;
+    return;
+  }
+  root.innerHTML = `<ul class="facts">${vehicles
+    .map((v) => {
+      const title = escapeHtml(v.name || [v.year, v.make, v.model].filter(Boolean).join(' ') || 'Vehicle');
+      const vin = v.vin ? ` · VIN ${escapeHtml(v.vin)}` : '';
+      return `<li>${title}${vin}</li>`;
+    })
+    .join('')}</ul>`;
+}
+
 function renderObd2Gate(options = {}) {
+  renderVehicles('vehiclesObd');
   el('obd2Body').innerHTML = `
-    <p><strong>Connect FIXD</strong> is the live Bluetooth path for your real scanner. It will not silently switch to Demo if pairing fails.</p>
-    <p><strong>FIXD protocol claim:</strong> <code>UNVERIFIED</code> until a live GATT + Mode 03 (or vendor) round-trip is recorded. Parser v3 (<code>${PROTOCOL_V3_META.version}</code>) still runs after connect.</p>
-    <p><strong>iPhone:</strong> Safari cannot do Web Bluetooth. Use the <strong>ATDD Connect</strong> native iOS app (Capacitor BLE under <code>atdd/ios</code>) for live FIXD, or Chrome on Android/Windows/Mac.</p>
+    <p><strong>Connect Scanner</strong> talks to your real FIXD when Bluetooth is available. It will not silently switch to Demo if pairing fails.</p>
+    <p><strong>FIXD protocol claim:</strong> <code>UNVERIFIED</code> until a live Mode 03 (or vendor) round-trip is recorded on a physical truck. Parser v3 (<code>${PROTOCOL_V3_META.version}</code>) runs after connect.</p>
     <div id="scannerMount"></div>
   `;
   mountScannerUi(el('scannerMount'), { autoStart: options.autoStart === true });
@@ -289,9 +313,21 @@ function wireNavigation() {
   });
 }
 
+function isStandaloneHomeScreen() {
+  return (
+    window.matchMedia?.('(display-mode: standalone)')?.matches ||
+    window.navigator.standalone === true
+  );
+}
+
 async function boot() {
   // Nav must work even if CDI inventory fails — Connect Scanner is independent.
   wireNavigation();
+
+  for (const id of ['buildStamp', 'buildStampFoot']) {
+    if (el(id)) el(id).textContent = ATDD_BUILD.number;
+  }
+  renderVehicles('vehiclesHome');
 
   try {
     await loadInventory();
@@ -306,7 +342,16 @@ async function boot() {
     el('integrityBadge').textContent = 'CDI checksum N/A';
   }
 
-  const { mode, autoStart } = parseHashMode();
+  let { mode, autoStart } = parseHashMode();
+  // Home Screen reopen: land on Connect Scanner (manifest start_url + standalone).
+  if ((!location.hash || location.hash === '#home') && isStandaloneHomeScreen()) {
+    mode = 'obd2';
+    autoStart = true;
+  }
+  if (!location.hash) {
+    mode = 'obd2';
+    autoStart = true;
+  }
   setMode(mode, { autoStart });
 }
 

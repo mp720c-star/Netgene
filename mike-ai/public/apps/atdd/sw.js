@@ -1,5 +1,5 @@
-// Bump cache name whenever Connect Scanner assets change.
-const CACHE = "atdd-cdi-unified-v4-connect-always";
+// Bump whenever Home Screen first-paint / Connect Scanner changes.
+const CACHE = "atdd-cdi-unified-v5-iphone-connect-scanner";
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
@@ -15,7 +15,7 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-// Network-only for app shell/JS so previews never stick on a fake/stale scanner build.
+// Network-only so iPhone Home Screen PWA picks up Connect Scanner updates.
 self.addEventListener("fetch", (event) => {
   event.respondWith(fetch(event.request));
 });
