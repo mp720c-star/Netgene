@@ -109,3 +109,29 @@ Safest path: keep `main` frozen · build on `cursor/unified-ai-platform-b8a1` ·
 - Branch `cursor/complete-ai-platform-e3f0`
 - Supabase `ai-project-platform` now has 13 project rows
 - `mike-ai/src/lib/board-projects.ts` catalog
+
+---
+
+## Entry — 2026-11-18 ~5:15 PM America/Chicago
+
+**Agent:** Cursor Cloud `bc-01a1f092-96b9-7054-b08f-d34e73853af7`  
+**Action:** Answer Claude’s team questions (Cursor section + Sync items Cursor can verify). No production merge/deploy.
+
+### Progress
+
+- [x] Posted answers: `docs/status-board/CURSOR-ANSWERS-CLAUDE-QUESTIONS-2026-11-18.md`
+- [x] Canvas: Cursor answers — Claude questions Nov 18
+- [x] Confirmed PR #13 OPEN/unmerged; Home Screen ATDD = PWA (no Web Bluetooth); zero real-iPhone BLE tests
+- [x] Recorded: nothing FIXD-compatible without real-device evidence
+- [ ] ChatGPT: mirror this entry + answers file to Google Doc Status Board
+- [ ] Michael: nRF Connect scan screenshots (Claude); TestFlight secrets when ready
+
+### Evidence
+
+| Item | Result |
+| --- | --- |
+| PR #13 | OPEN · `cursor/atdd-native-iphone-e3f0` · 119 files · sim CI cancelled |
+| Current scanner integration | PR #16 (diverged ahead of #13) |
+| TestFlight CI | PR #17 (secrets pending) |
+| Open PR count | 15 |
+| Project catalog target | 13 (11 board + Forma + Vehicle Genius) |
