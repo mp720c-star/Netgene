@@ -164,3 +164,30 @@ Safest path: keep `main` frozen · build on `cursor/unified-ai-platform-b8a1` ·
 | Parser SHA-256 | `9f4ab2fa79a7825bd17c254d7767393e997ee916117fe5dc7b49680473c223e4` |
 | CI (both PRs) | Ubuntu tree + Android APK + Workers **pass**; macOS simulator **pending** |
 | Mode 04 | Not implemented (Mode 03 read only) |
+
+---
+
+## Entry — 2026-11-18 ~5:32 PM America/Chicago
+
+**Agent:** Cursor Cloud (urgent iPhone delivery assessment)  
+**Branch:** `cursor/atdd-reconcile-pr16-pr17-nov18`  
+**Action:** Identify installed Home Screen app; web-update vs native; authorized TestFlight path. **No deploy / merge / spend.**
+
+### Progress
+
+- [x] Proved live production = `main`; `/atdd/` **404** — PR #16 PWA not what Michael’s phone is running
+- [x] Ruled out “CI / PR = delivery”
+- [x] Decision: **live FIXD on iPhone = separate native `com.netgene.atdd.ble`**, not a web update of the existing icon
+- [x] Posted `docs/status-board/ATDD-IPHONE-DELIVERY-STATUS-2026-11-18.md`
+- [ ] Michael approval for TestFlight secrets + workflow run
+- [ ] Michael sees Connect Scanner on iPhone (**success gate**)
+- [ ] Real FIXD hardware evidence
+
+### Evidence
+
+| Item | Result |
+| --- | --- |
+| Delivery claim | **NOT DELIVERED** |
+| Live hub SHA | matches `origin/main:index.html` |
+| Existing app | Unchanged; no Bluetooth scanner button (Michael) |
+| Authorized path | TestFlight → ATDD Connect `com.netgene.atdd.ble` beside old app |
