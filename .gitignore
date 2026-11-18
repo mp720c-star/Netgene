@@ -17,3 +17,8 @@ ravin-lookup/dist/
 # Large Ravin .exe live under downloads/ (served via GitHub raw). Keep them out of mike-ai so
 # Cursor publish and Cloudflare Workers stay under size limits.
 mike-ai/public/downloads/*.exe
+
+# ATDD candidate drops (keep README only)
+mike-ai/recovery/private/inbox/**
+!mike-ai/recovery/private/inbox/README.md
+mike-ai/recovery/private/inbox/_extract_*/

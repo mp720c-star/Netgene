@@ -182,3 +182,27 @@ Michael (or coordinator) delivers ATDD 1.2.0 + full 71-profile CDI database via 
 3. Provide Mac/Xcode or iOS CI for test IPA (separate from 1.2.0 Home Screen app)
 4. Hardware acceptance: FIXD discovery → connect → protocol proof → DTC match vs FIXD app
 
+
+---
+
+## Entry — 2026-11-18 ~6:25 AM America/Chicago
+
+**Agent:** Cloud agent ATDD native iPhone continuation  
+**Branch:** `cursor/atdd-native-iphone-e3f0` (from bluetooth-scanner; **no main merge**)  
+**Action:** Attempt native CoreBluetooth / iPhone package import + simulator CI.
+
+### Progress
+
+- [x] Separate branch created; originals / production untouched
+- [x] Reviewed in-repo BLE/OBD JS (FIXD UNVERIFIED); no native Xcode tree present
+- [x] Added `scripts/import-atdd-ios-candidate.mjs` + inbox drop path
+- [x] Added `.github/workflows/atdd-ios-simulator.yml` (unsigned macos-14)
+- [x] `cd atdd && npm test` — PASS (import checksum + DDT + OBD v3)
+- [ ] Candidate archive / `CURSOR_HANDOFF.txt` — **NOT FOUND in this VM**
+- [ ] Unsigned simulator `xcodebuild` — blocked (no ios project; host is Linux)
+- [ ] Gemini independent review — request posted (`GEMINI-ATDD-NATIVE-REVIEW.md`)
+- [ ] Signed TestFlight — blocked pending Apple signing + package
+
+### Next for Michael
+
+Re-attach complete candidate zip (must include `CURSOR_HANDOFF.txt`) or copy into `mike-ai/recovery/private/inbox/`.
