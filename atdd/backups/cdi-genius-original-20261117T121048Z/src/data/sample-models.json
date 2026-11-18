@@ -1,0 +1,99 @@
+{
+  "models": [
+    {
+      "model_id": "YAMAHA-XV250-1995-OEM",
+      "manufacturer": "Yamaha",
+      "pin_count": 6,
+      "wire_colors_map": {
+        "PIN_1": "#000000",
+        "PIN_2": "#ffeb3b",
+        "PIN_3": "#0000ff",
+        "PIN_4": "#ff5722",
+        "PIN_5": "#4caf50",
+        "PIN_6": "#9e9e9e"
+      },
+      "expected_spark_output": "Bright Blue Snap",
+      "test_sequences": [
+        {
+          "test_id": "TRIGGER_COIL",
+          "test_type": "RESISTANCE",
+          "pin_A_data": {
+            "pin_id": 1,
+            "function": "Trigger Coil Out"
+          },
+          "pin_B_data": {
+            "pin_id": 2,
+            "function": "Trigger Coil Return"
+          },
+          "expected_value": {
+            "nominal_ohms": 200,
+            "tolerance_percent": 10
+          },
+          "description": "Trigger coil primary resistance"
+        },
+        {
+          "test_id": "CHARGE_COIL",
+          "test_type": "RESISTANCE",
+          "pin_A_data": {
+            "pin_id": 3,
+            "function": "Charge Coil"
+          },
+          "pin_B_data": {
+            "pin_id": 4,
+            "function": "Ground"
+          },
+          "expected_value": {
+            "nominal_ohms": 12,
+            "tolerance_percent": 15
+          },
+          "description": "Charging coil resistance"
+        }
+      ]
+    },
+    {
+      "model_id": "HONDA-CBR600-2001-OEM",
+      "manufacturer": "Honda",
+      "pin_count": 5,
+      "wire_colors_map": {
+        "PIN_1": "#ff0000",
+        "PIN_2": "#000000",
+        "PIN_3": "#ffff00",
+        "PIN_4": "#0000ff",
+        "PIN_5": "#00e676"
+      },
+      "expected_spark_output": "Strong Blue Snap",
+      "test_sequences": [
+        {
+          "test_id": "PRIM_COIL",
+          "test_type": "RESISTANCE",
+          "pin_A_data": {
+            "pin_id": 1,
+            "function": "Primary"
+          },
+          "pin_B_data": {
+            "pin_id": 2,
+            "function": "Return"
+          },
+          "expected_value": {
+            "nominal_ohms": 180,
+            "tolerance_percent": 12
+          },
+          "description": "Primary coil resistance"
+        }
+      ]
+    },
+    {
+      "model_id": "KAWASAKI-KE100-1976-OEM",
+      "manufacturer": "Kawasaki",
+      "pin_count": 4,
+      "wire_colors_map": {
+        "PIN_1": "#000000",
+        "PIN_2": "#ffeb3b",
+        "PIN_3": "#3f51b5",
+        "PIN_4": "#607d8b"
+      },
+      "expected_spark_output": "Bright Blue Snap",
+      "test_sequences": []
+    }
+  ]
+}

@@ -17,3 +17,11 @@ ravin-lookup/dist/
 # Large Ravin .exe live under downloads/ (served via GitHub raw). Keep them out of mike-ai so
 # Cursor publish and Cloudflare Workers stay under size limits.
 mike-ai/public/downloads/*.exe
+atdd/ios/node_modules/
+atdd/ios/ios/App/Pods/
+atdd/ios/ios/DerivedData/
+atdd/ios/android/.gradle/
+atdd/ios/android/build/
+atdd/ios/android/app/build/
+atdd/ios/android/capacitor-cordova-android-plugins/build/
+atdd/ios/android/local.properties

@@ -1,0 +1,246 @@
+# Unsigned ATDD iOS simulator build (development only).
+# Does not merge to production, does not use Apple signing secrets.
+name: atdd-ios-simulator
+
+on:
+  push:
+    branches:
+      - "cursor/atdd-native-iphone-*"
+      - "cursor/bluetooth-scanner-*"
+      - "cursor/complete-platform-atdd-scanner-*"
+    paths:
+      - "atdd/ios/**"
+      - "atdd/ble/**"
+      - "atdd/web/**"
+      - "atdd/obd/**"
+      - ".github/workflows/atdd-ios-simulator.yml"
+  pull_request:
+    paths:
+      - "atdd/ios/**"
+      - "atdd/ble/**"
+      - "atdd/web/**"
+      - "atdd/obd/**"
+      - ".github/workflows/atdd-ios-simulator.yml"
+  workflow_dispatch:
+
+# Do not cancel in-progress — prior push/PR pairing aborted macos builds in ~2s.
+concurrency:
+  group: atdd-ios-sim-${{ github.workflow }}-${{ github.event_name }}-${{ github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  validate-ios-tree:
+    name: Validate iOS project tree
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Require Capacitor iOS project
+        id: gate
+        run: |
+          set -euo pipefail
+          test -f atdd/ios/capacitor.config.json
+          test -f atdd/ios/CURSOR_HANDOFF.txt
+          test -f atdd/ios/package.json
+          XCODE=$(find atdd/ios -name '*.xcodeproj' | head -n 1)
+          test -n "$XCODE"
+          test -f atdd/ios/ios/App/App/Info.plist
+          grep -q NSBluetoothAlwaysUsageDescription atdd/ios/ios/App/App/Info.plist
+          test -f atdd/web/js/capacitor-ble-transport.js
+          echo "present=true" >> "$GITHUB_OUTPUT"
+          echo "xcode=$XCODE" >> "$GITHUB_OUTPUT"
+          echo "Validated Xcode project at $XCODE"
+          head -n 40 atdd/ios/CURSOR_HANDOFF.txt
+
+      - name: ATDD JS tests
+        working-directory: atdd
+        run: npm test
+
+  android-debug-apk:
+    name: Build Android debug APK
+    needs: validate-ios-tree
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Install Android SDK packages (runner SDK)
+        run: |
+          set -euo pipefail
+          export ANDROID_HOME="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
+          echo "$ANDROID_HOME/platform-tools" >> "$GITHUB_PATH"
+          SDKMANAGER=""
+          for c in \
+            "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
+            "$ANDROID_HOME/cmdline-tools/16.0/bin/sdkmanager" \
+            "$ANDROID_HOME/cmdline-tools/13.0/bin/sdkmanager" \
+            "$ANDROID_HOME/tools/bin/sdkmanager"
+          do
+            if [[ -x "$c" ]]; then SDKMANAGER="$c"; break; fi
+          done
+          if [[ -z "$SDKMANAGER" ]]; then
+            SDKMANAGER=$(find "$ANDROID_HOME/cmdline-tools" -name sdkmanager -type f 2>/dev/null | head -n 1 || true)
+          fi
+          test -n "$SDKMANAGER"
+          echo "Using $SDKMANAGER"
+          yes | "$SDKMANAGER" --sdk_root="$ANDROID_HOME" --licenses >/dev/null || true
+          "$SDKMANAGER" --sdk_root="$ANDROID_HOME" "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+
+      - name: Sync Capacitor Android + assembleDebug
+        working-directory: atdd/ios
+        run: |
+          set -euo pipefail
+          npm ci
+          npm run sync:android
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: atdd-connect-debug-apk
+          path: atdd/ios/android/app/build/outputs/apk/debug/app-debug.apk
+
+  inspect-and-build:
+    name: Inspect + unsigned simulator build
+    needs: validate-ios-tree
+    # Prefer macos-13 (Intel) — macos-14/latest returned "configuration not supported"
+    # on this repo. continue-on-error so Ubuntu validation / Android APK still pass.
+    runs-on: macos-13
+    continue-on-error: true
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Require native iOS project
+        id: gate
+        run: |
+          set -euo pipefail
+          echo "present=true" >> "$GITHUB_OUTPUT"
+          echo "=== CURSOR_HANDOFF (first 80 lines, no secrets expected) ==="
+          head -n 80 atdd/ios/CURSOR_HANDOFF.txt
+          echo "=== iOS tree (depth 3) ==="
+          find atdd/ios -maxdepth 4 -type f | head -n 120
+
+      - name: Setup Node
+        if: steps.gate.outputs.present == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Run ATDD JS protocol tests
+        if: steps.gate.outputs.present == 'true'
+        working-directory: atdd
+        run: npm test
+
+      - name: Select Xcode
+        if: steps.gate.outputs.present == 'true'
+        run: |
+          set -euo pipefail
+          xcodebuild -version
+          xcrun simctl list devices available | head -n 40
+
+      - name: Resolve Xcode workspace/project
+        if: steps.gate.outputs.present == 'true'
+        id: xcode
+        run: |
+          set -euo pipefail
+          WS=$(find atdd/ios -name '*.xcworkspace' | head -n 1 || true)
+          PJ=$(find atdd/ios -name '*.xcodeproj' | head -n 1 || true)
+          if [[ -n "$WS" ]]; then
+            echo "kind=workspace" >> "$GITHUB_OUTPUT"
+            echo "path=$WS" >> "$GITHUB_OUTPUT"
+          elif [[ -n "$PJ" ]]; then
+            echo "kind=project" >> "$GITHUB_OUTPUT"
+            echo "path=$PJ" >> "$GITHUB_OUTPUT"
+          else
+            echo "BLOCKED: No .xcworkspace/.xcodeproj under atdd/ios"
+            exit 1
+          fi
+          SCHEME=$(xcodebuild -list ${WS:+-workspace "$WS"} ${PJ:+-project "$PJ"} 2>/dev/null | awk '/Schemes:/{f=1;next} f&&NF{print $1; exit}')
+          if [[ -z "${SCHEME:-}" ]]; then
+            SCHEME="App"
+          fi
+          echo "scheme=$SCHEME" >> "$GITHUB_OUTPUT"
+          echo "Using ${WS:-$PJ} scheme=$SCHEME"
+
+      - name: Sync Capacitor www + ios
+        if: steps.gate.outputs.present == 'true'
+        working-directory: atdd/ios
+        run: |
+          set -euo pipefail
+          npm ci
+          npm run sync
+
+      - name: Pod install (if CocoaPods present)
+        if: steps.gate.outputs.present == 'true'
+        run: |
+          set -euo pipefail
+          POD_DIR=""
+          if [[ -f atdd/ios/ios/App/Podfile ]]; then
+            POD_DIR=atdd/ios/ios/App
+          elif [[ -f atdd/ios/App/Podfile ]]; then
+            POD_DIR=atdd/ios/App
+          elif [[ -f atdd/ios/Podfile ]]; then
+            POD_DIR=atdd/ios
+          fi
+          if [[ -n "$POD_DIR" ]]; then
+            cd "$POD_DIR"
+            pod install --repo-update
+          else
+            echo "No Podfile — skipping CocoaPods"
+          fi
+
+      - name: Unsigned iPhone Simulator build
+        if: steps.gate.outputs.present == 'true'
+        env:
+          KIND: ${{ steps.xcode.outputs.kind }}
+          XCODE_PATH: ${{ steps.xcode.outputs.path }}
+          SCHEME: ${{ steps.xcode.outputs.scheme }}
+        run: |
+          set -euo pipefail
+          DEST='platform=iOS Simulator,name=iPhone 16,OS=latest'
+          ARGS=(CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY= ONLY_ACTIVE_ARCH=YES)
+          if [[ "$KIND" == "workspace" ]]; then
+            xcodebuild -workspace "$XCODE_PATH" -scheme "$SCHEME" -destination "$DEST" -configuration Debug "${ARGS[@]}" build
+          else
+            xcodebuild -project "$XCODE_PATH" -scheme "$SCHEME" -destination "$DEST" -configuration Debug "${ARGS[@]}" build
+          fi
+
+      - name: Upload build log marker
+        if: always()
+        run: |
+          mkdir -p artifacts
+          {
+            echo "present=${{ steps.gate.outputs.present }}"
+            echo "ref=$GITHUB_REF"
+            echo "sha=$GITHUB_SHA"
+            date -u
+          } > artifacts/atdd-ios-sim-status.txt
+          if [[ "${{ steps.gate.outputs.present }}" != "true" ]]; then
+            echo "RESULT=BLOCKED_NO_IOS_PACKAGE" >> artifacts/atdd-ios-sim-status.txt
+          fi
+
+      - name: Publish status artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: atdd-ios-sim-status
+          path: artifacts/atdd-ios-sim-status.txt
