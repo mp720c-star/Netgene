@@ -23,14 +23,44 @@ on:
       - ".github/workflows/atdd-ios-simulator.yml"
   workflow_dispatch:
 
+# Do not cancel in-progress — prior push/PR pairing aborted macos builds in ~2s.
 concurrency:
-  # Keep push and pull_request from cancelling each other on the same branch.
-  group: atdd-ios-sim-${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: atdd-ios-sim-${{ github.workflow }}-${{ github.event_name }}-${{ github.sha }}
+  cancel-in-progress: false
 
 jobs:
+  validate-ios-tree:
+    name: Validate iOS project tree
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Require Capacitor iOS project
+        id: gate
+        run: |
+          set -euo pipefail
+          test -f atdd/ios/capacitor.config.json
+          test -f atdd/ios/CURSOR_HANDOFF.txt
+          test -f atdd/ios/package.json
+          XCODE=$(find atdd/ios -name '*.xcodeproj' | head -n 1)
+          test -n "$XCODE"
+          test -f atdd/ios/ios/App/App/Info.plist
+          grep -q NSBluetoothAlwaysUsageDescription atdd/ios/ios/App/App/Info.plist
+          test -f atdd/web/js/capacitor-ble-transport.js
+          echo "present=true" >> "$GITHUB_OUTPUT"
+          echo "xcode=$XCODE" >> "$GITHUB_OUTPUT"
+          echo "Validated Xcode project at $XCODE"
+          head -n 40 atdd/ios/CURSOR_HANDOFF.txt
+
+      - name: ATDD JS tests
+        working-directory: atdd
+        run: npm test
+
   inspect-and-build:
     name: Inspect + unsigned simulator build
+    needs: validate-ios-tree
     runs-on: macos-14
     timeout-minutes: 45
     steps:
@@ -41,23 +71,11 @@ jobs:
         id: gate
         run: |
           set -euo pipefail
-          if [[ ! -f docs/status-board/CURSOR_HANDOFF_IMPORTED.txt && ! -f atdd/ios/CURSOR_HANDOFF.txt ]]; then
-            if [[ ! -d atdd/ios/App && ! -d atdd/ios/App.xcodeproj && ! -f atdd/ios/capacitor.config.json && ! -f atdd/ios/capacitor.config.ts ]]; then
-              echo "BLOCKED: atdd/ios native project not present."
-              echo "Import the candidate package (with CURSOR_HANDOFF.txt) via scripts/import-atdd-ios-candidate.mjs"
-              echo "present=false" >> "$GITHUB_OUTPUT"
-              exit 0
-            fi
-          fi
           echo "present=true" >> "$GITHUB_OUTPUT"
           echo "=== CURSOR_HANDOFF (first 80 lines, no secrets expected) ==="
-          if [[ -f docs/status-board/CURSOR_HANDOFF_IMPORTED.txt ]]; then
-            head -n 80 docs/status-board/CURSOR_HANDOFF_IMPORTED.txt
-          elif [[ -f atdd/ios/CURSOR_HANDOFF.txt ]]; then
-            head -n 80 atdd/ios/CURSOR_HANDOFF.txt
-          fi
+          head -n 80 atdd/ios/CURSOR_HANDOFF.txt
           echo "=== iOS tree (depth 3) ==="
-          find atdd/ios -maxdepth 3 -type f | head -n 120
+          find atdd/ios -maxdepth 4 -type f | head -n 120
 
       - name: Setup Node
         if: steps.gate.outputs.present == 'true'
