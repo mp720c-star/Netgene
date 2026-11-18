@@ -11,6 +11,8 @@ const nextConfig: NextConfig = {
       { source: "/apps/", destination: "/apps/index.html" },
       { source: "/apps/forma", destination: "/apps/forma/index.html" },
       { source: "/apps/forma/", destination: "/apps/forma/index.html" },
+      { source: "/apps/bluetooth-scanner", destination: "/apps/bluetooth-scanner/index.html" },
+      { source: "/apps/bluetooth-scanner/", destination: "/apps/bluetooth-scanner/index.html" },
       { source: "/apps/vehicle-genius", destination: "/apps/vehicle-genius/index.html" },
       { source: "/apps/vehicle-genius/", destination: "/apps/vehicle-genius/index.html" },
       { source: "/apps/cdi-genius", destination: "/apps/cdi-genius/index.html" },
