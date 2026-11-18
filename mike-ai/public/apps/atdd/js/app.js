@@ -97,9 +97,9 @@ function renderStatus() {
 
 function renderObd2Gate(options = {}) {
   el('obd2Body').innerHTML = `
-    <p><strong>Connect Scanner</strong> always runs: live Web Bluetooth when the browser can, otherwise a labeled Demo (SIMULATED) that auto-connects and probes.</p>
-    <p><strong>FIXD claim:</strong> <code>UNVERIFIED</code> — do not assume ELM327. Parser v3 (<code>${PROTOCOL_V3_META.version}</code>) stays available for probe/DTC parsing.</p>
-    <p><strong>ATDD OBD2 knowledge DB</strong> (Diagnose·Listen·Look·Code texts) is still gated until the original 1.2.0 databases are imported. Scanner connect/probe/DTC does not require that DB.</p>
+    <p><strong>Connect FIXD</strong> is the live Bluetooth path for your real scanner. It will not silently switch to Demo if pairing fails.</p>
+    <p><strong>FIXD protocol claim:</strong> <code>UNVERIFIED</code> until a live GATT + Mode 03 (or vendor) round-trip is recorded. Parser v3 (<code>${PROTOCOL_V3_META.version}</code>) still runs after connect.</p>
+    <p><strong>iPhone note:</strong> Safari cannot do Web Bluetooth. Use Chrome on Android/Windows/Mac for this web connect, or the native ATDD iOS BLE build when imported.</p>
     <div id="scannerMount"></div>
   `;
   mountScannerUi(el('scannerMount'), { autoStart: options.autoStart === true });

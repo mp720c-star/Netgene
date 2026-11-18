@@ -7,7 +7,7 @@
  */
 
 import { buildProbeReport, ELM_PROBE_SEQUENCE, nameLooksLikeFixd } from "./fixd-protocol-probe.js";
-import { parseMode03FrameAware } from "../obd/obd-protocol-v3-frame-aware.js";
+import { parseMode03FrameAware } from "./obd-protocol-v3-frame-aware.js";
 
 export function createScannerSession(transport) {
   const state = {
@@ -32,12 +32,12 @@ export function createScannerSession(transport) {
       return () => listeners.delete(fn);
     },
 
-    async scan() {
+    async scan(options = {}) {
       state.status = "scanning";
       state.lastError = null;
       emit();
       try {
-        state.devices = await transport.scan();
+        state.devices = await transport.scan(options);
         state.status = "idle";
         emit();
         return state.devices;

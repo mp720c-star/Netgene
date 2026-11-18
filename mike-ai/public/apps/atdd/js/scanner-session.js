@@ -32,12 +32,12 @@ export function createScannerSession(transport) {
       return () => listeners.delete(fn);
     },
 
-    async scan() {
+    async scan(options = {}) {
       state.status = "scanning";
       state.lastError = null;
       emit();
       try {
-        state.devices = await transport.scan();
+        state.devices = await transport.scan(options);
         state.status = "idle";
         emit();
         return state.devices;
