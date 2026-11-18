@@ -1,29 +1,41 @@
-# ATDD Connect — native iPhone (Capacitor BLE)
+# ATDD Connect — native FIXD (Capacitor BLE)
 
-Live **Connect FIXD** on iPhone uses this Capacitor shell + `@capacitor-community/bluetooth-le@6.1.0`.
+Live **Connect FIXD** on phone via `@capacitor-community/bluetooth-le@6.1.0`.
 
-## Why this exists
+## No Mac? Use Android
 
-The OneDrive review zip (`ATDD_BLE_IPHONE_REVIEW_20261117`) was not in the agent inbox.
-This scaffold matches the expected stack so FIXD pairing can work on device/simulator.
-See `CURSOR_HANDOFF.txt`.
+This Linux/CI environment **cannot** produce a signed iPhone IPA (needs Xcode).
 
-## Build (Mac + Xcode)
+**Fastest path without a Mac:**
+
+1. **Android phone + Chrome** — open the Cloudflare ATDD page and tap **Connect FIXD** (Web Bluetooth works in Chrome).
+2. Or install the debug APK: `downloads/atdd-connect-debug.apk` (sideload; allow unknown apps).
+
+## Android APK (built here)
 
 ```bash
 cd atdd/ios
 npm ci
-npm run sync
-cd ios/App
-pod install
-open App.xcworkspace
+npm run apk:debug
+# output: android/app/build/outputs/apk/debug/app-debug.apk
 ```
 
-Run on a physical iPhone (Bluetooth) or simulator (UI only — no radio).
+Published copy: `downloads/atdd-connect-debug.apk`
 
-## Connect FIXD
+## iPhone (needs a Mac or cloud Mac CI)
 
-1. Install/run **ATDD Connect**
-2. Open **OBD2 / ATDD** → **Connect FIXD**
-3. Select the FIXD adapter
-4. Probe / Read DTCs — protocol claim stays **UNVERIFIED** until live evidence is recorded
+GitHub Actions macOS runners are **not enabled** on this repo right now.
+
+On a Mac:
+
+```bash
+cd atdd/ios
+npm ci
+npm run sync:ios
+cd ios/App && pod install && open App.xcworkspace
+```
+
+## Do not
+
+- Claim FIXD protocol support without live evidence
+- Present Demo/SIMULATED as live vehicle data
