@@ -1,0 +1,963 @@
+
+const APP_VERSION = (window.ATD_DESKTOP && window.ATD_DESKTOP.version) || (typeof DiagEngine !== 'undefined' && DiagEngine.APP_VERSION) || '1.2.0';
+
+const state = {
+  dtcDb: [],
+  audioBlob: null,
+  audioSummary: null,
+  currentStream: null,
+  imageSummary: null,
+  lastAnalysis: null,
+  lastAnalysisText: ''
+};
+
+const symptoms = [
+  'No crank','Cranks no start','Hard start','Stalling','Rough idle','Misfire','Low power','Poor fuel economy','Overheating','Tick','Knock','Rod knock','Low compression','Burns oil','Needs engine rebuild','Squeal','Hiss','Whine','Grind','Smoke','Fuel smell','Oil leak','Coolant loss','Electrical weirdness','Transmission slip','ABS / brake issue','Charging problem','Battery light','No heat','Won’t shift','Gauge acting weird'
+];
+
+function byId(id){ return document.getElementById(id); }
+function text(el, value){ const node = byId(el); if(node) node.textContent = value; }
+function html(el, value){ const node = byId(el); if(node) node.innerHTML = value; }
+function value(id){ const node = byId(id); return node ? String(node.value || '').trim() : ''; }
+function checkedSymptoms(){ return symptoms.filter((name, i) => byId(`sym_${i}`) && byId(`sym_${i}`).checked); }
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
+
+function fillYears(){
+  const sel = byId('year');
+  sel.innerHTML = '<option value="">Select</option>';
+  const top = new Date().getFullYear() + 1;
+  for(let y = top; y >= 1980; y--){
+    const opt = document.createElement('option');
+    opt.value = String(y);
+    opt.textContent = String(y);
+    sel.appendChild(opt);
+  }
+}
+
+function renderSymptoms(){
+  const box = byId('symptoms');
+  box.innerHTML = '';
+  symptoms.forEach((name, i) => {
+    const label = document.createElement('label');
+    label.innerHTML = `<input type="checkbox" id="sym_${i}"> <span>${esc(name)}</span>`;
+    box.appendChild(label);
+  });
+}
+
+function loadStats(){
+  const stats = DiagEngine.computeStats(state.dtcDb);
+  html('dbStats', `
+    <div class="stat"><strong>${stats.total.toLocaleString()}</strong><div class="small">Codes ready offline</div></div>
+    <div class="stat"><strong>Mic + cam</strong><div class="small">Diagnose first</div></div>
+    <div class="stat"><strong>${stats.byFamily.Powertrain || 0}</strong><div class="small">Powertrain</div></div>
+    <div class="stat"><strong>${stats.byFamily.Body || 0}</strong><div class="small">Body</div></div>
+    <div class="stat"><strong>${stats.byFamily.Chassis || 0}</strong><div class="small">Chassis</div></div>
+    <div class="stat"><strong>${stats.byFamily.Network || 0}</strong><div class="small">Network</div></div>
+  `);
+}
+
+function showStatus(message, kind){
+  const banner = byId('statusBanner');
+  if(!banner){
+    if(message) alert(message);
+    return;
+  }
+  if(!message){
+    banner.hidden = true;
+    banner.textContent = '';
+    banner.className = 'status-banner';
+    return;
+  }
+  banner.hidden = false;
+  banner.textContent = message;
+  banner.className = 'status-banner' + (kind ? ' ' + kind : '');
+  clearTimeout(showStatus._timer);
+  showStatus._timer = setTimeout(() => {
+    if(banner.textContent === message) showStatus('');
+  }, 4500);
+}
+
+function restoreLegalAcceptance(){
+  const box = byId('acceptLegal');
+  if(!box) return;
+  try{
+    if(localStorage.getItem('atd_legal_ok') === '1') box.checked = true;
+  }catch(_err){ /* ignore */ }
+  box.addEventListener('change', () => {
+    try{
+      if(box.checked) localStorage.setItem('atd_legal_ok', '1');
+      else localStorage.removeItem('atd_legal_ok');
+    }catch(_err){ /* ignore */ }
+  });
+}
+
+async function loadDb(){
+  state.dtcDb = window.DTC_DB_DATA || [];
+}
+
+function vehicleData(){
+  return {
+    year: value('year'), make: value('make'), model: value('model'), engine: value('engine'), mileage: value('mileage'),
+    trans: value('trans'), fuel: value('fuel'), nickname: value('nickname')
+  };
+}
+
+function parseCodes(){
+  return Array.from(new Set(value('codes').toUpperCase().replace(/,/g,'\n').split(/\s+/).map(x => x.trim()).filter(Boolean)));
+}
+
+function fluidData(){
+  const data = {
+    type: value('fluidType'), level: value('fluidLevel'), color: value('fluidColor'), smell: value('fluidSmell'), capacity: value('fluidCapacity'), notes: value('fluidNotes')
+  };
+  const lines = [];
+  if(!data.type){ text('fluidOut', 'Fluid guidance will show here.'); return data; }
+  lines.push(`${data.type} review`);
+  if(/Below|dry/i.test(data.level)) lines.push('- Danger: verify level before further operation. Add only in small measured amounts.');
+  if(/add mark/i.test(data.level)) lines.push('- Slightly low: add carefully and re-check, do not dump a full container in blindly.');
+  if(/Above full/i.test(data.level)) lines.push('- Overfill warning: too much fluid can cause damage.');
+  if(/Milky/i.test(data.color)) lines.push('- Milky appearance can point to water or coolant contamination.');
+  if(/Metallic/i.test(data.color)) lines.push('- Metallic glitter points to wear material.');
+  if(/Burnt/i.test(data.smell)) lines.push('- Burnt smell points to overheating or friction damage.');
+  if(/Fuel/i.test(data.smell)) lines.push('- Fuel smell can point to fuel dilution or rich running.');
+  if(/Sweet coolant/i.test(data.smell)) lines.push('- Sweet coolant smell can point to a leak or cross-contamination.');
+  if(data.capacity) lines.push(`- Capacity entered: ${data.capacity}`);
+  if(data.notes) lines.push(`- Notes: ${data.notes}`);
+  if(lines.length === 1) lines.push('- Level, color, and smell look unremarkable from the entries given. Recheck with the vehicle cold or at the specified operating temperature.');
+  text('fluidOut', lines.join('\n'));
+  return data;
+}
+
+function requireLegalAcceptance(){
+  const box = byId('acceptLegal');
+  if(box && box.checked) return true;
+  showStatus('Check the box under the title first (“I know this is an assistant…”), then try again.', 'warn');
+  if(box){
+    box.focus();
+    const accept = box.closest('.acceptance');
+    if(accept) accept.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  return false;
+}
+
+function showEl(id){
+  const node = byId(id);
+  if(!node) return;
+  if(node.tagName === 'DETAILS') node.open = true;
+  const wrap = node.closest && node.closest('details');
+  if(wrap) wrap.open = true;
+  node.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function renderLookupCards(items){
+  if(!items.length){ html('codeResults','<div class="code-card">No matching codes.</div>'); showEl('codeResults'); return; }
+  html('codeResults', items.map(item => {
+    const diy = (item.detailed && item.detailed.diySteps && item.detailed.diySteps.length)
+      ? `<div class="diy mt-10"><strong>DIY repair steps</strong><ol class="checks">${item.detailed.diySteps.map(step => `<li>${esc(step)}</li>`).join('')}</ol></div>`
+      : '';
+    const guidance = item.detailed ? `
+      <div class="small mt-8"><strong>${esc(item.detailed.title || 'Guidance')}</strong></div>
+      <div class="small mt-8"><strong>What to check first:</strong> ${esc((item.detailed.firstChecks || []).join(' | '))}</div>
+      <div class="small mt-6"><strong>Parts people actually replace:</strong> ${esc((item.detailed.likelyParts || []).join(' | '))}</div>
+      ${diy}
+    ` : diy;
+    return `
+      <div class="code-card">
+        <div><span class="badge">${esc(item.code)}</span><span class="badge">${esc(item.family)}</span><span class="badge">${esc(item.subsystem)}</span></div>
+        <div><strong>${esc(item.description)}</strong></div>
+        ${guidance}
+      </div>
+    `;
+  }).join(''));
+  showEl('lookupCard');
+}
+
+function quickLookup(){
+  const codes = parseCodes();
+  if(!codes.length){
+    html('codeResults','<div class="code-card">Enter at least one code (example <strong>P0300</strong>), or tap an example chip.</div>');
+    showStatus('Type a code first, then tap Quick Lookup.', 'warn');
+    const field = byId('codes');
+    if(field) field.focus();
+    return;
+  }
+  const results = DiagEngine.lookupCodes(state.dtcDb, codes);
+  renderLookupCards(results || []);
+  if(results && results.length){
+    showStatus('Found ' + results.length + ' code' + (results.length === 1 ? '' : 's') + '. Scroll for DIY steps.', 'ok');
+  }else{
+    showStatus('No match for those codes in the offline library.', 'warn');
+  }
+}
+
+function useExampleCode(code){
+  const field = byId('codes');
+  if(!field) return;
+  field.value = code;
+  if(byId('acceptLegal') && byId('acceptLegal').checked) runDiagnosis();
+  else {
+    quickLookup();
+    showStatus('Code loaded. Check the legal box, then tap Diagnose now for the full repair plan.', 'warn');
+  }
+}
+
+function maybeAutoDiagnose(source){
+  const legal = byId('acceptLegal');
+  if(!legal || !legal.checked){
+    showStatus('Evidence captured from ' + source + '. Check the legal box, then tap Diagnose now.', 'warn');
+    return;
+  }
+  const hasMedia = !!(state.audioSummary || state.imageSummary);
+  const hasCodes = parseCodes().length > 0;
+  const hasSymptoms = checkedSymptoms().length > 0 || rebuildFlagSymptoms().length > 0;
+  if(!hasMedia && !hasCodes && !hasSymptoms){
+    showStatus('Add sound, a photo, a code, or a symptom before diagnosing.', 'warn');
+    return;
+  }
+  showStatus('Running diagnosis from ' + source + '…', 'ok');
+  runDiagnosis();
+}
+
+function searchLocalDb(){
+  const q = value('dbQuery');
+  if(!q){ html('codeResults','<div class="code-card">Enter a code or keyword.</div>'); showEl('codeResults'); return; }
+  if(/rebuild|short block|bottom end|ring job|rod knock/i.test(q)){
+    renderRebuildGuide();
+    showEl('rebuildCard');
+  }
+  if(/starter|alternator|valve cover|stereo|amp|subwoofer|exhaust|headlight|tail light|hub|flat|spark plug|oil|brake|tranny|trans fluid|windshield|injector|control arm|axle|rotor|pad/i.test(q)){
+    renderCommonJobs(q);
+    showEl('jobsCard');
+  }
+  const results = DiagEngine.searchDtc(state.dtcDb, q);
+  renderLookupCards(results);
+}
+
+function saveCase(){
+  const payload = currentCase();
+  localStorage.setItem('atd_case_latest', JSON.stringify(payload));
+  showStatus('Case saved on this device.', 'ok');
+}
+
+function loadCase(){
+  const raw = localStorage.getItem('atd_case_latest');
+  if(!raw){ showStatus('No saved case on this device yet.', 'warn'); return; }
+  const saved = JSON.parse(raw);
+  Object.entries(saved.vehicle || {}).forEach(([k,v]) => { if(byId(k)) byId(k).value = v || ''; });
+  byId('codes').value = (saved.dtcs || []).join('\n');
+  byId('notes').value = saved.notes || '';
+  Object.entries(saved.fluid || {}).forEach(([k,v]) => {
+    const map = { type:'fluidType', level:'fluidLevel', color:'fluidColor', smell:'fluidSmell', capacity:'fluidCapacity', notes:'fluidNotes' };
+    if(map[k] && byId(map[k])) byId(map[k]).value = v || '';
+  });
+  symptoms.forEach((name, i) => { byId(`sym_${i}`).checked = (saved.symptoms || []).includes(name); });
+  fluidData();
+  if(saved.lastAnalysis){
+    state.lastAnalysis = saved.lastAnalysis;
+    state.lastAnalysisText = saved.lastAnalysisText || '';
+    renderAnalysis(saved.lastAnalysis);
+  }
+  showStatus('Saved case loaded.', 'ok');
+}
+
+function clearCase(){
+  if(!confirm('Clear the on-screen form and delete the locally saved case?')) return;
+  localStorage.removeItem('atd_case_latest');
+  ['make','model','engine','mileage','nickname','codes','notes','dbQuery','fluidCapacity','fluidNotes'].forEach(id => { if(byId(id)) byId(id).value = ''; });
+  ['year','trans','fuel','fluidType','fluidLevel','fluidColor','fluidSmell'].forEach(id => { if(byId(id)) byId(id).value = ''; });
+  symptoms.forEach((_, i) => { if(byId(`sym_${i}`)) byId(`sym_${i}`).checked = false; });
+  ['flagRodKnock','flagLowCompression','flagBurnsOil','flagMetalInOil','flagNeedRebuild'].forEach(id => { if(byId(id)) byId(id).checked = false; });
+  state.lastAnalysis = null;
+  state.lastAnalysisText = '';
+  state.audioSummary = null;
+  state.imageSummary = null;
+  html('codeResults', '');
+  text('fluidOut', 'Fluid guidance will show here.');
+  text('audioSummary', 'No audio yet.');
+  text('imageSummary', 'No photo or frame yet.');
+  html('results', 'Nothing yet. Capture sound or a photo, or enter a code, then tap <strong>Diagnose now</strong>.');
+  showStatus('Saved case cleared.', 'ok');
+}
+
+function currentCase(){
+  return {
+    savedAt: new Date().toISOString(),
+    appVersion: APP_VERSION,
+    vehicle: vehicleData(),
+    dtcs: parseCodes(),
+    symptoms: Array.from(new Set(checkedSymptoms().concat(rebuildFlagSymptoms()))),
+    notes: value('notes'),
+    fluid: {
+      type: value('fluidType'), level: value('fluidLevel'), color: value('fluidColor'), smell: value('fluidSmell'), capacity: value('fluidCapacity'), notes: value('fluidNotes')
+    },
+    mediaSummary: { audio: state.audioSummary, image: state.imageSummary, video: state.imageSummary },
+    lastAnalysis: state.lastAnalysis,
+    lastAnalysisText: state.lastAnalysisText
+  };
+}
+
+function analysisToText(analysis){
+  const lines = [];
+  lines.push(`Auto/Truck Diagnostics for Dummies v${APP_VERSION}`);
+  lines.push(`Generated: ${analysis.generatedAt || new Date().toISOString()}`);
+  const v = analysis.vehicle || vehicleData();
+  lines.push(`Vehicle: ${[v.year, v.make, v.model, v.engine, v.nickname].filter(Boolean).join(' ') || '(not entered)'}`);
+  lines.push(`Primary finding: ${analysis.summary.primaryFinding}`);
+  lines.push(`Confidence: ${analysis.summary.confidence}%`);
+  lines.push(`Reason: ${analysis.summary.shortReason}`);
+  lines.push('');
+  lines.push('Top ranked causes');
+  (analysis.rankedHypotheses || []).forEach((item, i) => {
+    lines.push(`${i+1}. ${item.title} — ${item.confidence}%`);
+    lines.push(`   Evidence: ${(item.reasons || []).join(' | ')}`);
+  });
+  lines.push('');
+  lines.push(`DIY repair steps${analysis.diyTitle ? ' — ' + analysis.diyTitle : ''}`);
+  (analysis.diySteps || []).forEach((x, i) => lines.push(`${i+1}. ${x}`));
+  if(analysis.rebuildGuide && analysis.rebuildGuide.stages){
+    lines.push('');
+    lines.push('Engine rebuild stages');
+    analysis.rebuildGuide.stages.forEach((stage) => {
+      lines.push(stage.title);
+      (stage.steps || []).forEach((x, i) => lines.push(`  ${i+1}. ${x}`));
+    });
+  }
+  if(analysis.relatedJobs && analysis.relatedJobs.length){
+    lines.push('');
+    lines.push('Related how-to jobs');
+    analysis.relatedJobs.forEach((job) => {
+      lines.push(job.title);
+      (job.steps || []).forEach((x, i) => lines.push(`  ${i+1}. ${x}`));
+    });
+  }
+  lines.push('');
+  lines.push('First checks');
+  (analysis.firstChecks || []).forEach((x, i) => lines.push(`${i+1}. ${x}`));
+  lines.push('');
+  lines.push('Likely parts / paths');
+  (analysis.likelyParts || []).forEach((x, i) => lines.push(`${i+1}. ${x}`));
+  if((analysis.warnings || []).length){
+    lines.push('');
+    lines.push('Warnings');
+    analysis.warnings.forEach((x, i) => lines.push(`${i+1}. ${x}`));
+  }
+  if((analysis.codeCards || []).length){
+    lines.push('');
+    lines.push('Code cards');
+    analysis.codeCards.forEach(card => {
+      lines.push(`- ${card.code}: ${card.description}`);
+      if(card.guidance){
+        lines.push(`  ${card.guidance.title || 'Guidance'}`);
+        lines.push(`  First checks: ${card.guidance.firstChecks.join(' | ')}`);
+        if(card.guidance.likelyParts) lines.push(`  Likely parts: ${card.guidance.likelyParts.join(' | ')}`);
+      }
+    });
+  }
+  lines.push('');
+  lines.push('Disclaimers');
+  (analysis.disclaimers || []).forEach((x, i) => lines.push(`${i+1}. ${x}`));
+  return lines.join('\n');
+}
+
+function exportReport(){
+  const payload = currentCase();
+  const reportText = payload.lastAnalysisText || 'No diagnosis has been run yet. Vehicle, codes, symptoms, and fluid notes are included below.';
+  const body = `${reportText}\n\n--- Case JSON ---\n${JSON.stringify(payload, null, 2)}\n`;
+  const blob = new Blob([body], { type:'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `atd-report-${Date.now()}.txt`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+async function fileToArrayBuffer(file){ return await file.arrayBuffer(); }
+
+async function analyzeAudioBuffer(buffer){
+  try{
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const audioBuffer = await ctx.decodeAudioData(buffer.slice(0));
+    const channel = audioBuffer.getChannelData(0);
+    const sampleRate = audioBuffer.sampleRate;
+    let sum = 0, zc = 0;
+    for(let i=0;i<channel.length;i++){
+      const s = channel[i];
+      sum += s*s;
+      if(i>0 && ((channel[i-1] <= 0 && s > 0) || (channel[i-1] >= 0 && s < 0))) zc++;
+    }
+    const rms = Math.sqrt(sum / channel.length);
+    const zeroCrossRate = zc / (channel.length / sampleRate);
+    let cue = 'undetermined';
+    if(rms < 0.01) cue = 'very quiet / weak signal';
+    else if(zeroCrossRate > 6500) cue = 'possible squeal / high-frequency noise';
+    else if(zeroCrossRate < 1100 && rms > 0.03) cue = 'possible knock / thump';
+    else if(zeroCrossRate >= 1100 && zeroCrossRate <= 2600) cue = 'possible tick / rhythmic mechanical noise';
+    else cue = 'broad mechanical noise';
+    const summary = {
+      durationSec: Number(audioBuffer.duration.toFixed(2)),
+      rms: Number(rms.toFixed(4)),
+      zeroCrossRate: Number(zeroCrossRate.toFixed(1)),
+      cue
+    };
+    state.audioSummary = summary;
+    text('audioSummary', `Audio summary: ${summary.durationSec}s | RMS ${summary.rms} | ZCR ${summary.zeroCrossRate} | cue: ${summary.cue}`);
+    maybeAutoDiagnose('microphone');
+  }catch(err){
+    text('audioSummary', 'Audio loaded, but browser decoding failed for deeper analysis.');
+    state.audioSummary = { cue:'audio loaded but deeper decode unavailable' };
+    maybeAutoDiagnose('microphone');
+  }
+}
+
+async function handleAudioFile(file){
+  byId('audioPreview').src = URL.createObjectURL(file);
+  const buffer = await fileToArrayBuffer(file);
+  state.audioBlob = file;
+  await analyzeAudioBuffer(buffer);
+}
+
+function imageMetricsFromCanvas(canvas){
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  const { width, height } = canvas;
+  const data = ctx.getImageData(0, 0, width, height).data;
+  let white = 0, blue = 0, dark = 0, hot = 0, total = width * height;
+  for(let i=0;i<data.length;i+=4){
+    const r = data[i], g = data[i+1], b = data[i+2];
+    const avg = (r+g+b)/3;
+    if(avg > 205 && Math.abs(r-g) < 22 && Math.abs(g-b) < 22) white++;
+    if(b > r+10 && b > g+10 && avg > 80 && avg < 210) blue++;
+    if(avg < 55) dark++;
+    if(r > 180 && g > 90 && b < 120) hot++;
+  }
+  const ratio = x => Number((x / total).toFixed(4));
+  let smokeHint = 'no strong smoke color cue';
+  if(ratio(white) > 0.18) smokeHint = 'possible white smoke / steam cue';
+  if(ratio(blue) > 0.16) smokeHint = 'possible blue smoke / oil-burning cue';
+  if(ratio(dark) > 0.34) smokeHint = 'possible black smoke / dark exhaust cue';
+  const summary = { whiteRatio: ratio(white), blueRatio: ratio(blue), darkRatio: ratio(dark), hotRatio: ratio(hot), smokeHint };
+  state.imageSummary = summary;
+  text('imageSummary', `Image summary: white ${summary.whiteRatio} | blue ${summary.blueRatio} | dark ${summary.darkRatio} | cue: ${summary.smokeHint}`);
+  maybeAutoDiagnose('camera');
+  return summary;
+}
+
+async function drawImageFileToCanvas(file){
+  const img = new Image();
+  img.onload = () => {
+    const canvas = byId('frameCanvas');
+    const maxW = 640;
+    const scale = Math.min(1, maxW / img.width);
+    canvas.width = Math.max(1, Math.round(img.width * scale));
+    canvas.height = Math.max(1, Math.round(img.height * scale));
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    byId('photoPreview').src = img.src;
+    byId('photoPreview').hidden = false;
+    imageMetricsFromCanvas(canvas);
+  };
+  img.src = URL.createObjectURL(file);
+}
+
+async function startCamera(){
+  try{
+    state.currentStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' }, audio:false });
+    const video = byId('videoPreview');
+    video.srcObject = state.currentStream;
+    await video.play();
+  }catch(err){
+    alert('Camera not available or permission denied.');
+  }
+}
+
+function stopCamera(){
+  if(state.currentStream){ state.currentStream.getTracks().forEach(t => t.stop()); state.currentStream = null; }
+  const video = byId('videoPreview');
+  video.pause();
+  video.srcObject = null;
+}
+
+function captureFrame(){
+  const video = byId('videoPreview');
+  if(!(video.videoWidth > 0)) { alert('Start camera or load a video first.'); return; }
+  const canvas = byId('frameCanvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  byId('frameImage').src = canvas.toDataURL('image/jpeg', 0.9);
+  byId('frameImage').hidden = false;
+  imageMetricsFromCanvas(canvas);
+}
+
+let mediaRecorder = null;
+let mediaChunks = [];
+async function toggleAudioRecord(){
+  const btn = byId('btnAudioRecord');
+  if(mediaRecorder && mediaRecorder.state === 'recording'){
+    mediaRecorder.stop();
+    btn.textContent = 'Start Audio Recording';
+    return;
+  }
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({ audio:true });
+    mediaChunks = [];
+    mediaRecorder = new MediaRecorder(stream);
+    mediaRecorder.ondataavailable = e => mediaChunks.push(e.data);
+    mediaRecorder.onstop = async () => {
+      const blob = new Blob(mediaChunks, { type:'audio/webm' });
+      const file = new File([blob], 'audio.webm', { type:'audio/webm' });
+      await handleAudioFile(file);
+      stream.getTracks().forEach(t => t.stop());
+    };
+    mediaRecorder.start();
+    btn.textContent = 'Stop Audio Recording';
+    text('audioSummary', 'Recording...');
+  }catch(err){
+    alert('Microphone not available or permission denied.');
+  }
+}
+
+function rebuildFlagSymptoms(){
+  const extra = [];
+  if(byId('flagRodKnock') && byId('flagRodKnock').checked) extra.push('Rod knock');
+  if(byId('flagLowCompression') && byId('flagLowCompression').checked) extra.push('Low compression');
+  if(byId('flagBurnsOil') && byId('flagBurnsOil').checked) extra.push('Burns oil');
+  if(byId('flagNeedRebuild') && byId('flagNeedRebuild').checked) extra.push('Needs engine rebuild');
+  if(byId('flagMetalInOil') && byId('flagMetalInOil').checked) extra.push('Needs engine rebuild');
+  return extra;
+}
+
+function markSymptom(name, on){
+  const i = symptoms.indexOf(name);
+  const el = i >= 0 ? byId('sym_' + i) : null;
+  if(el) el.checked = !!on;
+}
+
+function startRebuildDiagnosis(){
+  if(!byId('flagRodKnock').checked && !byId('flagLowCompression').checked && !byId('flagBurnsOil').checked && !byId('flagMetalInOil').checked && !byId('flagNeedRebuild').checked){
+    byId('flagNeedRebuild').checked = true;
+  }
+  markSymptom('Rod knock', byId('flagRodKnock').checked);
+  markSymptom('Low compression', byId('flagLowCompression').checked);
+  markSymptom('Burns oil', byId('flagBurnsOil').checked);
+  markSymptom('Needs engine rebuild', byId('flagNeedRebuild').checked || byId('flagMetalInOil').checked);
+  if(byId('flagMetalInOil').checked){
+    if(byId('fluidType')) byId('fluidType').value = 'Engine oil';
+    if(byId('fluidColor')) byId('fluidColor').value = 'Metallic glitter';
+    fluidData();
+  }
+  const notes = byId('notes');
+  if(notes && byId('flagMetalInOil').checked && !/metal in oil/i.test(notes.value)){
+    notes.value = (notes.value ? notes.value + ' ' : '') + 'metal in oil';
+  }
+  runDiagnosis();
+}
+
+async function runDiagnosis(){
+  if(!requireLegalAcceptance()) return;
+  fluidData();
+  const payload = {
+    vehicle: vehicleData(),
+    dtcs: parseCodes(),
+    symptoms: Array.from(new Set(checkedSymptoms().concat(rebuildFlagSymptoms()))),
+    notes: value('notes'),
+    fluid: {
+      type: value('fluidType'), level: value('fluidLevel'), color: value('fluidColor'), smell: value('fluidSmell'), capacity: value('fluidCapacity'), notes: value('fluidNotes')
+    },
+    mediaSummary: {
+      audio: state.audioSummary,
+      image: state.imageSummary,
+      video: state.imageSummary
+    }
+  };
+  const analysis = DiagEngine.buildAnalysis(payload, state.dtcDb);
+  state.lastAnalysis = analysis;
+  renderAnalysis(analysis);
+}
+
+function renderAnalysis(analysis){
+  state.lastAnalysisText = analysisToText(analysis);
+  const v = analysis.vehicle || {};
+  const vehicleLine = [v.year, v.make, v.model, v.engine, v.nickname].filter(Boolean).join(' ') || '';
+  const outcome = analysis.outcome || (typeof DiagEngine !== 'undefined' && DiagEngine.resolveOutcome ? DiagEngine.resolveOutcome(analysis) : null);
+  const evidence = [];
+  if(state.audioSummary && state.audioSummary.cue) evidence.push('Mic: ' + state.audioSummary.cue);
+  if(state.imageSummary && state.imageSummary.smokeHint) evidence.push('Camera: ' + state.imageSummary.smokeHint);
+  (analysis.codeCards || []).slice(0, 3).forEach((card) => evidence.push('Code: ' + card.code + ' — ' + card.description));
+  (analysis.rankedHypotheses || []).slice(0, 2).forEach((h) => {
+    if(h.reasons && h.reasons[0]) evidence.push(h.reasons[0]);
+  });
+  const list = (items) => (items || []).map(x => `<li>${esc(x)}</li>`).join('') || '<li>None listed for this finding.</li>';
+
+  if(!outcome || outcome.kind === 'needs_more_evidence'){
+    html('results', `
+      <div class="outcome-banner">
+        <div class="kind">Need more evidence</div>
+        <h3>${esc((outcome && outcome.title) || 'Need more evidence')}</h3>
+        <div class="small">${esc((outcome && outcome.reason) || (analysis.summary && analysis.summary.shortReason) || '')}</div>
+        ${vehicleLine ? `<div class="small mt-6">${esc(vehicleLine)}</div>` : ''}
+      </div>
+      <div class="result-block"><h3>What to capture next</h3><ol class="checks diy-list">${list((outcome && outcome.instructions) || [])}</ol></div>
+      ${evidence.length ? `<div class="result-block"><h3>Evidence so far</h3><ul class="evidence-list">${evidence.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div>` : ''}
+    `);
+    showEl('resultsCard');
+    showStatus('Not enough to pick a repair plan yet — add mic, camera, or a code.', 'warn');
+    return;
+  }
+
+  const relatedJobs = (outcome.relatedJobs || []).map((job) => `
+    <details class="playbook" id="result-job-${esc(job.id)}">
+      <summary>${esc(job.title)} <span class="small">(related to this diagnosis)</span></summary>
+      ${job.time ? `<div class="small mt-8"><strong>Typical time:</strong> ${esc(job.time)}</div>` : ''}
+      ${job.tools && job.tools.length ? `<div class="small mt-8"><strong>Tools:</strong> ${esc(job.tools.join(', '))}</div>` : ''}
+      ${job.parts && job.parts.length ? `<div class="small mt-8"><strong>Parts:</strong> ${esc(job.parts.join(', '))}</div>` : ''}
+      ${job.warnings && job.warnings.length ? `<div class="notice mt-8">${job.warnings.map((w) => esc(w)).join(' ')}</div>` : ''}
+      <ol class="checks diy-list mt-8">${(job.steps || []).map((step) => `<li>${esc(step)}</li>`).join('')}</ol>
+    </details>
+  `).join('');
+
+  let rebuildHtml = '';
+  if(outcome.kind === 'rebuild' && outcome.playbook && outcome.playbook.stages){
+    rebuildHtml = `<div class="result-block"><h3>Engine rebuild stages</h3>${(outcome.playbook.stages || []).map((stage, idx) => `
+      <details class="playbook"${idx === 0 ? ' open' : ''}>
+        <summary>${esc(stage.title)}</summary>
+        <ol class="checks diy-list">${(stage.steps || []).map((step) => `<li>${esc(step)}</li>`).join('')}</ol>
+      </details>
+    `).join('')}</div>`;
+  }
+
+  const otherCodes = (outcome.codeCards || []).slice(outcome.kind === 'code' ? 1 : 0).map((card) => `
+    <div class="code-card">
+      <div><span class="badge">${esc(card.code)}</span><span class="badge">${esc(card.family || '')}</span></div>
+      <div><strong>${esc(card.description)}</strong></div>
+    </div>
+  `).join('');
+
+  html('results', `
+    <div class="outcome-banner">
+      <div class="kind">${esc(outcome.kind)}</div>
+      <h3>${esc(outcome.title)}</h3>
+      <div><span class="badge">${esc(outcome.confidence)}%</span> <span class="small">${esc(outcome.reason || '')}</span></div>
+      ${vehicleLine ? `<div class="small mt-6">${esc(vehicleLine)}</div>` : ''}
+    </div>
+    ${evidence.length ? `<div class="result-block"><h3>Evidence used</h3><ul class="evidence-list">${evidence.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div>` : ''}
+    <div class="result-block"><h3>Repair instructions — ${esc(outcome.instructionTitle || outcome.title)}</h3><ol class="checks diy-list">${list(outcome.instructions)}</ol></div>
+    ${rebuildHtml}
+    ${(outcome.firstChecks || []).length ? `<div class="result-block"><h3>First checks</h3><ol class="checks">${list(outcome.firstChecks)}</ol></div>` : ''}
+    ${(outcome.likelyParts || []).length ? `<div class="result-block"><h3>Likely parts / paths</h3><ol class="checks">${list(outcome.likelyParts)}</ol></div>` : ''}
+    ${(outcome.warnings || []).length ? `<div class="result-block"><h3>Warnings</h3><ol class="checks warn-list">${list(outcome.warnings)}</ol></div>` : ''}
+    ${relatedJobs ? `<div class="result-block"><h3>Related jobs for this diagnosis only</h3>${relatedJobs}</div>` : ''}
+    ${otherCodes ? `<div class="result-block"><h3>Other codes in this case</h3><div class="cards">${otherCodes}</div></div>` : ''}
+    <div class="result-block"><h3>Disclaimers</h3><ol class="checks">${list(analysis.disclaimers)}</ol></div>
+  `);
+  showEl('resultsCard');
+  showStatus('Diagnosis ready: ' + outcome.title, 'ok');
+}
+
+
+function bindBluetoothScanner(){
+  if(!window.AtddObd){
+    const note = byId('btSupportNote');
+    if(note) note.textContent = 'Bluetooth module failed to load.';
+    return;
+  }
+  const session = AtddObd.createSession();
+  const statusEl = byId('btStatus');
+  const deviceEl = byId('btDevice');
+  const logEl = byId('btLog');
+  const noteEl = byId('btSupportNote');
+  const btnConnect = byId('btnBtConnect');
+  const btnDemo = byId('btnBtDemo');
+  const btnDisc = byId('btnBtDisconnect');
+  const btnInit = byId('btnBtInit');
+  const btnRead = byId('btnBtReadDtcs');
+
+  function setConnected(on){
+    if(btnDisc) btnDisc.disabled = !on;
+    if(btnInit) btnInit.disabled = !on;
+    if(btnRead) btnRead.disabled = !on;
+    if(btnConnect) btnConnect.disabled = on;
+    if(btnDemo) btnDemo.disabled = on;
+  }
+  function refreshLog(){
+    if(!logEl) return;
+    logEl.textContent = session.getLog().slice(-40).map(e => e.dir + ' ' + e.msg).join('\n');
+  }
+  function setStatus(text){ if(statusEl) statusEl.textContent = 'Status: ' + text; }
+
+  if(noteEl){
+    noteEl.textContent = session.available()
+      ? 'Connect an ELM327 BLE adapter to read stored trouble codes into this case.'
+      : 'Web Bluetooth is not available here. Use Chrome/Edge on HTTPS, or tap Demo mode.';
+  }
+  if(btnConnect && !session.available()) btnConnect.disabled = true;
+
+  if(btnConnect) btnConnect.onclick = async () => {
+    try{
+      setStatus('connecting…');
+      const info = await session.connectBle();
+      if(deviceEl) deviceEl.textContent = 'Adapter: ' + info.name + ' (live BLE)';
+      setConnected(true);
+      setStatus('connected — initialize next');
+      refreshLog();
+      showStatus('Bluetooth adapter connected', 'ok');
+    }catch(err){
+      setStatus('error');
+      refreshLog();
+      showStatus(err.message || String(err), 'warn');
+    }
+  };
+
+  if(btnDemo) btnDemo.onclick = async () => {
+    try{
+      const info = await session.connectDemo();
+      if(deviceEl) deviceEl.textContent = 'Adapter: ' + info.name + ' (DEMO — not live vehicle data)';
+      setConnected(true);
+      setStatus('demo ready — initialize next');
+      refreshLog();
+      showStatus('Demo Bluetooth mode (simulated)', 'ok');
+    }catch(err){
+      showStatus(err.message || String(err), 'warn');
+    }
+  };
+
+  if(btnDisc) btnDisc.onclick = async () => {
+    await session.disconnect();
+    setConnected(false);
+    if(deviceEl) deviceEl.textContent = 'Adapter: —';
+    setStatus('disconnected');
+    refreshLog();
+  };
+
+  if(btnInit) btnInit.onclick = async () => {
+    try{
+      setStatus('initializing…');
+      await session.initializeAdapter();
+      setStatus('ready');
+      refreshLog();
+      showStatus('Adapter initialized', 'ok');
+    }catch(err){
+      setStatus('init failed');
+      refreshLog();
+      showStatus(err.message || String(err), 'warn');
+    }
+  };
+
+  if(btnRead) btnRead.onclick = async () => {
+    try{
+      setStatus('reading DTCs…');
+      const result = await session.readStoredDtcs();
+      refreshLog();
+      const codes = result.codes || [];
+      if(codes.length){
+        const field = byId('codes');
+        if(field){
+          const existing = field.value.trim();
+          const merged = [...new Set((existing ? existing.split(/[\s,;]+/) : []).concat(codes).filter(Boolean))];
+          field.value = merged.join(' ');
+        }
+        setStatus((result.isSimulated ? 'SIMULATED ' : '') + 'read ' + codes.length + ' code(s): ' + codes.join(', '));
+        showStatus((result.isSimulated ? 'Demo codes loaded: ' : 'Bluetooth codes loaded: ') + codes.join(', '), 'ok');
+        showEl('lookupCard');
+      }else{
+        setStatus((result.isSimulated ? 'SIMULATED ' : '') + 'no stored DTCs');
+        showStatus('No stored DTCs returned', 'ok');
+      }
+    }catch(err){
+      setStatus('read failed');
+      refreshLog();
+      showStatus(err.message || String(err), 'warn');
+    }
+  };
+}
+
+function bindEvents(){
+  byId('btnLookup').onclick = quickLookup;
+  byId('btnLookupTop').onclick = () => { showEl('listenPanel'); const btn = byId('btnAudioRecord'); if(btn) btn.focus(); };
+  byId('btnSearchDtc').onclick = searchLocalDb;
+  byId('btnClearCodes').onclick = () => { byId('codes').value = ''; html('codeResults',''); showStatus(''); };
+  byId('btnRunDiagnosis').onclick = runDiagnosis;
+  byId('btnRunDiagnosisTop').onclick = runDiagnosis;
+  const rebuildBtn = byId('btnRebuildTop');
+  if(rebuildBtn) rebuildBtn.onclick = () => { showEl('lookupCard'); const field = byId('codes'); if(field){ field.focus(); field.scrollIntoView({ behavior:'smooth', block:'center' }); } };
+  const jobsBtn = byId('btnJobsTop');
+  if(jobsBtn) jobsBtn.onclick = () => { showEl('lookPanel'); const btn = byId('btnStartCamera'); if(btn) btn.focus(); };
+  const bluetoothBtn = byId('btnBluetoothTop');
+  if(bluetoothBtn) bluetoothBtn.onclick = () => { const el = byId('bluetoothCard'); if(el){ el.open = true; showEl('bluetoothCard'); } };
+  bindBluetoothScanner();
+  const rebuildDiag = byId('btnRebuildDiagnosis');
+  if(rebuildDiag) rebuildDiag.onclick = startRebuildDiagnosis;
+  byId('btnSaveCase').onclick = saveCase;
+  byId('btnSaveCaseTop').onclick = saveCase;
+  byId('btnLoadCase').onclick = loadCase;
+  byId('btnClearCase').onclick = clearCase;
+  byId('btnExport').onclick = exportReport;
+  byId('btnExportTop').onclick = exportReport;
+  document.querySelectorAll('[data-code]').forEach((chip) => {
+    chip.addEventListener('click', () => useExampleCode(chip.getAttribute('data-code')));
+  });
+  const codesField = byId('codes');
+  if(codesField){
+    codesField.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter' && !e.shiftKey){
+        e.preventDefault();
+        runDiagnosis();
+      }
+    });
+  }
+  byId('btnAudioUpload').onclick = () => byId('audioFile').click();
+  byId('audioFile').onchange = async (e) => { const file = e.target.files[0]; if(file) await handleAudioFile(file); };
+  byId('btnPhotoUpload').onclick = () => byId('photoFile').click();
+  byId('photoFile').onchange = async (e) => { const file = e.target.files[0]; if(file) await drawImageFileToCanvas(file); };
+  byId('btnVideoUpload').onclick = () => byId('videoFile').click();
+  byId('videoFile').onchange = async (e) => {
+    const file = e.target.files[0];
+    if(!file) return;
+    stopCamera();
+    const video = byId('videoPreview');
+    video.srcObject = null;
+    video.src = URL.createObjectURL(file);
+    video.onloadeddata = () => {
+      video.currentTime = Math.min(1, video.duration || 0);
+    };
+    video.onseeked = () => captureFrame();
+  };
+  byId('btnStartCamera').onclick = startCamera;
+  byId('btnStopCamera').onclick = stopCamera;
+  byId('btnCaptureFrame').onclick = captureFrame;
+  byId('btnAudioRecord').onclick = toggleAudioRecord;
+  ['fluidType','fluidLevel','fluidColor','fluidSmell','fluidCapacity','fluidNotes'].forEach(id => {
+    const el = byId(id);
+    if(el) el.addEventListener('input', fluidData);
+    if(el) el.addEventListener('change', fluidData);
+  });
+  byId('dbQuery').addEventListener('keydown', (e) => { if(e.key === 'Enter'){ e.preventDefault(); searchLocalDb(); } });
+  const solutionQuery = byId('solutionQuery');
+  if(solutionQuery){
+    solutionQuery.addEventListener('input', () => renderAllSolutions(solutionQuery.value));
+    solutionQuery.addEventListener('keydown', (e) => { if(e.key === 'Enter'){ e.preventDefault(); renderAllSolutions(solutionQuery.value); } });
+  }
+  const jobQuery = byId('jobQuery');
+  if(jobQuery){
+    jobQuery.addEventListener('input', () => renderCommonJobs(jobQuery.value));
+    jobQuery.addEventListener('keydown', (e) => { if(e.key === 'Enter'){ e.preventDefault(); renderCommonJobs(jobQuery.value); } });
+  }
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest && e.target.closest('[data-job]');
+    if(!a) return;
+    e.preventDefault();
+    openJob(a.getAttribute('data-job'));
+  });
+}
+
+function openJob(id){
+  if(byId('jobQuery')) byId('jobQuery').value = '';
+  renderCommonJobs('');
+  showEl('jobsCard');
+  const node = byId('job-' + id);
+  if(node){
+    node.open = true;
+    node.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+function renderCommonJobs(filter){
+  const box = byId('commonJobs');
+  if(!box || typeof DiagEngine === 'undefined' || !DiagEngine.listCommonJobs) return;
+  const q = String(filter != null ? filter : (byId('jobQuery') && byId('jobQuery').value) || '').trim().toLowerCase();
+  const jobs = DiagEngine.listCommonJobs().filter((job) => {
+    if(!q) return true;
+    const hay = (job.title + ' ' + (job.keywords || []).join(' ') + ' ' + (job.steps || []).join(' ')).toLowerCase();
+    return hay.includes(q);
+  });
+  if(!jobs.length){
+    box.innerHTML = '<div class="small">No job matches that search. Try starter, brakes, oil, or axle.</div>';
+    return;
+  }
+  box.innerHTML = jobs.map((job) => `
+    <details class="playbook" id="job-${esc(job.id)}"${q ? ' open' : ''}>
+      <summary>${esc(job.title)}</summary>
+      ${job.time ? `<div class="small mt-8"><strong>Typical time:</strong> ${esc(job.time)}</div>` : ''}
+      ${job.tools && job.tools.length ? `<div class="small mt-8"><strong>Tools:</strong> ${esc(job.tools.join(', '))}</div>` : ''}
+      ${job.parts && job.parts.length ? `<div class="small mt-8"><strong>Parts:</strong> ${esc(job.parts.join(', '))}</div>` : ''}
+      ${job.warnings && job.warnings.length ? `<div class="notice mt-8">${job.warnings.map((w) => esc(w)).join(' ')}</div>` : ''}
+      <ol class="checks diy-list mt-8">${(job.steps || []).map((step) => `<li>${esc(step)}</li>`).join('')}</ol>
+    </details>
+  `).join('');
+}
+
+function renderRebuildGuide(){
+  const box = byId('rebuildStages');
+  const summary = byId('rebuildSummary');
+  if(!box || typeof DiagEngine === 'undefined' || !DiagEngine.engineRebuildGuide) return;
+  const guide = DiagEngine.engineRebuildGuide();
+  if(summary) summary.textContent = guide.summary || summary.textContent;
+  box.innerHTML = (guide.warnings && guide.warnings.length ? `<div class="notice">${guide.warnings.map((w) => esc(w)).join(' ')}</div>` : '') +
+    (guide.stages || []).map((stage, idx) => `
+    <details class="playbook"${idx === 0 ? ' open' : ''}>
+      <summary>${esc(stage.title)}</summary>
+      <ol class="checks diy-list">${(stage.steps || []).map((step) => `<li>${esc(step)}</li>`).join('')}</ol>
+    </details>
+  `).join('');
+}
+
+function renderAllSolutions(filter){
+  const box = byId('allSolutions');
+  if(!box || typeof DiagEngine === 'undefined' || !DiagEngine.listRepairPlaybooks) return;
+  const q = String(filter != null ? filter : (byId('solutionQuery') && byId('solutionQuery').value) || '').trim().toLowerCase();
+  const plans = DiagEngine.listRepairPlaybooks().filter((plan) => {
+    if(!q) return true;
+    const hay = (plan.labels.join(' ') + ' ' + (plan.diySteps || []).join(' ')).toLowerCase();
+    return hay.includes(q);
+  });
+  if(!plans.length){
+    box.innerHTML = '<div class="small">No playbook matches that search. Try a code like P0442 or a word like MAF.</div>';
+    return;
+  }
+  box.innerHTML = plans.map(plan => `
+    <details class="playbook">
+      <summary>${esc(plan.labels.join(', '))}</summary>
+      <ol class="checks diy-list">${(plan.diySteps || []).map(step => `<li>${esc(step)}</li>`).join('')}</ol>
+    </details>
+  `).join('');
+}
+
+async function init(){
+  fillYears();
+  renderSymptoms();
+  restoreLegalAcceptance();
+  bindEvents();
+  text('appVersion', 'v' + APP_VERSION);
+  text('footerVersion', 'v' + APP_VERSION);
+  await loadDb();
+  if(typeof DiagEngine === 'undefined'){
+    html('results', 'Diagnostics engine failed to load. Confirm diagnosticsEngine.js is next to index.html.');
+    return;
+  }
+  if(!state.dtcDb.length){
+    html('dbStats', '<div class="stat"><strong>0</strong><div class="small">DTC database missing — data/dtc-db.js did not load</div></div>');
+    html('results', 'The bundled DTC database did not load. Confirm data/dtc-db.js defines window.DTC_DB_DATA.');
+    return;
+  }
+  loadStats();
+  if(window.ATD_DESKTOP){
+    const status = byId('computerStatus');
+    if(status) status.textContent = 'This is already the computer copy. Same diagnose-first camera/mic flow as the phone page.';
+  }
+  // Browse libraries stay collapsed — diagnosis pulls only what is needed.
+  document.querySelectorAll('details.extra, details.collapsible').forEach((el) => { el.open = false; });
+  const jobsCard = byId('jobsCard');
+  if(jobsCard){
+    jobsCard.addEventListener('toggle', () => { if(jobsCard.open) renderCommonJobs(); });
+  }
+  const rebuildCard = byId('rebuildCard');
+  if(rebuildCard){
+    rebuildCard.addEventListener('toggle', () => { if(rebuildCard.open) renderRebuildGuide(); });
+  }
+  const solutionsWrap = byId('solutionsCardWrap');
+  if(solutionsWrap){
+    solutionsWrap.addEventListener('toggle', () => { if(solutionsWrap.open) renderAllSolutions(); });
+  }
+}
+
+init();
