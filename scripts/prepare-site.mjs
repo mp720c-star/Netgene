@@ -32,4 +32,19 @@ fs.mkdirSync(path.join(site, "cdi-genius"), { recursive: true });
 fs.copyFileSync(path.join(root, "cdi-genius", "index.html"), path.join(site, "cdi-genius", "index.html"));
 fs.copyFileSync(path.join(root, "cdi-genius", "README.md"), path.join(site, "cdi-genius", "README.md"));
 
-console.log("prepare-site: wrote static site to ./site");
+// Installers stay on GitHub (too large for Workers / Cursor publish). Ship the page + checksums only.
+const downloadsSrc = path.join(root, "downloads");
+const downloadsDest = path.join(site, "downloads");
+fs.mkdirSync(downloadsDest, { recursive: true });
+for (const name of ["index.html", "SHA256SUMS.txt"]) {
+  const from = path.join(downloadsSrc, name);
+  if (fs.existsSync(from)) {
+    let text = fs.readFileSync(from, "utf8");
+    if (name === "index.html") {
+      text = text.replace('href="../index.html"', 'href="/"');
+    }
+    fs.writeFileSync(path.join(downloadsDest, name), text);
+  }
+}
+
+console.log("prepare-site: wrote static site to ./site (Ravin .exe via GitHub raw links)");
