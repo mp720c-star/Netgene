@@ -13,9 +13,12 @@ Use this profile for **iOS App Store / TestFlight** distribution. Do not commit 
 
 ## Agent host status (this environment)
 
-- `.mobileprovision` file bytes: **not present** in Git / uploads / local mounts
-- Distribution private key / `.p12`: **not available** on this Linux Cloud Agent (no Keychain; no signing env vars)
-- Public CSR only: `ATDD_Connect_Distribution.certSigningRequest`
+- `.mobileprovision` file bytes: **not present** in Git / uploads / local mounts — cannot re-validate UUID/team/App ID from binary here (metadata only, below)
+- `/home/ubuntu/.atdd-signing/`: **absent on this VM**
+- Prior claim (agent `bc-01a1f93c-c1b0-711e-9205-ce71f64bd374`, ~2026-11-20 12:00–13:00 America/Chicago): encrypted key + matching `.p12` lived only on **that ephemeral Linux host**; cert subject included Team `AJ2FB298SY` and matched the key **on that host**
+- This Cloud Agent is a **different VM** (same Cursor environment id, different boot). Ephemeral home from the earlier agent is **not mounted** and is **not** in environment builds/snapshots inspected
+- Public CSR only here: `ATDD_Connect_Distribution.certSigningRequest`
+- No certificates regenerated; no signing assets overwritten; no private key material printed
 
 ## Where the profile must live for signed CI
 
