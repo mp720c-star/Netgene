@@ -223,3 +223,27 @@ Mirrored to `atdd/classic/` (+ `SOURCE.txt`).
 | Bridge | `atdd/classic/bluetooth.js` (FIXD claim `UNVERIFIED`) |
 | Site prepare | `site/atdd/` classic; `site/atdd/connect/` scanner |
 | Workers URL used as source | Yes (import only; hostname not auto-updated) |
+
+## Entry — 2026-11-20 ~10:16 AM America/Chicago
+
+**Agent:** Cursor Cloud `bc-01a1f93c-c1b0-711e-9205-ce71f64bd374`  
+**Branch:** `cursor/atdd-fixd-scanner-integration-check-d374`  
+**Action:** iPhone-only live FIXD path — bring TestFlight CI onto this branch. **No secret values in chat.**
+
+### Facts
+
+- Home Screen ATDD icon = classic web PWA → **no Web Bluetooth on iPhone**
+- Live FIXD on iPhone = **TestFlight** app `com.netgene.atdd.ble` only
+- Agent **cannot** create Apple Distribution cert / ASC API key / set GitHub secret values (API 403)
+- Workflow ready: `.github/workflows/atdd-ios-testflight.yml` (manual Run workflow)
+
+### Michael unblock (required)
+
+Add **all seven** secrets at  
+https://github.com/mp720c-star/Netgene/settings/secrets/actions  
+
+Names: `ASC_ISSUER_ID` · `ASC_KEY_ID` · `ASC_PRIVATE_KEY` · `IOS_TEAM_ID` · `IOS_DISTRIBUTION_P12_BASE64` · `IOS_DISTRIBUTION_P12_PASSWORD` · `IOS_PROVISION_PROFILE_BASE64`  
+
+Guide: `docs/status-board/ATDD-TESTFLIGHT-CI-SECRETS.md`  
+Then say **secrets added** — agent runs TestFlight upload workflow.
+
