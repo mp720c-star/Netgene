@@ -109,3 +109,117 @@ Safest path: keep `main` frozen · build on `cursor/unified-ai-platform-b8a1` ·
 - Branch `cursor/complete-ai-platform-e3f0`
 - Supabase `ai-project-platform` now has 13 project rows
 - `mike-ai/src/lib/board-projects.ts` catalog
+
+---
+
+## Entry — 2026-11-18 ~5:15 PM America/Chicago
+
+**Agent:** Cursor Cloud `bc-01a1f092-96b9-7054-b08f-d34e73853af7`  
+**Action:** Answer Claude’s team questions (Cursor section + Sync items Cursor can verify). No production merge/deploy.
+
+### Progress
+
+- [x] Posted answers: `docs/status-board/CURSOR-ANSWERS-CLAUDE-QUESTIONS-2026-11-18.md`
+- [x] Canvas: Cursor answers — Claude questions Nov 18
+- [x] Confirmed PR #13 OPEN/unmerged; Home Screen ATDD = PWA (no Web Bluetooth); zero real-iPhone BLE tests
+- [x] Recorded: nothing FIXD-compatible without real-device evidence
+- [ ] ChatGPT: mirror this entry + answers file to Google Doc Status Board
+- [ ] Michael: nRF Connect scan screenshots (Claude); TestFlight secrets when ready
+
+### Evidence
+
+| Item | Result |
+| --- | --- |
+| PR #13 | OPEN · `cursor/atdd-native-iphone-e3f0` · 119 files · sim CI cancelled |
+| Current scanner integration | PR #16 (diverged ahead of #13) |
+| TestFlight CI | PR #17 (secrets pending) |
+| Open PR count | 15 |
+| Project catalog target | 13 (11 board + Forma + Vehicle Genius) |
+
+---
+
+## Entry — 2026-11-18 ~5:28 PM America/Chicago
+
+**Agent:** Cursor Cloud (ATDD development-order reconcile)  
+**Branch:** `cursor/atdd-reconcile-pr16-pr17-nov18` (docs only; stacked from PR #17 head)  
+**Action:** Reconcile PR #16 / #17 against preserved ATDD 1.2.0 baseline — bundle ID, parser revision, paths, commits, CI. No merge / signing / deploy / GATT.
+
+### Progress
+
+- [x] Confirmed iOS bundle ID in code: **`com.netgene.atdd.ble`**
+- [x] Confirmed `com.michaelpaine.autotruckdiagnosticsfordummies` **absent** from Netgene git
+- [x] Confirmed PR #16 parser = **v3** (`3.1.0-cloud-continuation`); **no v4/v7** in tree
+- [x] Reconfirmed ATDD 1.2.0 originals **NOT FOUND**; `main` still has no `atdd/`
+- [x] Ran synthetic `obd-protocol-v3` tests — **passed** (no hardware)
+- [x] Posted report: `docs/status-board/ATDD-PR16-PR17-RECONCILIATION-2026-11-18.md`
+- [ ] Michael: nRF Connect **scan only** screenshots (FIXD app closed)
+- [ ] Michael: explicit approval before any GATT connect / TestFlight secrets / merge
+
+### Evidence
+
+| Item | Result |
+| --- | --- |
+| PR #16 head | `8af95e1f921c317daad661fa193029c2aa3fa574` |
+| PR #17 head | `0efa0e1307ae7b018886847355dfda4a4a9cb84e` |
+| Parser SHA-256 | `9f4ab2fa79a7825bd17c254d7767393e997ee916117fe5dc7b49680473c223e4` |
+| CI (both PRs) | Ubuntu tree + Android APK + Workers **pass**; macOS simulator **pending** |
+| Mode 04 | Not implemented (Mode 03 read only) |
+
+---
+
+## Entry — 2026-11-18 ~5:32 PM America/Chicago
+
+**Agent:** Cursor Cloud (urgent iPhone delivery assessment)  
+**Branch:** `cursor/atdd-reconcile-pr16-pr17-nov18`  
+**Action:** Identify installed Home Screen app; web-update vs native; authorized TestFlight path. **No deploy / merge / spend.**
+
+### Progress
+
+- [x] Proved live production = `main`; `/atdd/` **404** — PR #16 PWA not what Michael’s phone is running
+- [x] Ruled out “CI / PR = delivery”
+- [x] Decision: **live FIXD on iPhone = separate native `com.netgene.atdd.ble`**, not a web update of the existing icon
+- [x] Posted `docs/status-board/ATDD-IPHONE-DELIVERY-STATUS-2026-11-18.md`
+- [ ] Michael approval for TestFlight secrets + workflow run
+- [ ] Michael sees Connect Scanner on iPhone (**success gate**)
+- [ ] Real FIXD hardware evidence
+
+### Evidence
+
+| Item | Result |
+| --- | --- |
+| Delivery claim | **NOT DELIVERED** |
+| Live hub SHA | matches `origin/main:index.html` |
+| Existing app | Unchanged; no Bluetooth scanner button (Michael) |
+| Authorized path | TestFlight → ATDD Connect `com.netgene.atdd.ble` beside old app |
+
+## Entry — 2026-11-20 ~8:00 AM America/Chicago
+
+**Agent:** Cursor Cloud `bc-01a1f93c-c1b0-711e-9205-ce71f64bd374`  
+**Branch:** `cursor/atdd-fixd-scanner-integration-check-d374`  
+**Action:** Import live ATDD 1.2.0 from Michael’s Workers link; add top-bar **Bluetooth** button. No production merge.
+
+### Source
+
+`https://cursor-kathy-health-app-cfb3-noisy-pond-2dc8.michaelepaine.workers.dev/index.html`  
+Mirrored to `atdd/classic/` (+ `SOURCE.txt`).
+
+### Progress
+
+- [x] Imported ATDD v1.2.0 (Diagnose / Listen / Look / Code + offline DTC DB)
+- [x] Added top-bar **Bluetooth** → Connect FIXD panel (live Web Bluetooth; Demo separate / labeled SIMULATED; no silent Demo fallback)
+- [x] Read codes writes Mode 03 DTCs into the scanner field for Diagnose
+- [x] Hub `/atdd/` serves classic; Connect Scanner moved to `/atdd/connect/`
+- [x] Mike AI `/apps/atdd` = classic + Bluetooth; prior scanner shell at `/apps/atdd-connect`
+- [x] `npm --prefix atdd test` + classic bluetooth-parse tests
+- [ ] Live FIXD hardware acceptance (still UNVERIFIED)
+- [ ] iPhone Web Bluetooth (still blocked — native/`com.netgene.atdd.ble` path)
+- [ ] Redeploy Michael’s Workers hostname with this build (needs explicit publish)
+
+### Evidence
+
+| Item | Result |
+| --- | --- |
+| Bluetooth top-bar control | `btnBluetoothTop` in `atdd/classic/index.html` |
+| Bridge | `atdd/classic/bluetooth.js` (FIXD claim `UNVERIFIED`) |
+| Site prepare | `site/atdd/` classic; `site/atdd/connect/` scanner |
+| Workers URL used as source | Yes (import only; hostname not auto-updated) |

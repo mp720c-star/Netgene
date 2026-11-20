@@ -55,7 +55,7 @@ export const BOARD_PROJECTS: BoardProjectSeed[] = [
     seedId: "seed-auto-truck",
     name: "Auto Truck Diagnostics for Dummies",
     summary:
-      "Priority OBD / truck diagnostics — signed Windows baseline 1.2.0; web Connect Scanner at /apps/atdd.",
+      "Priority OBD / truck diagnostics — v1.2.0 web app at /apps/atdd with top-bar Bluetooth · Connect FIXD.",
     status: "active",
     tags: ["board-seed", "priority", "hub-app"],
   },
@@ -112,7 +112,7 @@ export const BOARD_PROJECTS: BoardProjectSeed[] = [
     seedId: "seed-atdd",
     name: "ATDD (Auto Truck Diagnostics)",
     summary:
-      "Unified ATDD + CDI web app with Connect Scanner (Web Bluetooth + labeled demo).",
+      "ATDD v1.2.0 (Diagnose / Listen / Look / Code) plus Bluetooth · Connect FIXD; Connect Scanner at /apps/atdd-connect.",
     status: "active",
     tags: ["workspace-app", "hub-app", "priority"],
   },
@@ -122,7 +122,12 @@ export const HUB_APPS = [
   {
     name: "ATDD",
     href: "/apps/atdd",
-    blurb: "Connect Scanner + CDI diagnostics",
+    blurb: "v1.2.0 + Bluetooth · Connect FIXD",
+  },
+  {
+    name: "ATDD Connect Scanner",
+    href: "/apps/atdd-connect",
+    blurb: "Standalone FIXD/Web Bluetooth scanner shell",
   },
   {
     name: "Forma",
