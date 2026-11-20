@@ -53,7 +53,7 @@ if (fs.existsSync(bleCompanion)) {
 const downloadsSrc = path.join(root, "downloads");
 const downloadsDest = path.join(site, "downloads");
 fs.mkdirSync(downloadsDest, { recursive: true });
-for (const name of ["index.html", "SHA256SUMS.txt", "atdd-connect-debug.apk", "atdd-connect-debug.apk.sha256"]) {
+for (const name of ["index.html", "SHA256SUMS.txt", "atdd-connect-debug.apk", "atdd-connect-debug.apk.sha256", "ATDD_Connect_Distribution.certSigningRequest"]) {
   const from = path.join(downloadsSrc, name);
   if (fs.existsSync(from)) {
     if (name.endsWith(".apk") || name.endsWith(".sha256")) {
