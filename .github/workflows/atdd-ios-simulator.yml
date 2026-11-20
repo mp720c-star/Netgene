@@ -6,6 +6,7 @@ on:
   push:
     branches:
       - "cursor/atdd-native-iphone-*"
+      - "cursor/atdd-*"
       - "cursor/bluetooth-scanner-*"
       - "cursor/complete-platform-atdd-scanner-*"
     paths:
