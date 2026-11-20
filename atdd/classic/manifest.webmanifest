@@ -1,0 +1,16 @@
+{
+  "name": "Auto/Truck Diagnostics for Dummies",
+  "short_name": "ATDD",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#090909",
+  "theme_color": "#b8121b",
+  "icons": [
+    {
+      "src": "./icon.png",
+      "sizes": "1024x1024",
+      "type": "image/png"
+    }
+  ],
+  "description": "Auto/Truck Diagnostics for Dummies \u2014 Diagnose, Listen, Look, Code, and Bluetooth Connect FIXD."
+}
