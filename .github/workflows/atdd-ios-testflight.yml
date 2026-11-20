@@ -21,6 +21,9 @@ concurrency:
 
 env:
   BUNDLE_ID: com.netgene.atdd.ble
+  # Expected App Store profile (ATDD Connect AppStore) — UUID is not a secret.
+  EXPECTED_PROFILE_UUID: ce2e5ad5-a404-44da-9d64-18e53beb419b
+  EXPECTED_TEAM_ID: AJ2FB298SY
   SCHEME: App
   WORKSPACE: atdd/ios/ios/App/App.xcworkspace
 
@@ -121,10 +124,24 @@ jobs:
           echo -n "$IOS_PROVISION_PROFILE_BASE64" | base64 --decode > "$PROFILE_PATH"
           UUID=$(security cms -D -i "$PROFILE_PATH" | plutil -extract UUID raw -)
           NAME=$(security cms -D -i "$PROFILE_PATH" | plutil -extract Name raw -)
+          TEAM=$(security cms -D -i "$PROFILE_PATH" | plutil -extract TeamIdentifier.0 raw -)
+          APPID=$(security cms -D -i "$PROFILE_PATH" | plutil -extract Entitlements.application-identifier raw -)
+          if [[ "$UUID" != "$EXPECTED_PROFILE_UUID" ]]; then
+            echo "::error::Profile UUID mismatch: got $UUID expected $EXPECTED_PROFILE_UUID"
+            exit 1
+          fi
+          if [[ "$TEAM" != "$EXPECTED_TEAM_ID" ]]; then
+            echo "::error::Profile Team ID mismatch: got $TEAM expected $EXPECTED_TEAM_ID"
+            exit 1
+          fi
+          if [[ "$APPID" != "${EXPECTED_TEAM_ID}.${BUNDLE_ID}" ]]; then
+            echo "::error::Profile App ID mismatch: got $APPID expected ${EXPECTED_TEAM_ID}.${BUNDLE_ID}"
+            exit 1
+          fi
           cp "$PROFILE_PATH" "$HOME/Library/MobileDevice/Provisioning Profiles/${UUID}.mobileprovision"
           echo "uuid=$UUID" >> "$GITHUB_OUTPUT"
           echo "name=$NAME" >> "$GITHUB_OUTPUT"
-          echo "Installed provisioning profile name=$NAME uuid=$UUID"
+          echo "Installed provisioning profile name=$NAME uuid=$UUID team=$TEAM appId=$APPID"
 
       - name: Build signed archive
         env:
