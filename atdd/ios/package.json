@@ -2,12 +2,12 @@
   "name": "atdd-native-ble",
   "version": "1.2.0-dev+ble",
   "private": true,
-  "description": "ATDD native shell — Capacitor 6 + bluetooth-le for live FIXD (iOS + Android)",
+  "description": "ATDD native shell \u2014 Capacitor 6 + bluetooth-le for live FIXD (iOS + Android)",
   "scripts": {
     "build:www": "node scripts/sync-www.mjs",
-    "sync": "npm run build:www && npx cap sync",
+    "sync": "npm run sync:android && npm run sync:ios",
     "sync:ios": "npm run build:www && npx cap sync ios",
-    "sync:android": "npm run build:www && npx cap sync android",
+    "sync:android": "node scripts/sync-www.mjs android && npx cap sync android",
     "open:ios": "npx cap open ios",
     "open:android": "npx cap open android",
     "apk:debug": "npm run sync:android && cd android && ./gradlew assembleDebug"

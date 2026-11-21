@@ -4,30 +4,44 @@ import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const web = path.resolve(root, "../web");
-const www = path.join(root, "www");
+const classic = path.resolve(root, "../classic");
+const out = path.join(root, "www");
+const platform = process.argv[2] ?? "ios";
+if (!["ios", "android"].includes(platform)) throw new Error("Choose ios or android");
 
-function rmrf(p) {
-  fs.rmSync(p, { recursive: true, force: true });
-}
-function copyDir(src, dest) {
-  fs.mkdirSync(dest, { recursive: true });
-  for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
-    if (entry.name === "sw.js") continue; // native app: no stale SW
-    const from = path.join(src, entry.name);
-    const to = path.join(dest, entry.name);
-    if (entry.isDirectory()) copyDir(from, to);
-    else fs.copyFileSync(from, to);
-  }
+function copySite(source, destination) {
+  fs.cpSync(source, destination, {
+    recursive: true,
+    filter: (file) => !["sw.js", "tests", "SOURCE.txt"].includes(path.basename(file)),
+  });
 }
 
-rmrf(www);
-copyDir(web, www);
-// Mark native shell in index for diagnostics
-const indexPath = path.join(www, "index.html");
-let html = fs.readFileSync(indexPath, "utf8");
-html = html.replace(
-  "</head>",
-  `<meta name="atdd-shell" content="capacitor-ios-ble" />\n</head>`,
-);
-fs.writeFileSync(indexPath, html);
-console.log("sync-www: copied atdd/web → atdd/ios/www");
+function replaceOnce(html, original, replacement) {
+  if (html.split(original).length !== 2) throw new Error("Missing or repeated HTML anchor: " + original);
+  return html.replace(original, () => replacement);
+}
+
+fs.rmSync(out, { recursive: true, force: true });
+if (platform === "android") {
+  copySite(web, out);
+  const entry = path.join(out, "index.html");
+  const html = fs.readFileSync(entry, "utf8");
+  fs.writeFileSync(entry, replaceOnce(html, "</head>", '<meta name="atdd-shell" content="capacitor-ios-ble" />\n</head>'));
+} else {
+  copySite(classic, out);
+  const tools = path.join(out, "tools");
+  copySite(web, tools);
+  fs.cpSync(path.join(root, "scanner"), path.join(out, "scanner"), { recursive: true });
+  const entry = path.join(out, "index.html");
+  let html = fs.readFileSync(entry, "utf8").replace(/\r\n/g, "\n");
+  html = replaceOnce(html, '<script src="./bluetooth.js"></script>', '<script type="module" src="./scanner/iphone-scanner.mjs"></script>');
+  html = replaceOnce(html, '<details class="extra card">\n        <summary>Privacy', '<p><a href="./tools/index.html#cdi">CDI ignition diagnostics</a></p>\n      <details class="extra card">\n        <summary>Privacy');
+  fs.writeFileSync(entry, html);
+  const cdi = path.join(tools, "index.html");
+  let cdiHtml = fs.readFileSync(cdi, "utf8");
+  cdiHtml = replaceOnce(cdiHtml, '<nav class="nav" aria-label="Primary">', '<nav class="nav" aria-label="Primary">\n    <a href="../index.html">Back to Auto/Truck Diagnostics</a>');
+  cdiHtml = cdiHtml.replace(/^.*<link [^>]*https:\/\/fonts\.(googleapis|gstatic)\.com[^>]*>\r?\n/gm, "");
+  cdiHtml = replaceOnce(cdiHtml, "if ('serviceWorker' in navigator)", "if (!window.Capacitor?.isNativePlatform?.() && 'serviceWorker' in navigator)");
+  fs.writeFileSync(cdi, cdiHtml);
+}
+console.log("Packaged " + platform + " launch page from " + (platform === "ios" ? "atdd/classic" : "atdd/web"));

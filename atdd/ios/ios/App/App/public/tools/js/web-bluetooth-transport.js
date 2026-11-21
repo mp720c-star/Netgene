@@ -74,7 +74,7 @@ export function webBluetoothBlockReason() {
   const ua = navigator.userAgent || "";
   const isiOS = /iPhone|iPad|iPod/i.test(ua);
   if (isiOS) {
-    return "iPhone/iPad Safari cannot use Web Bluetooth. Live FIXD connect needs Chrome on Android/Windows/Mac, or the native ATDD iOS BLE app (not imported into this build yet).";
+    return "This iPhone screen cannot use Web Bluetooth. Open the ATDD Connect app and tap Connect Scanner.";
   }
   if (!navigator.bluetooth?.requestDevice) {
     return "This browser has no Web Bluetooth. Use Chrome or Edge over HTTPS (or localhost).";

@@ -6,11 +6,16 @@ on:
       upload:
         description: Upload the signed build to TestFlight
         type: boolean
-        default: true
+        default: false
       marketing_version:
         description: iOS marketing version
         type: string
         default: "1.2.0"
+
+      artifact_recipient:
+        description: Optional public encryption certificate (base64 DER) for a private build download
+        type: string
+        required: false
 
 permissions:
   contents: read
@@ -70,7 +75,8 @@ jobs:
           test -d node_modules/@capacitor-community/bluetooth-le
           test -d node_modules/@capacitor/ios
           npm run sync:ios
-          grep -q 'registerPlugin("BluetoothLe")' ios/App/App/public/js/capacitor-ble-transport.js
+          node scripts/verify-ios-content.mjs ios/App/App/public
+          node tests/stored-codes.test.mjs
 
       - name: Import the distribution certificate
         uses: apple-actions/import-codesign-certs@v3
@@ -178,8 +184,44 @@ jobs:
           test -f "${files[0]}"
           echo "path=${files[0]}" >> "$GITHUB_OUTPUT"
 
+      - name: Verify the contents and signature of the exported iPhone app
+        env:
+          IPA_PATH: ${{ steps.export.outputs.path }}
+        run: |
+          set -euo pipefail
+          /usr/bin/ditto -x -k "$IPA_PATH" "$RUNNER_TEMP/ipa-check"
+          apps=("$RUNNER_TEMP"/ipa-check/Payload/*.app)
+          test "${#apps[@]}" = 1
+          app="${apps[0]}"
+          /usr/bin/codesign --verify --deep --strict "$app"
+          test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app/Info.plist")" = "$BUNDLE_ID"
+          test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$app/Info.plist")" = "$GITHUB_RUN_NUMBER"
+          test -f "$app/embedded.mobileprovision"
+          node atdd/ios/scripts/verify-ios-content.mjs "$app/public"
+          node -e 'const c=require(process.argv[1]); if(!c.packageClassList.includes("BluetoothLe"))process.exit(1)' "$app/capacitor.config.json"
+          shasum -a 256 "$IPA_PATH"
+
+      - name: Encrypt the build for the requesting computer
+        if: ${{ !inputs.upload && inputs.artifact_recipient != '' }}
+        env:
+          RECIPIENT: ${{ inputs.artifact_recipient }}
+          IPA_PATH: ${{ steps.export.outputs.path }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$RECIPIENT" | /usr/bin/base64 -D | openssl x509 -inform DER -out "$RUNNER_TEMP/recipient.pem"
+          openssl cms -encrypt -binary -aes-256-cbc -outform DER -in "$IPA_PATH" -out "$RUNNER_TEMP/ATDD.ipa.cms" "$RUNNER_TEMP/recipient.pem"
+
+      - name: Save encrypted build for download
+        if: ${{ !inputs.upload && inputs.artifact_recipient != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: atdd-ios-${{ github.run_number }}-encrypted
+          path: ${{ runner.temp }}/ATDD.ipa.cms
+          retention-days: 3
+          if-no-files-found: error
+
       - name: Upload the verified build to TestFlight
-        if: ${{ github.event_name == 'push' || inputs.upload }}
+        if: ${{ inputs.upload }}
         uses: apple-actions/upload-testflight-build@v2
         with:
           app-path: ${{ steps.export.outputs.path }}
@@ -188,7 +230,7 @@ jobs:
           api-private-key: ${{ secrets.ASC_PRIVATE_KEY }}
 
       - name: Record Apple processing status
-        if: ${{ github.event_name == 'push' || inputs.upload }}
+        if: ${{ inputs.upload }}
         env:
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}

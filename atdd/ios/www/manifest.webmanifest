@@ -1,18 +1,16 @@
 {
-  "name": "ATDD + CDI Genius Unified",
-  "short_name": "ATDD+CDI",
-  "description": "Auto/Truck Diagnostics for Dummies — Connect Scanner / FIXD on reopen.",
-  "start_url": "./index.html#obd2-connect",
-  "scope": "./",
+  "name": "Auto/Truck Diagnostics for Dummies",
+  "short_name": "ATDD",
+  "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#d9e6df",
-  "theme_color": "#0f2a24",
+  "background_color": "#090909",
+  "theme_color": "#b8121b",
   "icons": [
     {
-      "src": "./icon-180.png",
-      "sizes": "180x180",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "src": "./icon.png",
+      "sizes": "1024x1024",
+      "type": "image/png"
     }
-  ]
+  ],
+  "description": "Auto/Truck Diagnostics for Dummies \u2014 Diagnose, Listen, Look, Code, and Bluetooth Connect FIXD."
 }

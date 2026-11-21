@@ -110,49 +110,41 @@ export function buildRequestDeviceOptions() {
 /**
  * Live FIXD/OBD transport via Capacitor Bluetooth LE (iOS/Android).
  */
-export function createCapacitorBleTransport() {
+export function createCapacitorBleTransport({ onDisconnect, requireKnownProfile = false } = {}) {
   let deviceId = null;
   let deviceName = null;
   let write = null;
   let notify = null;
   let buffer = "";
-  let pendingResolve = null;
-  let pendingReject = null;
-  let responseTimer = null;
+  let pending = null;
+  let connected = false;
   let commandChain = Promise.resolve();
   let lastServices = [];
   let writeMode = "writeWithoutResponse";
   let notifyHandles = [];
   const decoder = new TextDecoder();
 
+  function finish(error, reply) {
+    if (!pending) return;
+    const command = pending;
+    pending = null;
+    buffer = "";
+    clearTimeout(command.timeout);
+    if (error) command.reject(error);
+    else command.resolve(reply);
+  }
+
   function onValue(value) {
-    // Native plugin delivers space-separated hex. DataView is the web shape.
-    let chunk = "";
-    if (typeof value === "string") {
-      try {
-        chunk = bleHexToText(value);
-      } catch {
-        chunk = value;
-      }
-    } else if (value?.buffer) {
-      chunk = decoder.decode(value);
-    } else if (Array.isArray(value)) {
-      chunk = decoder.decode(Uint8Array.from(value));
-    }
-    buffer += chunk;
-    if (buffer.includes(">")) {
-      const full = buffer;
-      buffer = "";
-      if (responseTimer) {
-        clearTimeout(responseTimer);
-        responseTimer = null;
-      }
-      if (pendingResolve) {
-        const resolve = pendingResolve;
-        pendingResolve = null;
-        pendingReject = null;
-        resolve(full);
-      }
+    if (!pending) return;
+    try {
+      if (typeof value === "string") buffer += bleHexToText(value);
+      else if (value?.buffer) buffer += decoder.decode(value);
+      else if (Array.isArray(value)) buffer += decoder.decode(Uint8Array.from(value));
+      else throw new Error("Unexpected Bluetooth notification.");
+      if (buffer.length > 32768) throw new Error("Scanner reply exceeded the receive buffer.");
+      if (buffer.includes(">")) finish(null, buffer);
+    } catch (error) {
+      finish(error);
     }
   }
 
@@ -178,46 +170,21 @@ export function createCapacitorBleTransport() {
           properties: c.properties || {},
         })),
       });
-      const normalized = characteristics.map((c) => ({
-        uuid: c.uuid || c,
-        properties: c.properties || {},
-      }));
-      const picked = pickCharacteristics(normalized);
-      // Guessing notify/write when the plugin omits properties makes iOS throw
-      // inside setNotifyValue / writeValue and kills the TestFlight app.
-      if (!picked.write || !picked.notify) {
-        for (const profile of CANDIDATE_GATT_PROFILES) {
-          if (!String(uuid).toLowerCase().includes(profile.service.slice(4, 8))) continue;
-          const writeChar = normalized.find((c) =>
-            String(c.uuid).toLowerCase().includes(profile.write.slice(-8).replace("-", "")),
-          );
-          const notifyChar = normalized.find((c) =>
-            String(c.uuid).toLowerCase().includes(profile.notify.slice(-8).replace("-", "")),
-          );
-          const wp = writeChar?.properties || {};
-          const np = notifyChar?.properties || {};
-          const writable = wp.write || wp.writeWithoutResponse;
-          const notifiable = np.notify || np.indicate;
-          if (writeChar && notifyChar && writable && notifiable) {
-            return {
-              write: { service: uuid, characteristic: writeChar.uuid, properties: wp },
-              notify: { service: uuid, characteristic: notifyChar.uuid, properties: np },
-              inspected,
-            };
-          }
-        }
-      } else {
+      const profile = CANDIDATE_GATT_PROFILES.find((item) => item.service === String(uuid).toLowerCase());
+      if (requireKnownProfile && !profile) continue;
+      let picked;
+      if (profile) {
+        const channels = characteristics.filter((c) =>
+          [profile.write, profile.notify].includes(String(c.uuid).toLowerCase()));
+        picked = pickCharacteristics(channels);
+      }
+      if ((!picked?.write || !picked.notify) && !requireKnownProfile) {
+        picked = pickCharacteristics(characteristics);
+      }
+      if (picked?.write && picked.notify) {
         return {
-          write: {
-            service: uuid,
-            characteristic: picked.write.uuid,
-            properties: picked.write.properties || {},
-          },
-          notify: {
-            service: uuid,
-            characteristic: picked.notify.uuid,
-            properties: picked.notify.properties || {},
-          },
+          write: { service: uuid, characteristic: picked.write.uuid, properties: picked.write.properties },
+          notify: { service: uuid, characteristic: picked.notify.uuid, properties: picked.notify.properties },
           inspected,
         };
       }
@@ -246,14 +213,21 @@ export function createCapacitorBleTransport() {
       const ble = plugin();
       deviceId = id || deviceId;
       if (!deviceId) throw new Error("No device selected — tap Connect Scanner first.");
+      const handle = await ble.addListener("disconnected|" + deviceId, () => {
+        connected = false;
+        finish(new Error("Scanner disconnected before the vehicle reply was complete."));
+        onDisconnect?.();
+      });
+      notifyHandles.push(handle);
       await ble.connect({ deviceId, timeout: 20000 });
+      connected = true;
       const found = await discover(ble);
       lastServices = found.inspected || [];
       this._lastServices = lastServices;
       if (!found.write || !found.notify) {
         const seen = lastServices.map((s) => s.uuid).join(", ") || "(none)";
         throw new Error(
-          `Native BLE connected to ${deviceName || deviceId}, but no UART write/notify characteristics found. Services: ${seen}`,
+          `Native BLE connected to ${deviceName || deviceId}, but no supported OBD data channel was found. Services: ${seen}`,
         );
       }
       write = {
@@ -274,7 +248,6 @@ export function createCapacitorBleTransport() {
       if (!notifyProps.notify && !notifyProps.indicate) {
         throw new Error("Notify characteristic does not support notifications.");
       }
-      notifyHandles = [];
       if (typeof ble.addListener === "function") {
         for (const key of notificationEventKeys(deviceId, notify.service, notify.characteristic)) {
           const handle = await ble.addListener(key, (event) => {
@@ -293,40 +266,32 @@ export function createCapacitorBleTransport() {
       return lastServices;
     },
     async send(cmd) {
-      if (!write || !deviceId) throw new Error("Not connected");
+      const target = deviceId;
       const ble = plugin();
-      const value = textToBleHex(`${String(cmd).trim()}\r`);
-      const writeCall = writeMode === "write" ? ble.write.bind(ble) : ble.writeWithoutResponse.bind(ble);
-      const run = () =>
-        new Promise((resolve, reject) => {
-          pendingResolve = resolve;
-          pendingReject = reject;
-          buffer = "";
-          writeCall({
-            deviceId,
-            service: write.service,
-            characteristic: write.characteristic,
-            value,
-          }).catch(reject);
-          responseTimer = setTimeout(() => {
-            if (pendingReject) {
-              const partial = buffer;
-              buffer = "";
-              if (partial) pendingResolve?.(partial);
-              else {
-                pendingReject(
-                  new Error("Adapter response timeout (no data). FIXD may not speak ELM AT commands."),
-                );
-              }
-              pendingResolve = null;
-              pendingReject = null;
-            }
-          }, 8000);
+      const value = textToBleHex(String(cmd).trim() + "\r");
+      const run = () => new Promise((resolve, reject) => {
+        if (!connected || !write || !target || target !== deviceId) {
+          reject(new Error("Scanner disconnected."));
+          return;
+        }
+        const command = { resolve, reject };
+        pending = command;
+        buffer = "";
+        command.timeout = setTimeout(() => {
+          if (pending === command) finish(new Error("Timed out waiting for a complete scanner reply."));
+        }, 10000);
+        Promise.resolve().then(() => ble[writeMode]({
+          deviceId: target, service: write.service, characteristic: write.characteristic, value,
+        })).catch((error) => {
+          if (pending === command) finish(error);
         });
+      });
       commandChain = commandChain.then(run, run);
       return commandChain;
     },
     async disconnect() {
+      connected = false;
+      finish(new Error("Scanner disconnected."));
       try {
         const ble = plugin();
         for (const handle of notifyHandles) {
