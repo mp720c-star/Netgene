@@ -1,6 +1,6 @@
 /** Visible iPhone / PWA build stamp for Home Screen ATDD+CDI. */
 export const ATDD_BUILD = {
-  number: "16.iphone-pwa.2",
+  number: "16.iphone-pwa.3",
   label: "ATDD+CDI Home Screen PWA",
   branch: "cursor/complete-platform-atdd-scanner-e3f0",
   /** No TestFlight / IPA link until a Mac or enabled GitHub macOS runner produces one. */
