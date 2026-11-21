@@ -1,0 +1,13 @@
+{
+  "name": "atdd-unified",
+  "version": "1.2.0-dev+cdi-import",
+  "private": true,
+  "type": "module",
+  "description": "Auto/Truck Diagnostics for Dummies + CDI Genius unified development build",
+  "scripts": {
+    "test": "node tests/verify-import.mjs && node tests/ddt-engine.test.mjs && node obd/tests/obd-protocol-v3.test.mjs && node tests/scanner-session.test.mjs",
+    "test:obd": "node obd/tests/obd-protocol-v3.test.mjs",
+    "verify": "node tests/verify-import.mjs",
+    "serve": "python3 -m http.server 8765 --bind 127.0.0.1 --directory web"
+  }
+}

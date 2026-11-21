@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="ATDD+CDI" />
+  <meta name="theme-color" content="#0f2a24" />
+  <meta name="atdd-build" content="16.iphone-pwa.2" />
+  <title>ATDD — Connect Scanner</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./icon-180.png" />
+  <link rel="apple-touch-icon" href="./icon-180.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="top">
+    <div>
+      <p class="brand">Auto/Truck Diagnostics for Dummies</p>
+      <h1>ATDD+CDI</h1>
+      <p class="lead">Home Screen build <code id="buildStamp">…</code> — Connect Scanner opens your FIXD when Bluetooth is available.</p>
+    </div>
+    <div class="badges">
+      <span id="integrityBadge" class="badge">…</span>
+      <span id="profileBadge" class="badge">…</span>
+    </div>
+  </header>
+
+  <nav class="nav" aria-label="Primary">
+    <button type="button" data-nav="home">Home</button>
+    <button type="button" data-nav="obd2" class="active">Connect Scanner</button>
+    <button type="button" data-nav="cdi">CDI Ignition</button>
+    <button type="button" data-nav="status">Verify</button>
+  </nav>
+
+  <p id="bootError" class="warn" hidden></p>
+
+  <main>
+    <section data-mode-panel="home" hidden>
+      <h2>ATDD</h2>
+      <p class="note">This Home Screen icon opens the <strong>ATDD+CDI</strong> web app (PWA). Live FIXD needs Bluetooth — native Cap BLE inside ATDD Connect, or Chrome/Edge on Android/Windows/Mac.</p>
+      <div class="row">
+        <button type="button" class="primary" data-nav="obd2" id="homeConnectScanner" data-autostart="1">Connect Scanner</button>
+        <button type="button" class="ghost" data-nav="cdi">CDI diagnostics</button>
+        <button type="button" class="ghost" data-nav="status">Verify</button>
+      </div>
+      <h3>Saved vehicles</h3>
+      <div id="vehiclesHome"></div>
+    </section>
+
+    <section data-mode-panel="cdi" hidden>
+      <h2>CDI Ignition Diagnostics</h2>
+      <div id="cdiBody"></div>
+    </section>
+
+    <section data-mode-panel="obd2">
+      <h2>Connect Scanner</h2>
+      <div id="vehiclesObd" class="vehicles-strip"></div>
+      <div id="obd2Body"></div>
+    </section>
+
+    <section data-mode-panel="status" hidden>
+      <h2>Transfer verification</h2>
+      <div id="statusBody"></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Build <code id="buildStampFoot">…</code> · branch <code>cursor/complete-platform-atdd-scanner-e3f0</code> · FIXD protocol <code>UNVERIFIED</code></p>
+  </footer>
+
+  <script type="module" src="./js/app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    }
+  </script>
+</body>
+</html>

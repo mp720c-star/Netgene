@@ -1,0 +1,18 @@
+{
+  "appId": "com.netgene.atdd.ble",
+  "appName": "ATDD Connect",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "BluetoothLe": {
+      "displayStrings": {
+        "scanning": "Scanning for FIXD / OBD…",
+        "cancel": "Cancel",
+        "availableServices": "Available services",
+        "noDeviceFound": "No FIXD/OBD device found"
+      }
+    }
+  }
+}

@@ -20,6 +20,16 @@ const nextConfig: NextConfig = {
       { source: "/apps/vehicle-genius/", destination: "/apps/vehicle-genius/index.html" },
       { source: "/apps/cdi-genius", destination: "/apps/cdi-genius/index.html" },
       { source: "/apps/cdi-genius/", destination: "/apps/cdi-genius/index.html" },
+      { source: "/apps/atdd", destination: "/apps/atdd/index.html" },
+      { source: "/apps/atdd/", destination: "/apps/atdd/index.html" },
+      {
+        source: "/apps/bluetooth-scanner",
+        destination: "/apps/bluetooth-scanner/index.html",
+      },
+      {
+        source: "/apps/bluetooth-scanner/",
+        destination: "/apps/bluetooth-scanner/index.html",
+      },
       { source: "/downloads", destination: "/downloads/index.html" },
       { source: "/downloads/", destination: "/downloads/index.html" },
     ];
