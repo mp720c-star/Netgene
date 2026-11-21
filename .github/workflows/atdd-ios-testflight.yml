@@ -11,6 +11,10 @@ on:
         description: iOS marketing version
         type: string
         default: "1.2.0"
+  push:
+    branches: [main]
+    paths:
+      - .github/atdd-testflight-once
 
 permissions:
   contents: read
