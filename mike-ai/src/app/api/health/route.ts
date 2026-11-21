@@ -1,30 +1,27 @@
-import { loadProjectRecords } from "@/lib/projects";
 import { hasModelCredentials } from "@/lib/origin";
-import { getUsageSnapshot, recordUsage } from "@/lib/usage";
+import { authReady, unlockCodeConfigured, sessionConfigured } from "@/lib/session";
+import { cloudConfigStatus } from "@/lib/cloud/status";
+import { databaseInfo } from "@/lib/db";
+import { hasFaceIdCredential } from "@/lib/webauthn";
 
+export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const projects = loadProjectRecords();
-  recordUsage({
-    kind: "health",
-    ok: true,
-    detail: `projects=${projects.records.length};model=${hasModelCredentials() ? "configured" : "missing"}`,
-  });
-
+  const faceIdRegistered = await hasFaceIdCredential().catch(() => false);
+  const db = databaseInfo();
   return Response.json({
     ok: true,
-    deployment: "test",
-    productionUntouched: true,
-    mikeAiVercelApp: "https://mike-ai.vercel.app (paused — not modified)",
+    platform: "AI Project Platform",
+    database: db.mode,
+    supabase: db.supabase,
+    supabaseHost: db.supabaseHost,
+    authReady: authReady(),
+    unlockCodeConfigured: unlockCodeConfigured(),
+    sessionConfigured: sessionConfigured(),
+    faceIdRegistered,
     modelCredentials: hasModelCredentials(),
-    projects: {
-      source: projects.source,
-      count: projects.records.length,
-      fileName: projects.fileName,
-      message: projects.message,
-    },
-    usage: getUsageSnapshot().totals,
-    apps: ["/apps/", "/apps/forma/", "/apps/vehicle-genius/", "/apps/cdi-genius/"],
+    chatgptMemoryRequiresUnlock: true,
+    cloud: cloudConfigStatus(),
   });
 }

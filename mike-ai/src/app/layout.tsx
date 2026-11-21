@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Fraunces, Outfit } from "next/font/google";
 import "./globals.css";
 
@@ -13,9 +13,23 @@ const body = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Mike AI — Test Deploy",
+  title: "AI Project Platform",
   description:
-    "Separate test deployment of the Netgene / Mike AI platform. Production and Drive backups are not modified.",
+    "Michael Paine's secure AI Project Platform — Face ID, project files, iCloud-primary sync, ChatGPT memory.",
+  applicationName: "AI Project Platform",
+  appleWebApp: {
+    capable: true,
+    title: "AI Platform",
+    statusBarStyle: "default",
+  },
+  manifest: "/manifest.webmanifest",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0b6e6a",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

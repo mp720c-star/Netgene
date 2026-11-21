@@ -1,0 +1,71 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "AI Project Platform — ChatGPT Local Memory (session)",
+    "version": "1.1.0",
+    "description": "Export/import local project memory for an unlocked AI Project Platform session. Requires the platform unlock cookie (Face ID or password). Shared Bearer tokens are not accepted."
+  },
+  "servers": [
+    {
+      "url": "https://REPLACE_WITH_PUBLISHED_HOST",
+      "description": "Published AI Project Platform host"
+    }
+  ],
+  "paths": {
+    "/api/memory/chatgpt": {
+      "get": {
+        "operationId": "getLocalMemory",
+        "summary": "Load projects and local memory (unlocked session)",
+        "description": "Returns project list and newest memory entries. Caller must already be unlocked in the browser (session cookie).",
+        "responses": {
+          "200": {
+            "description": "Local context payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": { "type": "boolean" },
+                    "generatedAt": { "type": "string", "format": "date-time" },
+                    "instruction": { "type": "string" },
+                    "projects": { "type": "array", "items": { "type": "object" } },
+                    "memory": { "type": "array", "items": { "type": "object" } }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Locked — unlock with Face ID or password first" },
+          "503": { "description": "Auth secrets not configured" }
+        }
+      },
+      "post": {
+        "operationId": "addLocalMemory",
+        "summary": "Append a local memory note (unlocked session)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["title", "body"],
+                "properties": {
+                  "title": { "type": "string", "maxLength": 200 },
+                  "body": { "type": "string", "maxLength": 8000 },
+                  "projectId": { "type": "string" },
+                  "kind": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Saved" },
+          "401": { "description": "Locked" },
+          "403": { "description": "Origin not trusted" },
+          "413": { "description": "Payload too large" }
+        }
+      }
+    }
+  }
+}

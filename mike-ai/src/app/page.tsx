@@ -1,260 +1,590 @@
 "use client";
 
-import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useState } from "react";
 import styles from "./page.module.css";
 
-type ProjectRecord = {
-  id?: string;
-  name?: string;
-  summary?: string;
-  status?: string;
-  [key: string]: unknown;
+type AuthStatus = {
+  authReady: boolean;
+  unlockCodeConfigured: boolean;
+  sessionConfigured: boolean;
+  faceIdRegistered: boolean;
+  unlocked: boolean;
 };
 
-type ProjectsResponse = {
-  ok: boolean;
-  source: string;
-  fileName: string | null;
-  count: number;
-  message: string;
-  records: ProjectRecord[];
+type Project = {
+  id: string;
+  name: string;
+  summary: string;
+  status: string;
+  updated_at: string;
 };
+
+type FileRow = {
+  id: string;
+  project_id: string;
+  name: string;
+  mime_type: string;
+  size_bytes: string;
+  checksum_sha256: string;
+  updated_at: string;
+};
+
+type SyncProvider = {
+  provider: string;
+  role: string;
+  configured: boolean;
+  missing: string[];
+  last: { status: string; detail: string; last_success_at: string | null } | null;
+};
+
+type MemoryEntry = {
+  id: string;
+  title: string;
+  body: string;
+  source: string;
+  updated_at: string;
+};
+
+function b64url(buf: ArrayBuffer): string {
+  const bytes = new Uint8Array(buf);
+  let s = "";
+  for (const b of bytes) s += String.fromCharCode(b);
+  return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
+
+function fmtBytes(n: string | number) {
+  const v = Number(n);
+  if (!Number.isFinite(v)) return String(n);
+  if (v < 1024) return `${v} B`;
+  if (v < 1024 * 1024) return `${(v / 1024).toFixed(1)} KB`;
+  return `${(v / (1024 * 1024)).toFixed(2)} MB`;
+}
+
+function fmtWhen(iso: string) {
+  try {
+    return new Date(iso).toLocaleString("en-US", { timeZone: "America/Chicago" });
+  } catch {
+    return iso;
+  }
+}
 
 export default function HomePage() {
-  const [projects, setProjects] = useState<ProjectsResponse | null>(null);
-  const [input, setInput] = useState("");
-  const transport = useMemo(
-    () =>
-      new DefaultChatTransport({
-        api: "/api/chat",
-      }),
-    [],
-  );
-  const { messages, sendMessage, status, error } = useChat({ transport });
-  const [chatHint, setChatHint] = useState<string | null>(null);
+  const [auth, setAuth] = useState<AuthStatus | null>(null);
+  const [code, setCode] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [projectId, setProjectId] = useState<string>("");
+  const [files, setFiles] = useState<FileRow[]>([]);
+  const [sync, setSync] = useState<SyncProvider[]>([]);
+  const [memory, setMemory] = useState<MemoryEntry[]>([]);
+  const [tab, setTab] = useState<"files" | "sync" | "memory" | "chatgpt">("files");
+  const [chatgptExport, setChatgptExport] = useState<string>("");
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const [projectsRes, healthRes] = await Promise.all([
-        fetch("/api/projects", { cache: "no-store" }),
-        fetch("/api/health", { cache: "no-store" }),
-      ]);
-      const data = (await projectsRes.json()) as ProjectsResponse;
-      const health = (await healthRes.json()) as { modelCredentials?: boolean };
-      if (!cancelled) {
-        setProjects(data);
-        if (!health.modelCredentials) {
-          setChatHint(
-            "No OPENAI_API_KEY or AI_GATEWAY_API_KEY configured. Chat stays fail-closed — no fake replies.",
-          );
-        }
-      }
-    })().catch(() => {
-      if (!cancelled) {
-        setProjects({
-          ok: false,
-          source: "none",
-          fileName: null,
-          count: 0,
-          message: "Failed to reach /api/projects.",
-          records: [],
-        });
-      }
-    });
-    return () => {
-      cancelled = true;
-    };
+  const refreshAuth = useCallback(async () => {
+    const res = await fetch("/api/auth/status", { cache: "no-store" });
+    const json = (await res.json()) as AuthStatus;
+    setAuth(json);
+    return json;
   }, []);
 
-  async function onSubmit(e: FormEvent) {
-    e.preventDefault();
-    const text = input.trim();
-    if (!text) return;
-    setChatHint(null);
-
-    try {
-      const health = await fetch("/api/health", { cache: "no-store" });
-      const healthJson = (await health.json()) as { modelCredentials?: boolean };
-      if (!healthJson.modelCredentials) {
-        setChatHint(
-          "No OPENAI_API_KEY or AI_GATEWAY_API_KEY configured. Chat stays fail-closed — no fake replies.",
-        );
-        return;
-      }
-      await sendMessage({ text });
-      setInput("");
-    } catch (err) {
-      setChatHint(err instanceof Error ? err.message : "Chat request failed.");
+  const loadWorkspace = useCallback(async () => {
+    const [pRes, fRes, sRes, mRes] = await Promise.all([
+      fetch("/api/projects", { cache: "no-store" }),
+      fetch("/api/files", { cache: "no-store" }),
+      fetch("/api/sync", { cache: "no-store" }),
+      fetch("/api/memory", { cache: "no-store" }),
+    ]);
+    if (pRes.status === 401 || fRes.status === 401) {
+      await refreshAuth();
+      return;
     }
+    const pJson = (await pRes.json()) as { projects?: Project[] };
+    const fJson = (await fRes.json()) as { files?: FileRow[] };
+    const sJson = (await sRes.json()) as { providers?: SyncProvider[] };
+    const mJson = (await mRes.json()) as { entries?: MemoryEntry[] };
+    setProjects(pJson.projects || []);
+    setFiles(fJson.files || []);
+    setSync(sJson.providers || []);
+    setMemory(mJson.entries || []);
+    if (!projectId && pJson.projects?.[0]?.id) setProjectId(pJson.projects[0].id);
+  }, [projectId, refreshAuth]);
+
+  useEffect(() => {
+    refreshAuth().catch(() => setError("Could not reach auth status."));
+  }, [refreshAuth]);
+
+  useEffect(() => {
+    if (auth?.unlocked) {
+      loadWorkspace().catch((e) => setError(e instanceof Error ? e.message : "Load failed"));
+    }
+  }, [auth?.unlocked, loadWorkspace]);
+
+  async function unlockWithPassword(e: FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/auth/unlock", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message || json.error || "Unlock failed");
+      setCode("");
+      await refreshAuth();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unlock failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function unlockWithFaceId() {
+    setBusy(true);
+    setError(null);
+    try {
+      const optRes = await fetch("/api/auth/webauthn/login/options", { method: "POST" });
+      const optJson = await optRes.json();
+      if (!optRes.ok) throw new Error(optJson.message || optJson.error || "Face ID unavailable");
+      const options = optJson.options;
+      const cred = (await navigator.credentials.get({
+        publicKey: {
+          challenge: Uint8Array.from(
+            atob(options.challenge.replace(/-/g, "+").replace(/_/g, "/")),
+            (c) => c.charCodeAt(0),
+          ),
+          rpId: options.rpId,
+          timeout: options.timeout,
+          userVerification: "required",
+          allowCredentials: (options.allowCredentials || []).map(
+            (c: { id: string; transports?: string[] }) => ({
+              type: "public-key" as const,
+              id: Uint8Array.from(atob(c.id.replace(/-/g, "+").replace(/_/g, "/")), (x) =>
+                x.charCodeAt(0),
+              ),
+              transports: c.transports as AuthenticatorTransport[] | undefined,
+            }),
+          ),
+        },
+      })) as PublicKeyCredential | null;
+      if (!cred) throw new Error("Face ID cancelled");
+      const resp = cred.response as AuthenticatorAssertionResponse;
+      const verify = await fetch("/api/auth/webauthn/login/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          challenge: options.challenge,
+          response: {
+            id: cred.id,
+            rawId: b64url(cred.rawId),
+            type: cred.type,
+            clientExtensionResults: cred.getClientExtensionResults(),
+            response: {
+              clientDataJSON: b64url(resp.clientDataJSON),
+              authenticatorData: b64url(resp.authenticatorData),
+              signature: b64url(resp.signature),
+              userHandle: resp.userHandle ? b64url(resp.userHandle) : undefined,
+            },
+          },
+        }),
+      });
+      const vJson = await verify.json();
+      if (!verify.ok) throw new Error(vJson.error || "Face ID verify failed");
+      await refreshAuth();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Face ID failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function registerFaceId() {
+    setBusy(true);
+    setError(null);
+    try {
+      const optRes = await fetch("/api/auth/webauthn/register/options", { method: "POST" });
+      const optJson = await optRes.json();
+      if (!optRes.ok) throw new Error(optJson.message || optJson.error || "Register unavailable");
+      const options = optJson.options;
+      const cred = (await navigator.credentials.create({
+        publicKey: {
+          challenge: Uint8Array.from(
+            atob(options.challenge.replace(/-/g, "+").replace(/_/g, "/")),
+            (c) => c.charCodeAt(0),
+          ),
+          rp: options.rp,
+          user: {
+            id: Uint8Array.from(
+              atob(options.user.id.replace(/-/g, "+").replace(/_/g, "/")),
+              (c) => c.charCodeAt(0),
+            ),
+            name: options.user.name,
+            displayName: options.user.displayName,
+          },
+          pubKeyCredParams: options.pubKeyCredParams,
+          timeout: options.timeout,
+          authenticatorSelection: options.authenticatorSelection,
+          excludeCredentials: (options.excludeCredentials || []).map(
+            (c: { id: string; transports?: string[] }) => ({
+              type: "public-key" as const,
+              id: Uint8Array.from(atob(c.id.replace(/-/g, "+").replace(/_/g, "/")), (x) =>
+                x.charCodeAt(0),
+              ),
+              transports: c.transports as AuthenticatorTransport[] | undefined,
+            }),
+          ),
+          attestation: options.attestation || "none",
+        },
+      })) as PublicKeyCredential | null;
+      if (!cred) throw new Error("Registration cancelled");
+      const resp = cred.response as AuthenticatorAttestationResponse;
+      const transports =
+        typeof resp.getTransports === "function" ? resp.getTransports() : [];
+      const verify = await fetch("/api/auth/webauthn/register/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          challenge: options.challenge,
+          response: {
+            id: cred.id,
+            rawId: b64url(cred.rawId),
+            type: cred.type,
+            clientExtensionResults: cred.getClientExtensionResults(),
+            response: {
+              clientDataJSON: b64url(resp.clientDataJSON),
+              attestationObject: b64url(resp.attestationObject),
+              transports,
+            },
+          },
+        }),
+      });
+      const vJson = await verify.json();
+      if (!verify.ok) throw new Error(vJson.error || "Register failed");
+      await refreshAuth();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Face ID register failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function logout() {
+    await fetch("/api/auth/logout", { method: "POST" });
+    setProjects([]);
+    setFiles([]);
+    await refreshAuth();
+  }
+
+  async function onUpload(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!projectId) {
+      setError("Choose a project first.");
+      return;
+    }
+    const form = e.currentTarget;
+    const data = new FormData(form);
+    data.set("projectId", projectId);
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/files", { method: "POST", body: data });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message || json.error || "Upload failed");
+      form.reset();
+      await loadWorkspace();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function runSync() {
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: "{}",
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message || json.error || "Sync failed");
+      setSync(json.providers || []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Sync failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function addNote(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    setBusy(true);
+    try {
+      const res = await fetch("/api/memory", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: String(fd.get("title") || ""),
+          body: String(fd.get("body") || ""),
+          projectId: projectId || undefined,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Save failed");
+      e.currentTarget.reset();
+      await loadWorkspace();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Save failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const visibleFiles = projectId
+    ? files.filter((f) => f.project_id === projectId)
+    : files;
+
+  if (!auth) {
+    return (
+      <main className={styles.shell}>
+        <p className={styles.muted}>Loading AI Project Platform…</p>
+      </main>
+    );
+  }
+
+  if (!auth.unlocked) {
+    return (
+      <main className={styles.shell}>
+        <header className={styles.hero}>
+          <p className={styles.brand}>AI Project Platform</p>
+          <h1>Unlock</h1>
+          <p className={styles.lede}>
+            Face ID / platform authenticator, or your password. Access from any phone or computer.
+          </p>
+        </header>
+
+        {!auth.authReady && (
+          <div className={styles.warn}>
+            Open this app while signed in to Cursor. A password is optional and only works after
+            unlock secrets are set.
+          </div>
+        )}
+
+        {error && <div className={styles.error}>{error}</div>}
+
+        <div className={styles.unlock}>
+          {auth.faceIdRegistered && (
+            <button type="button" className={styles.primary} disabled={busy} onClick={unlockWithFaceId}>
+              Unlock with Face ID
+            </button>
+          )}
+          <form onSubmit={unlockWithPassword} className={styles.form}>
+            <label>
+              Password
+              <input
+                type="password"
+                autoComplete="current-password"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                required
+              />
+            </label>
+            <button type="submit" className={styles.secondary} disabled={busy || !auth.authReady}>
+              Unlock with password
+            </button>
+          </form>
+        </div>
+      </main>
+    );
   }
 
   return (
     <main className={styles.shell}>
-      <div className={styles.banner}>
-        <strong>TEST DEPLOY ONLY.</strong> Production <code>mike-ai.vercel.app</code> is not
-        modified. Drive/OneDrive backups are not overwritten or deleted. Project records load only
-        from a real <code>AI_Platform_Project_Records_&lt;timestamp&gt;.json</code> file.
-      </div>
+      <header className={styles.hero}>
+        <div className={styles.topRow}>
+          <p className={styles.brand}>AI Project Platform</p>
+          <button type="button" className={styles.linkish} onClick={logout}>
+            Lock
+          </button>
+        </div>
+        <h1>Projects & files</h1>
+        <p className={styles.lede}>
+          Organized by project, newest first. Download anywhere. iCloud primary; Google Drive &
+          OneDrive replicas.
+        </p>
+      </header>
 
-      <h1 className={styles.brand}>Mike AI</h1>
-      <p className={styles.lead}>
-        Restored Netgene apps on a separate test surface. Chat stays fail-closed without real model
-        credentials. Project memory stays empty until a real records export is dropped into{" "}
-        <code>mike-ai/recovery/</code>.
-      </p>
+      {error && <div className={styles.error}>{error}</div>}
 
-      <div className={styles.grid}>
+      <section className={styles.bar}>
+        <label>
+          Project
+          <select value={projectId} onChange={(e) => setProjectId(e.target.value)}>
+            {projects.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name} ({p.status})
+              </option>
+            ))}
+          </select>
+        </label>
+        {!auth.faceIdRegistered && (
+          <button type="button" className={styles.secondary} disabled={busy} onClick={registerFaceId}>
+            Register Face ID on this device
+          </button>
+        )}
+      </section>
+
+      <nav className={styles.tabs}>
+        {(["files", "sync", "memory", "chatgpt"] as const).map((t) => (
+          <button
+            key={t}
+            type="button"
+            className={tab === t ? styles.tabOn : styles.tab}
+            onClick={() => setTab(t)}
+          >
+            {t === "chatgpt" ? "ChatGPT memory" : t[0].toUpperCase() + t.slice(1)}
+          </button>
+        ))}
+      </nav>
+
+      {tab === "files" && (
         <section className={styles.panel}>
-          <h2>Chat</h2>
-          <p className={styles.meta}>
-            Status: <strong>{status}</strong>
-            {error ? ` — ${error.message}` : ""}
-          </p>
-          {chatHint ? <p className={styles.error} role="alert">{chatHint}</p> : null}
-          <div className={styles.chatLog}>
-            {messages.length === 0 ? (
-              <div className={styles.bubble}>No messages yet.</div>
-            ) : (
-              messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={message.role === "user" ? styles.bubbleUser : styles.bubble}
-                >
-                  <strong>{message.role === "user" ? "You" : "Mike"}</strong>
-                  <div>
-                    {message.parts.map((part, index) =>
-                      part.type === "text" ? <span key={index}>{part.text}</span> : null,
-                    )}
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-          <form className={styles.form} onSubmit={onSubmit}>
-            <input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask Mike…"
-              disabled={status !== "ready"}
-              aria-label="Chat message"
-            />
-            <button type="submit" disabled={status !== "ready"}>
-              Send
+          <form className={styles.upload} onSubmit={onUpload}>
+            <input name="file" type="file" required />
+            <button type="submit" className={styles.primary} disabled={busy}>
+              Upload to project
             </button>
           </form>
-          {error ? <p className={styles.error}>{error.message}</p> : null}
-          {chatHint ? <p className={styles.error}>{chatHint}</p> : null}
+          <ul className={styles.list}>
+            {visibleFiles.map((f) => (
+              <li key={f.id}>
+                <div>
+                  <strong>{f.name}</strong>
+                  <span className={styles.muted}>
+                    {" "}
+                    · {fmtBytes(f.size_bytes)} · {fmtWhen(f.updated_at)} CT
+                  </span>
+                  <div className={styles.hash}>{f.checksum_sha256}</div>
+                </div>
+                <a className={styles.secondary} href={`/api/files/download?id=${encodeURIComponent(f.id)}`}>
+                  Download
+                </a>
+              </li>
+            ))}
+            {visibleFiles.length === 0 && (
+              <li className={styles.muted}>No files in this project yet.</li>
+            )}
+          </ul>
         </section>
+      )}
 
+      {tab === "sync" && (
         <section className={styles.panel}>
-          <h2>Project records</h2>
-          {!projects ? (
-            <p className={styles.meta}>Loading…</p>
-          ) : (
-            <>
-              <p className={styles.meta}>
-                <span className={projects.ok ? styles.statusOk : styles.statusEmpty}>
-                  {projects.ok ? `${projects.count} record(s)` : "No records loaded"}
-                </span>
-                {" · "}
-                source: {projects.source}
-                {projects.fileName ? ` · ${projects.fileName}` : ""}
-              </p>
-              <p className={styles.meta}>{projects.message}</p>
-              {projects.records.length > 0 ? (
-                <ul className={styles.list}>
-                  {projects.records.map((record, index) => (
-                    <li key={String(record.id ?? index)}>
-                      <strong>{String(record.name ?? record.id ?? `Record ${index + 1}`)}</strong>
-                      {record.summary ? (
-                        <>
-                          <br />
-                          <small>{String(record.summary)}</small>
-                        </>
-                      ) : null}
-                      {record.status ? (
-                        <>
-                          <br />
-                          <small>status: {String(record.status)}</small>
-                        </>
-                      ) : null}
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
-            </>
+          <button type="button" className={styles.primary} disabled={busy} onClick={runSync}>
+            Sync now (iCloud → Drive → OneDrive)
+          </button>
+          <ul className={styles.list}>
+            {sync.map((p) => (
+              <li key={p.provider}>
+                <div>
+                  <strong>
+                    {p.provider} ({p.role})
+                  </strong>
+                  <div className={styles.muted}>
+                    {p.configured
+                      ? p.last
+                        ? `${p.last.status}: ${p.last.detail}`
+                        : "configured — not synced yet"
+                      : `missing: ${p.missing.join(", ") || "secrets"}`}
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {tab === "memory" && (
+        <section className={styles.panel}>
+          <form className={styles.form} onSubmit={addNote}>
+            <label>
+              Title
+              <input name="title" required />
+            </label>
+            <label>
+              Note
+              <textarea name="body" rows={4} required />
+            </label>
+            <button type="submit" className={styles.primary} disabled={busy}>
+              Save memory
+            </button>
+          </form>
+          <ul className={styles.list}>
+            {memory.map((m) => (
+              <li key={m.id}>
+                <div>
+                  <strong>{m.title}</strong>
+                  <span className={styles.muted}>
+                    {" "}
+                    · {m.source} · {fmtWhen(m.updated_at)} CT
+                  </span>
+                  <p>{m.body}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {tab === "chatgpt" && (
+        <section className={styles.panel}>
+          <h2>ChatGPT local memory</h2>
+          <ol className={styles.steps}>
+            <li>Stay unlocked on this device (Face ID or password session).</li>
+            <li>
+              Copy the export below and paste it into ChatGPT as grounding context — or call{" "}
+              <code>GET /api/memory/chatgpt</code> from this same unlocked browser session.
+            </li>
+            <li>
+              Shared Bearer tokens are not used; memory never opens without unlock.
+            </li>
+          </ol>
+          <button
+            type="button"
+            className={styles.primary}
+            disabled={busy}
+            onClick={async () => {
+              setBusy(true);
+              setError(null);
+              try {
+                const res = await fetch("/api/memory/chatgpt", { cache: "no-store" });
+                const json = await res.json();
+                if (!res.ok) throw new Error(json.message || json.error || "Export failed");
+                const text = JSON.stringify(json, null, 2);
+                setChatgptExport(text);
+                if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(text);
+              } catch (err) {
+                setError(err instanceof Error ? err.message : "Export failed");
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
+            Copy memory for ChatGPT
+          </button>
+          {chatgptExport && (
+            <pre className={styles.muted} style={{ whiteSpace: "pre-wrap", marginTop: "1rem" }}>
+              {chatgptExport.slice(0, 4000)}
+              {chatgptExport.length > 4000 ? "\n…" : ""}
+            </pre>
           )}
         </section>
-      </div>
-
-      <section className={styles.panel} style={{ marginTop: "1rem" }}>
-        <h2>Netgene apps</h2>
-        <p className={styles.meta}>Real restored apps from the Netgene workspace (test copies).</p>
-        <div className={styles.apps}>
-          <a className={styles.appLink} href="/apps">
-            <strong>Hub</strong>
-            <span>Project index</span>
-          </a>
-          <a className={styles.appLink} href="/apps/forma">
-            <strong>Forma</strong>
-            <span>On-device photo editor</span>
-          </a>
-          <a className={styles.appLink} href="/apps/vehicle-genius">
-            <strong>Vehicle Genius</strong>
-            <span>Offline symptom helper</span>
-          </a>
-          <a className={styles.appLink} href="/apps/cdi-genius">
-            <strong>CDI Genius</strong>
-            <span>Expo CDI diagnostic landing</span>
-          </a>
-        </div>
-      </section>
-
-      <section className={styles.panel} style={{ marginTop: "1rem" }}>
-        <h2>Ravin Lookup — Windows downloads</h2>
-        <p className={styles.meta}>
-          Portable x64 <code>.exe</code> installers (~67 MB). Open this page on another computer and
-          download there, or save here and copy the file over. Hosted on GitHub so they work from any
-          PC.
-        </p>
-        <div className={styles.apps}>
-          <a
-            className={styles.appLink}
-            href="https://raw.githubusercontent.com/mp720c-star/Netgene/cursor/vercel-ai-platform-restore-2661/downloads/Ravin-Lookup-Car-Truck-1.0.0-win-x64.exe"
-            download
-          >
-            <strong>Car / Truck</strong>
-            <span>Ravin-Lookup-Car-Truck-1.0.0-win-x64.exe · ~67 MB</span>
-          </a>
-          <a
-            className={styles.appLink}
-            href="https://raw.githubusercontent.com/mp720c-star/Netgene/cursor/vercel-ai-platform-restore-2661/downloads/Ravin-Lookup-Dirt-Bike-1.0.0-win-x64.exe"
-            download
-          >
-            <strong>Dirt Bike / Moto</strong>
-            <span>Ravin-Lookup-Dirt-Bike-1.0.0-win-x64.exe · ~67 MB</span>
-          </a>
-          <a
-            className={styles.appLink}
-            href="https://raw.githubusercontent.com/mp720c-star/Netgene/cursor/vercel-ai-platform-restore-2661/downloads/Ravin-Lookup-ATV-1.0.0-win-x64.exe"
-            download
-          >
-            <strong>ATV / 4-Wheeler</strong>
-            <span>Ravin-Lookup-ATV-1.0.0-win-x64.exe · ~67 MB</span>
-          </a>
-          <a className={styles.appLink} href="/downloads/SHA256SUMS.txt" download>
-            <strong>SHA256 checksums</strong>
-            <span>Verify installer integrity after transfer</span>
-          </a>
-          <a className={styles.appLink} href="/downloads">
-            <strong>All download links</strong>
-            <span>Dedicated downloads page</span>
-          </a>
-        </div>
-      </section>
+      )}
     </main>
   );
 }
