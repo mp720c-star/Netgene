@@ -17,3 +17,10 @@ ravin-lookup/dist/
 # Large Ravin .exe live under downloads/ (served via GitHub raw). Keep them out of mike-ai so
 # Cursor publish and Cloudflare Workers stay under size limits.
 mike-ai/public/downloads/*.exe
+
+# Private registry imports / exports — never commit project histories
+mike-ai/recovery/private/inbox/**
+mike-ai/recovery/private/accepted/**
+mike-ai/recovery/AI_Platform_Project_Records_*.json
+!mike-ai/recovery/private/.gitkeep
+!mike-ai/recovery/private/README.md

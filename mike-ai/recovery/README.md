@@ -24,3 +24,10 @@ The newest matching file (by timestamp in the name) is loaded by `/api/projects`
 - Never delete Drive/OneDrive backups
 - Never write back into those backup locations from this test deploy
 - Production `https://mike-ai.vercel.app` stays untouched
+
+## Private authenticated import (2026-11-16)
+
+Authoritative registry handoffs go to **`private/inbox/`** (gitignored), not into public git.
+
+See the newest `CURSOR_READY_IMPORT_*.md` in this folder for destination + auth method.
+Never commit `AI_Platform_Project_Records_*.json` or private inbox payloads.
