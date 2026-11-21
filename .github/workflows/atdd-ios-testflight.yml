@@ -45,18 +45,29 @@ jobs:
           MARKETING_VERSION: ${{ inputs.marketing_version }}
         run: |
           set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           test -f atdd/ios/package.json
+          test -f atdd/ios/package-lock.json
+          grep -q 'registerPlugin("BluetoothLe")' atdd/web/js/capacitor-ble-transport.js
+          grep -q '@capacitor-community/bluetooth-le' atdd/ios/package.json
+          grep -q 'CapacitorCommunityBluetoothLe' atdd/ios/ios/App/Podfile
           xcodebuild -version
           sdk=$(xcrun --sdk iphoneos --show-sdk-version)
           test "$(printf '%s' "$sdk" | cut -d. -f1)" -ge 26
           [[ "$MARKETING_VERSION" =~ ^[0-9]+(\.[0-9]+){0,2}$ ]]
+          echo "SOURCE_COMMIT=$(git rev-parse HEAD)"
+          echo "BUILD_NUMBER=$GITHUB_RUN_NUMBER"
+          echo "MARKETING_VERSION=$MARKETING_VERSION"
 
       - name: Sync Capacitor and install iOS dependencies
         working-directory: atdd/ios
         run: |
           set -euo pipefail
           npm ci
+          test -d node_modules/@capacitor-community/bluetooth-le
+          test -d node_modules/@capacitor/ios
           npm run sync:ios
+          grep -q 'registerPlugin("BluetoothLe")' ios/App/App/public/js/capacitor-ble-transport.js
 
       - name: Import the distribution certificate
         uses: apple-actions/import-codesign-certs@v3
@@ -170,3 +181,97 @@ jobs:
           issuer-id: ${{ secrets.ASC_ISSUER_ID }}
           api-key-id: ${{ secrets.ASC_KEY_ID }}
           api-private-key: ${{ secrets.ASC_PRIVATE_KEY }}
+
+      - name: Record Apple processing status
+        if: ${{ inputs.upload }}
+        env:
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+          MARKETING_VERSION: ${{ inputs.marketing_version }}
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const crypto = require("node:crypto");
+          const bundleId = process.env.BUNDLE_ID;
+          const buildNumber = process.env.GITHUB_RUN_NUMBER;
+          const marketingVersion = process.env.MARKETING_VERSION;
+
+          function pem() {
+            let key = process.env.ASC_PRIVATE_KEY || "";
+            if (!key.includes("BEGIN")) {
+              key = Buffer.from(key, "base64").toString("utf8");
+            }
+            return key.replace(/\\n/g, "\n");
+          }
+
+          function token() {
+            const header = Buffer.from(JSON.stringify({
+              alg: "ES256",
+              kid: process.env.ASC_KEY_ID,
+              typ: "JWT",
+            })).toString("base64url");
+            const now = Math.floor(Date.now() / 1000);
+            const body = Buffer.from(JSON.stringify({
+              iss: process.env.ASC_ISSUER_ID,
+              iat: now,
+              exp: now + 600,
+              aud: "appstoreconnect-v1",
+            })).toString("base64url");
+            const data = `${header}.${body}`;
+            const signature = crypto.sign("SHA256", Buffer.from(data), {
+              key: pem(),
+              dsaEncoding: "ieee-p1363",
+            });
+            return `${data}.${signature.toString("base64url")}`;
+          }
+
+          async function asc(path, jwt) {
+            const response = await fetch(`https://api.appstoreconnect.apple.com${path}`, {
+              headers: { Authorization: `Bearer ${jwt}` },
+            });
+            const text = await response.text();
+            if (!response.ok) {
+              const error = new Error(`App Store Connect returned HTTP ${response.status}`);
+              error.status = response.status;
+              throw error;
+            }
+            return JSON.parse(text);
+          }
+
+          function report(state, detail) {
+            console.log(`APPLE_PROCESSING_STATE=${state}`);
+            console.log(`APPLE_BUILD_NUMBER=${buildNumber}`);
+            console.log(`MARKETING_VERSION=${marketingVersion}`);
+            if (detail) console.log(detail);
+          }
+
+          (async () => {
+            const apps = await asc(`/v1/apps?filter[bundleId]=${encodeURIComponent(bundleId)}&limit=1`, token());
+            const app = apps.data && apps.data[0];
+            if (!app) {
+              report("APP_NOT_FOUND", `No App Store Connect app for ${bundleId}`);
+              return;
+            }
+            const deadline = Date.now() + 12 * 60 * 1000;
+            let last = "NOT_YET_LISTED";
+            let uploaded = "";
+            while (Date.now() < deadline) {
+              const builds = await asc(
+                `/v1/builds?filter[app]=${app.id}&filter[version]=${encodeURIComponent(buildNumber)}&sort=-uploadedDate&limit=5`,
+                token(),
+              );
+              const match = (builds.data || []).find((item) => item.attributes && item.attributes.version === buildNumber);
+              if (match) {
+                last = match.attributes.processingState || "UNKNOWN";
+                uploaded = match.attributes.uploadedDate || "";
+                if (last !== "PROCESSING") break;
+              }
+              await new Promise((resolve) => setTimeout(resolve, 20000));
+            }
+            report(last, uploaded ? `APPLE_UPLOADED_DATE=${uploaded}` : "Build is not listed yet.");
+          })().catch((error) => {
+            report("UNKNOWN", `APPLE_STATUS_ERROR=${error.message}`);
+            process.exitCode = 0;
+          });
+          NODE
