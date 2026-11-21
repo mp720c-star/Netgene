@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { storedCodes } from "../www/scanner/stored-codes.mjs";
+import { storedCodes } from "../www/scanner/stored-codes.js";
 
 const accepted = [
   ["43 00\r>", []],

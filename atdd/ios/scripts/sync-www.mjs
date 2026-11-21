@@ -34,7 +34,7 @@ if (platform === "android") {
   fs.cpSync(path.join(root, "scanner"), path.join(out, "scanner"), { recursive: true });
   const entry = path.join(out, "index.html");
   let html = fs.readFileSync(entry, "utf8").replace(/\r\n/g, "\n");
-  html = replaceOnce(html, '<script src="./bluetooth.js"></script>', '<script type="module" src="./scanner/iphone-scanner.mjs"></script>');
+  html = replaceOnce(html, '<script src="./bluetooth.js"></script>', '<script type="module" src="./scanner/iphone-scanner.js"></script>');
   html = replaceOnce(html, '<details class="extra card">\n        <summary>Privacy', '<p><a href="./tools/index.html#cdi">CDI ignition diagnostics</a></p>\n      <details class="extra card">\n        <summary>Privacy');
   fs.writeFileSync(entry, html);
   const cdi = path.join(tools, "index.html");

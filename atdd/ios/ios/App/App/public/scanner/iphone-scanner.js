@@ -1,5 +1,5 @@
 import { capacitorBleAvailable, createCapacitorBleTransport } from "../tools/js/capacitor-ble-transport.js";
-import { storedCodes } from "./stored-codes.mjs";
+import { storedCodes } from "./stored-codes.js";
 
 const el = (id) => document.getElementById(id);
 const panel = el("bluetoothCard");

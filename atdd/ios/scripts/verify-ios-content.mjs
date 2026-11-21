@@ -12,13 +12,13 @@ const entry = fs.readFileSync(path.join(root, "index.html"), "utf8");
 assert.match(entry, /<title>Auto\/Truck Diagnostics for Dummies<\/title>/);
 for (const label of ["Diagnose", "Listen", "Look", "Code"]) assert.ok(entry.includes(">" + label + "</button>"), label);
 assert.ok(entry.includes('id="btnBluetoothTop"'));
-assert.ok(entry.includes('src="./scanner/iphone-scanner.mjs"'));
+assert.ok(entry.includes('src="./scanner/iphone-scanner.js"'));
 for (const file of ["app.js", "icon.png", "styles.css", "diagnosticsEngine.js", "data/dtc-db.js", "data/common-jobs.js"]) {
   const packed = fs.readFileSync(path.join(root, file));
   assert.ok(packed.equals(fs.readFileSync(path.join(classic, file))), "Changed original " + file);
 }
-const scanner = fs.readFileSync(path.join(root, "scanner/iphone-scanner.mjs"));
-assert.ok(scanner.equals(fs.readFileSync(path.join(ios, "scanner/iphone-scanner.mjs"))));
+const scanner = fs.readFileSync(path.join(root, "scanner/iphone-scanner.js"));
+assert.ok(scanner.equals(fs.readFileSync(path.join(ios, "scanner/iphone-scanner.js"))));
 for (const file of ["capacitor-ble-transport.js", "fixd-protocol-probe.js", "obd-protocol-v3-frame-aware.js", "web-bluetooth-transport.js"]) {
   assert.ok(fs.readFileSync(path.join(root, "tools/js", file)).equals(fs.readFileSync(path.join(ios, "../web/js", file))), file);
 }
