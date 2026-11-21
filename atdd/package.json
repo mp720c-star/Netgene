@@ -1,14 +1,15 @@
 {
   "name": "atdd-unified",
-  "version": "1.2.0-dev+cdi-import",
+  "version": "1.2.0+build.2",
   "private": true,
   "type": "module",
   "description": "Auto/Truck Diagnostics for Dummies + CDI Genius unified development build",
   "scripts": {
-    "test": "node tests/verify-import.mjs && node tests/ddt-engine.test.mjs && node obd/tests/obd-protocol-v3.test.mjs && node tests/scanner-session.test.mjs && node classic/tests/bluetooth-parse.test.mjs",
-    "test:obd": "node obd/tests/obd-protocol-v3.test.mjs",
+    "test": "node tests/verify-import.mjs && node tests/ddt-engine.test.mjs && node obd/tests/obd-protocol-v3.test.mjs && node obd/tests/pids.test.mjs && node tests/scanner-session.test.mjs && node classic/tests/bluetooth-parse.test.mjs && node tests/ios-tree-validate.mjs",
+    "test:obd": "node obd/tests/obd-protocol-v3.test.mjs && node obd/tests/pids.test.mjs",
     "verify": "node tests/verify-import.mjs",
     "serve": "python3 -m http.server 8765 --bind 127.0.0.1 --directory web",
-    "test:bluetooth-classic": "node classic/tests/bluetooth-parse.test.mjs"
+    "test:bluetooth-classic": "node classic/tests/bluetooth-parse.test.mjs",
+    "sync:ios-www": "node ios/scripts/sync-www.mjs"
   }
 }

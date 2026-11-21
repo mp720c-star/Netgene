@@ -1,41 +1,32 @@
-# ATDD Connect — native FIXD (Capacitor BLE)
+# ATDD Connect — native iOS (Build 2)
 
-Live **Connect FIXD** on phone via `@capacitor-community/bluetooth-le@6.1.0`.
+Bundle ID: `com.netgene.atdd.ble` · Apple App ID: `6837583273` · Version `1.2.0` Build `2`
 
-## No Mac? Use Android
+Native Capacitor shell with:
 
-This Linux/CI environment **cannot** produce a signed iPhone IPA (needs Xcode).
+- Classic ATDD diagnostic UI (main screen) + **Bluetooth · Connect Scanner** button
+- CoreBluetooth via `@capacitor-community/bluetooth-le@6.1.0`
+- Wi-Fi OBD TCP via local `ObdWifiPlugin` (typical `192.168.0.10:35000`)
+- CDI Genius + advanced scanner under `www/connect/`
+- Read-only PIDs: DTCs, VIN (when returned), RPM, coolant
 
-**Fastest path without a Mac:**
+## Limits (honest)
 
-1. **Android phone + Chrome** — open the Cloudflare ATDD page and tap **Connect FIXD** (Web Bluetooth works in Chrome).
-2. Or install the debug APK: `downloads/atdd-connect-debug.apk` (sideload; allow unknown apps).
+- FIXD proprietary GATT UUIDs: **not verified** in this repo — claim stays `UNVERIFIED`
+- Bluetooth Classic (SPP): **not available** to iOS App Store apps
+- Do **not** upload Build 2 until BLE and Wi-Fi paths are verified on hardware
+- Do **not** create another App ID; do not delete Build 1
 
-## Android APK (built here)
+See `atdd/docs/HARDWARE-TRANSPORT-LIMITS.md`.
 
-```bash
-cd atdd/ios
-npm ci
-npm run apk:debug
-# output: android/app/build/outputs/apk/debug/app-debug.apk
-```
-
-Published copy: `downloads/atdd-connect-debug.apk`
-
-## iPhone (needs a Mac or cloud Mac CI)
-
-GitHub Actions macOS runners are **not enabled** on this repo right now.
-
-On a Mac:
+## Develop
 
 ```bash
-cd atdd/ios
-npm ci
-npm run sync:ios
-cd ios/App && pod install && open App.xcworkspace
+cd atdd && npm test
+cd ios && npm ci && npm run sync:ios
+# On a Mac: open ios/App/App.xcworkspace
 ```
 
-## Do not
+## TestFlight
 
-- Claim FIXD protocol support without live evidence
-- Present Demo/SIMULATED as live vehicle data
+Workflow: `.github/workflows/atdd-ios-testflight.yml` (manual). Upload defaults to **false**.

@@ -1,6 +1,6 @@
 {
   "name": "atdd-native-ble",
-  "version": "1.2.0-dev+ble",
+  "version": "1.2.0+build.2",
   "private": true,
   "description": "ATDD native shell — Capacitor 6 + bluetooth-le for live FIXD (iOS + Android)",
   "scripts": {

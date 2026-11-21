@@ -7,9 +7,9 @@ on:
   workflow_dispatch:
     inputs:
       upload:
-        description: Upload IPA to TestFlight after a successful archive
+        description: Upload IPA to TestFlight after a successful archive (keep false until BLE/Wi-Fi verified)
         type: boolean
-        default: true
+        default: false
       marketing_version:
         description: CFBundleShortVersionString (e.g. 1.2.0)
         type: string
@@ -93,6 +93,10 @@ jobs:
           set -euo pipefail
           xcodebuild -version
           sudo xcode-select -s /Applications/Xcode.app/Contents/Developer || true
+
+      - name: Run ATDD automated tests
+        working-directory: atdd
+        run: npm test
 
       - name: Sync Capacitor www + iOS
         working-directory: atdd/ios

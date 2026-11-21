@@ -44,7 +44,12 @@ function createMockBleTransport() {
   assert.equal(dtcs.presentedAsLive, false);
   assert.ok(Array.isArray(dtcs.codes));
   assert.ok(dtcs.codes.length >= 1);
-  console.log("ok simulated connect/probe/dtc");
+  const pids = await session.readLivePids();
+  assert.equal(pids.isSimulated, true);
+  assert.equal(pids.vin, "1HGCM82633A004352");
+  assert.equal(pids.rpm, 1726);
+  assert.equal(pids.coolant, 83);
+  console.log("ok simulated connect/probe/dtc/pids");
 }
 
 {

@@ -49,6 +49,12 @@
 	<string>ATDD Connect uses Bluetooth to talk to your FIXD / OBD adapter for live diagnostics.</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
 	<string>ATDD Connect uses Bluetooth to talk to your FIXD / OBD adapter for live diagnostics.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>ATDD Connect uses the local network to reach Wi-Fi OBD-II adapters (typically after you join the adapter Wi-Fi).</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_obd._tcp</string>
+	</array>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>bluetooth-central</string>

@@ -8,6 +8,7 @@
 
 import { buildProbeReport, ELM_PROBE_SEQUENCE, nameLooksLikeFixd } from "./fixd-protocol-probe.js";
 import { parseMode03FrameAware } from "./obd-protocol-v3-frame-aware.js";
+import { parsePidReply } from "./pids.js";
 
 export function createScannerSession(transport) {
   const state = {
@@ -132,7 +133,44 @@ export function createScannerSession(transport) {
       };
       emit();
       return state.lastDtcs;
-    }
+    },
+
+    /**
+     * Read-only PID pass: VIN (0902), RPM (010C), coolant (0105).
+     * Never invents values — missing replies stay null with reasons.
+     */
+    async readLivePids() {
+      if (state.status !== "ready" && state.status !== "connected") {
+        throw new Error("Connect and probe before reading PIDs");
+      }
+      const provenance = transport.kind === "simulated" ? "simulated" : "live_adapter";
+      const readings = { provenance, isSimulated: provenance === "simulated", vin: null, rpm: null, coolant: null };
+      for (const [key, cmd] of [
+        ["vin", "0902"],
+        ["rpm", "010C"],
+        ["coolant", "0105"],
+      ]) {
+        try {
+          const reply = await transport.send(cmd);
+          state.transcript += `TX ${cmd}\nRX ${reply}\n`;
+          const parsed = parsePidReply(cmd, reply);
+          if (key === "vin") {
+            readings.vin = parsed.vin || null;
+            readings.vinOk = !!parsed.ok;
+            readings.vinReason = parsed.reason || null;
+          } else if (parsed.ok) {
+            readings[key] = parsed.value;
+          } else {
+            readings[`${key}Reason`] = parsed.reason || "parse_failed";
+          }
+        } catch (err) {
+          readings[`${key}Reason`] = err.message || String(err);
+        }
+      }
+      state.lastPids = readings;
+      emit();
+      return readings;
+    },
   };
 }
 
@@ -162,6 +200,12 @@ export function createSimulatedTransport() {
       const c = String(cmd).trim().toUpperCase();
       if (c.startsWith("AT")) return "OK\r>";
       if (c === "0100") return "41 00 BE 1F A8 13\r>";
+      if (c === "010C") return "41 0C 1A F8\r>"; // 1726 rpm
+      if (c === "0105") return "41 05 7B\r>"; // 83 °C
+      if (c === "0902") {
+        // SIMULATED VIN bytes for 1HGCM82633A004352 — labeled simulated by session provenance
+        return "49 02 01 31 48 47 43 4D 38 32 36 33 33 41 30 30 34 33 35 32\r>";
+      }
       if (c === "03") return "43 02 03 01 04 20\r>";
       return "NO DATA\r>";
     },

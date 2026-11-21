@@ -19,7 +19,7 @@
     <button id="btnLookupTop">Listen</button>
     <button id="btnJobsTop">Look</button>
     <button id="btnRebuildTop">Code</button>
-    <button id="btnBluetoothTop">Bluetooth</button>
+    <button id="btnBluetoothTop" class="warn">Bluetooth · Connect Scanner</button>
     <button class="good topbar-extra" id="btnSaveCaseTop">Save</button>
     <button class="secondary topbar-extra" id="btnExportTop">Export</button>
     <button class="secondary topbar-extra" id="btnComputerTop">Computer</button>
@@ -39,19 +39,29 @@
 
     <div class="stack mt-14">
       <section class="card" id="bluetoothCard" hidden>
-        <h2>Bluetooth · Connect FIXD</h2>
-        <p class="lead">Pair your real FIXD over Bluetooth, read codes, and drop them into the scanner field above. Demo is separate and labeled SIMULATED — it never pretends to be FIXD.</p>
+        <h2>Bluetooth · Connect Scanner</h2>
+        <p class="lead">Pair a compatible BLE or Wi-Fi OBD-II adapter, read codes and live PIDs, then drop results into Diagnose. Demo is separate and labeled SIMULATED — it never pretends to be a live scanner.</p>
         <p class="small" id="btSupport">Checking Bluetooth…</p>
+        <p class="small" id="btStatusLive" role="status" aria-live="polite">Status: idle</p>
         <div class="status-banner warn" id="btIphoneGate" hidden></div>
+        <div class="status-banner warn" id="btClassicLimit" hidden></div>
         <div class="row secondary-actions">
-          <button class="warn" id="btnBtConnect">Connect FIXD</button>
+          <button class="warn" id="btnBtConnect">Connect Scanner</button>
           <button class="secondary" id="btnBtScanAll">Scan any BLE device</button>
+          <button class="secondary" id="btnBtWifi">Connect Wi-Fi OBD</button>
           <button class="secondary" id="btnBtReadCodes" disabled>Read codes</button>
+          <button class="secondary" id="btnBtReadPids" disabled>Read live PIDs</button>
           <button class="secondary" id="btnBtDisconnect" disabled>Disconnect</button>
           <button class="secondary" id="btnBtDemo">Demo only (SIMULATED)</button>
         </div>
-        <pre id="btLog" class="bt-log" aria-live="polite">Idle. Tap Bluetooth in the top bar, then Connect FIXD with the adapter powered in the OBD port.</pre>
-        <p class="small mt-8">FIXD protocol claim stays <code>UNVERIFIED</code> until a live Mode 03 round-trip succeeds on a physical truck. Live connect never silently falls back to Demo.</p>
+        <div class="row mt-8 wifi-obd-config">
+          <label for="btWifiHost">Wi-Fi host <input id="btWifiHost" value="192.168.0.10" inputmode="decimal" autocomplete="off"></label>
+          <label for="btWifiPort">Port <input id="btWifiPort" value="35000" inputmode="numeric" autocomplete="off"></label>
+        </div>
+        <div id="btLiveReadings" class="mt-8" aria-live="polite"></div>
+        <pre id="btLog" class="bt-log" aria-live="polite">Idle. Tap Bluetooth in the top bar, then Connect Scanner with the adapter powered in the OBD port.</pre>
+        <p class="small mt-8">FIXD protocol claim stays <code>UNVERIFIED</code> — this build only uses candidate ELM-class GATT UUIDs. No FIXD proprietary service/characteristic UUIDs have been captured from live hardware here. Live connect never silently falls back to Demo.</p>
+        <p class="small"><a href="./connect/">CDI Ignition + advanced Connect Scanner</a> · ATDD Connect native shell <code>com.netgene.atdd.ble</code> · v1.2.0 Build 2</p>
       </section>
 
       <section class="card primary-card" id="lookupCard">

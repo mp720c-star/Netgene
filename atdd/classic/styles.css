@@ -121,7 +121,12 @@ details.extra[open] summary{margin-bottom:10px}
   .topbar button{flex:1 1 120px}
 }
 
-/* Bluetooth · Connect FIXD panel */
+/* Bluetooth · Connect Scanner panel */
+#btnBluetoothTop{
+  outline:2px solid #ffd27b;
+  outline-offset:1px;
+  font-weight:700;
+}
 #bluetoothCard .bt-log{
   margin:12px 0 0;
   padding:12px;
@@ -138,3 +143,7 @@ details.extra[open] summary{margin-bottom:10px}
   line-height:1.4;
 }
 #bluetoothCard code{color:#ffd27b}
+#bluetoothCard .wifi-obd-config label{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--muted)}
+#bluetoothCard .wifi-obd-config input{min-width:9rem;padding:8px 10px;border-radius:8px;border:1px solid #5c3a0d;background:#140c04;color:#fff}
+#btLiveReadings .facts{margin:0;padding-left:1.1rem}
+#btStatusLive{color:#ffd27b;font-weight:600}

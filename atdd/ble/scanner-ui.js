@@ -8,6 +8,11 @@ import {
   capacitorBleAvailable,
   createCapacitorBleTransport,
 } from "./capacitor-ble-transport.js";
+import {
+  wifiObdAvailable,
+  wifiObdBlockReason,
+  createWifiObdTransport,
+} from "./wifi-obd-transport.js";
 
 function escapeHtml(str) {
   return String(str)
@@ -33,11 +38,13 @@ export function mountScannerUi(root, options = {}) {
         Demo is separate and labeled SIMULATED — it will not pretend to be FIXD.</p>
       <p id="btSupport" class="note"></p>
       <div class="row">
-        <button type="button" id="connectScannerBtn" class="primary">Connect FIXD</button>
+        <button type="button" id="connectScannerBtn" class="primary">Connect Scanner</button>
         <button type="button" id="scanAllBtn" class="ghost">Scan all BLE devices</button>
+        <button type="button" id="wifiBtn" class="ghost">Connect Wi-Fi OBD</button>
         <button type="button" id="demoBtn" class="ghost">Demo only (SIMULATED)</button>
         <button type="button" id="probeBtn" class="ghost" disabled>Probe protocol</button>
         <button type="button" id="dtcBtn" class="ghost" disabled>Read DTCs</button>
+        <button type="button" id="pidBtn" class="ghost" disabled>Read live PIDs</button>
         <button type="button" id="discBtn" class="ghost" disabled>Disconnect</button>
       </div>
       <p id="scanStatus" class="note">Status: idle</p>
@@ -52,29 +59,35 @@ export function mountScannerUi(root, options = {}) {
   const outEl = root.querySelector("#scanOut");
   const connectBtn = root.querySelector("#connectScannerBtn");
   const scanAllBtn = root.querySelector("#scanAllBtn");
+  const wifiBtn = root.querySelector("#wifiBtn");
   const demoBtn = root.querySelector("#demoBtn");
   const probeBtn = root.querySelector("#probeBtn");
   const dtcBtn = root.querySelector("#dtcBtn");
+  const pidBtn = root.querySelector("#pidBtn");
   const discBtn = root.querySelector("#discBtn");
 
   const capOk = capacitorBleAvailable();
   const webOk = webBluetoothAvailable();
+  const wifiOk = wifiObdAvailable();
   const bleOk = capOk || webOk;
   const blockReason = !bleOk ? webBluetoothBlockReason() : null;
   supportEl.textContent = capOk
-    ? "Native iPhone/Android Bluetooth ready. Tap Connect FIXD with the dongle powered in the OBD port."
+    ? "Native Bluetooth ready. Tap Connect Scanner with the adapter powered in the OBD port."
     : webOk
-      ? "Web Bluetooth ready. Tap Connect FIXD, keep the dongle powered in the OBD port, and choose the FIXD device."
-      : blockReason || "Bluetooth unavailable.";
+      ? "Web Bluetooth ready. Tap Connect Scanner, keep the dongle powered in the OBD port, and choose the device."
+      : wifiOk
+        ? "BLE unavailable here, but Wi-Fi OBD is available via the native ObdWifi plugin."
+        : blockReason || "Bluetooth unavailable.";
+  wifiBtn.disabled = !wifiOk;
   if (!bleOk) {
     connectBtn.disabled = true;
     scanAllBtn.disabled = true;
     outEl.textContent =
-      "Live FIXD connect is blocked here.\n\n" +
+      "Live BLE connect is blocked here.\n\n" +
       (blockReason || "") +
-      "\n\nOn iPhone use the ATDD Connect native app (Capacitor BLE).\n" +
-      "Or use Chrome/Edge on Android / Windows / Mac.\n" +
-      "Demo only (SIMULATED) does not talk to your FIXD.\n";
+      (wifiOk ? "\n\nWi-Fi OBD is available — join the adapter Wi-Fi, then tap Connect Wi-Fi OBD.\n" : "") +
+      "\nBluetooth Classic (SPP) is not available to iOS apps.\n" +
+      "Demo only (SIMULATED) does not talk to a live adapter.\n";
   }
 
   function setBusy(next) {
@@ -83,29 +96,34 @@ export function mountScannerUi(root, options = {}) {
       connectBtn.disabled = busy;
       scanAllBtn.disabled = busy;
     }
+    wifiBtn.disabled = busy || !wifiOk;
     demoBtn.disabled = busy;
   }
 
   function bindSession(nextSession) {
     session = nextSession;
     session.subscribe((s) => {
-      const sim = s.provenance === "simulated" ? " (SIMULATED — not FIXD)" : "";
+      const sim = s.provenance === "simulated" ? " (SIMULATED — not live)" : "";
       const ble =
         s.provenance === "web-bluetooth"
           ? " (live Web Bluetooth)"
           : s.provenance === "capacitor-ble"
             ? " (live native Bluetooth)"
-            : "";
+            : s.provenance === "wifi-obd"
+              ? " (live Wi-Fi OBD)"
+              : "";
       statusEl.textContent = `Status: ${s.status}${s.lastError ? " — " + s.lastError : ""}${sim}${ble}`;
       const linked = ["connected", "ready", "probing"].includes(s.status);
       probeBtn.disabled = !linked;
       dtcBtn.disabled = !linked;
+      pidBtn.disabled = !linked;
       discBtn.disabled = !s.selected;
       if (!busy) {
         if (bleOk) {
           connectBtn.disabled = linked;
           scanAllBtn.disabled = linked;
         }
+        wifiBtn.disabled = linked || !wifiOk;
         demoBtn.disabled = linked;
       }
     });
@@ -171,11 +189,31 @@ export function mountScannerUi(root, options = {}) {
     await connectDevice(chosen.id);
   }
 
+  async function startWifi() {
+    if (!wifiOk) {
+      outEl.textContent = wifiObdBlockReason() || "Wi-Fi OBD unavailable.\n";
+      return;
+    }
+    const transport = createWifiObdTransport();
+    transportKind = transport.kind;
+    bindSession(createScannerSession(transport));
+    outEl.textContent =
+      "Connecting Wi-Fi OBD (default 192.168.0.10:35000).\nJoin the adapter Wi-Fi first, then wait for TCP link…\n";
+    const devices = await session.scan();
+    listEl.innerHTML = devices
+      .map(
+        (d) =>
+          `<li><button type="button" data-id="${escapeHtml(d.id)}" class="primary">Connect: ${escapeHtml(d.name || d.id)}</button></li>`,
+      )
+      .join("");
+    await connectDevice(devices[0].id);
+  }
+
   async function startDemo() {
     transportKind = "simulated";
     bindSession(createScannerSession(createSimulatedTransport()));
     outEl.textContent =
-      "Demo only (SIMULATED). This is not your FIXD and will not pair to the vehicle.\n";
+      "Demo only (SIMULATED). This is not a live adapter and will not pair to the vehicle.\n";
     const devices = await session.scan();
     listEl.innerHTML = devices
       .map(
@@ -193,7 +231,7 @@ export function mountScannerUi(root, options = {}) {
       await fn();
     } catch (err) {
       const msg = err?.message || String(err);
-      outEl.textContent = `FIXD/live connect failed:\n${msg}\n\nDemo was NOT started. Fix the Bluetooth issue above, then tap Connect FIXD again.\n`;
+      outEl.textContent = `Live connect failed:\n${msg}\n\nDemo was NOT started. Fix the link issue above, then tap Connect Scanner again.\n`;
       statusEl.textContent = `Status: error — ${msg}`;
     } finally {
       setBusy(false);
@@ -206,6 +244,9 @@ export function mountScannerUi(root, options = {}) {
   scanAllBtn.addEventListener("click", () => {
     void run(() => startLive({ preferFixdName: false }));
   });
+  wifiBtn.addEventListener("click", () => {
+    void run(() => startWifi());
+  });
   demoBtn.addEventListener("click", () => {
     void run(() => startDemo());
   });
@@ -216,7 +257,7 @@ export function mountScannerUi(root, options = {}) {
       const report = await session.probeProtocol();
       const banner =
         transportKind === "simulated"
-          ? "⚠ DEMO PROBE (SIMULATED — not FIXD)\n"
+          ? "⚠ DEMO PROBE (SIMULATED — not live)\n"
           : "Live probe (FIXD protocol claim still UNVERIFIED)\n";
       outEl.textContent = banner + JSON.stringify(report, null, 2);
     } catch (err) {
@@ -230,11 +271,25 @@ export function mountScannerUi(root, options = {}) {
       const dtcs = await session.readStoredDtcs();
       const banner =
         dtcs.isSimulated || transportKind === "simulated"
-          ? "⚠ SIMULATED RESULTS — not your FIXD\n"
+          ? "⚠ SIMULATED RESULTS — not live\n"
           : "Live adapter payload (FIXD protocol claim still UNVERIFIED)\n";
       outEl.textContent = banner + JSON.stringify(dtcs, null, 2);
     } catch (err) {
       outEl.textContent = `Read DTCs failed: ${err.message || err}\n`;
+    }
+  });
+
+  pidBtn.addEventListener("click", async () => {
+    if (!session) return;
+    try {
+      const pids = await session.readLivePids();
+      const banner =
+        pids.isSimulated || transportKind === "simulated"
+          ? "⚠ SIMULATED PIDs — not live\n"
+          : "Live PID pass (read-only; FIXD claim still UNVERIFIED)\n";
+      outEl.textContent = banner + JSON.stringify(pids, null, 2);
+    } catch (err) {
+      outEl.textContent = `Read live PIDs failed: ${err.message || err}\n`;
     }
   });
 
@@ -245,15 +300,16 @@ export function mountScannerUi(root, options = {}) {
       connectBtn.disabled = false;
       scanAllBtn.disabled = false;
     }
+    wifiBtn.disabled = !wifiOk;
     demoBtn.disabled = false;
     outEl.textContent += "\nDisconnected.\n";
   });
 
-  // Auto-start = attempt LIVE FIXD connect only when Web Bluetooth exists.
+  // Auto-start = attempt LIVE connect only when a live transport exists.
   if (autoStart) {
     if (bleOk) void run(() => startLive({ preferFixdName: true }));
     else {
-      statusEl.textContent = "Status: blocked — cannot live-connect FIXD in this browser";
+      statusEl.textContent = "Status: blocked — cannot live-connect in this browser";
     }
   }
 }

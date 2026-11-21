@@ -1,35 +1,40 @@
-ATDD iOS BLE handoff (Cloud Agent scaffold)
-==========================================
-Created: 2026-11-18
-Branch: cursor/complete-platform-atdd-scanner-e3f0
+ATDD Connect iOS BLE handoff — Build 2
+=======================================
+Branch: cursor/atdd-bluetooth-obd-build2-70e7
+Bundle ID: com.netgene.atdd.ble (Apple App ID 6837583273)
+Marketing version: 1.2.0
+Project build: 2
 
 STATUS
-- OneDrive candidate package ATDD_BLE_IPHONE_REVIEW_20261117 was NOT present in the VM inbox.
-- This tree is a Capacitor 6.2 + @capacitor-community/bluetooth-le@6.1.0 scaffold so native
-  FIXD connect can proceed on iPhone while the reviewed zip is still missing.
-- If/when the OneDrive zip arrives in mike-ai/recovery/private/inbox/, run:
-    node scripts/import-atdd-ios-candidate.mjs
-  and reconcile any differences (prefer reviewed App sources; keep Bluetooth usage strings).
+- Build 1 already delivered to App Store Connect — do not overwrite/delete it.
+- Build 2 source prepares classic ATDD diagnostic shell as native www home with a
+  clearly visible "Bluetooth · Connect Scanner" top-bar button.
+- Native transports: Capacitor BluetoothLe (CoreBluetooth) + ObdWifi TCP plugin.
+- FIXD proprietary GATT UUIDs: NOT captured in this environment → claim UNVERIFIED.
+- Bluetooth Classic (SPP): not supported by iOS App Store apps (documented).
+- Do NOT upload to TestFlight until BLE and Wi-Fi paths are verified on hardware.
+  Workflow upload default is false.
 
 STACK
 - appId: com.netgene.atdd.ble
 - appName: ATDD Connect
-- webDir: www (synced from atdd/web)
-- iOS project: ios/App/App.xcodeproj
-- Plugins: bluetooth-le 6.1.0, app, status-bar
+- webDir: www (classic home + ./connect CDI/scanner)
+- Plugins: bluetooth-le 6.1.0, ObdWifi (local Swift), app, status-bar
 
 PERMISSIONS
-- NSBluetoothAlwaysUsageDescription set
-- NSBluetoothPeripheralUsageDescription set
+- NSBluetoothAlwaysUsageDescription
+- NSBluetoothPeripheralUsageDescription
+- NSLocalNetworkUsageDescription (Wi-Fi OBD)
 - UIBackgroundModes: bluetooth-central
 
-BUILD (unsigned simulator)
-- macOS + Xcode: cd atdd/ios && npm ci && npm run sync
-- open ios/App/App.xcworkspace (after pod install) or App.xcodeproj
-- GitHub Actions: atdd-ios-simulator (CODE_SIGNING_ALLOWED=NO)
+BUILD
+- cd atdd && npm test
+- cd atdd/ios && npm ci && npm run sync:ios
+- Archive on macOS / TestFlight workflow (upload=false until verified)
 
 DO NOT
 - Claim FIXD protocol support without live GATT + Mode 03 evidence
 - Present Demo/SIMULATED DTCs as live vehicle data
-- Overwrite signed ATDD 1.2.0 Home Screen app
+- Invent FIXD service/characteristic UUIDs
+- Create a new App ID / overwrite Build 1
 - Commit Apple signing certificates or provisioning profiles
