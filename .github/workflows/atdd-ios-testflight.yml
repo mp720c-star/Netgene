@@ -1,9 +1,6 @@
 name: atdd-ios-testflight
 
 on:
-  push:
-    branches:
-      - cursor/testflight-connect-fix-57a8
   workflow_dispatch:
     inputs:
       upload:
