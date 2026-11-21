@@ -35,7 +35,7 @@
     const el = byId("btLog");
     if (!el) return;
     const line = String(msg);
-    el.textContent = el.textContent && el.textContent !== "Idle. Tap Bluetooth in the top bar, then Connect FIXD with the adapter powered in the OBD port."
+    el.textContent = el.textContent && el.textContent !== "Idle. Tap Connect, with the adapter powered in the OBD port."
       ? el.textContent + "\n" + line
       : line;
     el.scrollTop = el.scrollHeight;
@@ -338,13 +338,6 @@
   }
 
   function bindBluetoothUi() {
-    const top = byId("btnBluetoothTop");
-    if (top) {
-      top.onclick = () => {
-        showBluetoothPanel();
-        refreshSupportUi();
-      };
-    }
     const connect = byId("btnBtConnect");
     const read = byId("btnBtReadCodes");
     const disc = byId("btnBtDisconnect");
@@ -369,6 +362,10 @@
       }
     }
 
+    const top = byId("btnBluetoothTop");
+    if (top) {
+      top.onclick = () => startConnect(false);
+    }
     if (connect) {
       connect.onclick = () => startConnect(false);
     }
