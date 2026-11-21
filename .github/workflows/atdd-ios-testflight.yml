@@ -20,8 +20,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  # The iOS source is on Netgene PR #19. Pin the version used for this release.
-  ATDD_SOURCE_COMMIT: 5a680e4e48366a8cb8bf6df5da3fd15c441d316b
+  # Build the branch selected in Run workflow. That branch holds the ATDD Connect source.
   BUNDLE_ID: com.netgene.atdd.ble
   EXPECTED_PROFILE_UUID: ce2e5ad5-a404-44da-9d64-18e53beb419b
   WORKSPACE: atdd/ios/ios/App/App.xcworkspace
@@ -32,10 +31,9 @@ jobs:
     runs-on: macos-26
     timeout-minutes: 45
     steps:
-      - name: Check out the ATDD release source
+      - name: Check out ATDD Connect
         uses: actions/checkout@v4
         with:
-          ref: ${{ env.ATDD_SOURCE_COMMIT }}
           persist-credentials: false
 
       - uses: actions/setup-node@v4
@@ -47,7 +45,7 @@ jobs:
           MARKETING_VERSION: ${{ inputs.marketing_version }}
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD)" = "$ATDD_SOURCE_COMMIT"
+          test -f atdd/ios/package.json
           xcodebuild -version
           sdk=$(xcrun --sdk iphoneos --show-sdk-version)
           test "$(printf '%s' "$sdk" | cut -d. -f1)" -ge 26

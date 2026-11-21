@@ -1,0 +1,54 @@
+{
+  "generated_at_utc": "2026-11-17T12:14:31Z",
+  "generated_at_america_chicago_label": "America/Chicago",
+  "branch": "cursor/atdd-cdi-integration-8bcc",
+  "agent": "bc-01a1e966-14bd-71c7-8df2-3829a9968bcc",
+  "cdi_genius": {
+    "located": true,
+    "path": "cdi-genius/",
+    "import_path": "atdd/source-import/cdi-genius/",
+    "package_json_version": "0.1.0",
+    "claimed_version_target": "1.1.0",
+    "profiles_found": 3,
+    "profiles_expected": 71,
+    "profiles_missing": 68,
+    "profile_ids": [
+      "YAMAHA-XV250-1995-OEM",
+      "HONDA-CBR600-2001-OEM",
+      "KAWASAKI-KE100-1976-OEM"
+    ],
+    "sample_models_bytes": 2513,
+    "sample_models_sha256": "7df7c0858b3d7bf6e323cc30d73fd4ba2a9971b1a548c50ce68371d0c6ed39ee",
+    "source_file_count": 30,
+    "import_checksum_match": true,
+    "backup_checksum_match": true
+  },
+  "atdd": {
+    "located": false,
+    "claimed_version_target": "1.2.0",
+    "board_seed_present": true,
+    "app_tree_found": false,
+    "obd2_database_found": false,
+    "diagnose_listen_look_code_found": false,
+    "signed_windows_installer_found": false,
+    "iphone_homescreen_app_found": false
+  },
+  "unified_shell": {
+    "path": "atdd/web/",
+    "pwa_manifest": true,
+    "service_worker": true,
+    "cdi_mode_operational_for_recovered_profiles": true,
+    "obd2_mode_gated_until_originals": true
+  },
+  "tests": {
+    "verify_import": "PASS",
+    "ddt_engine": "PASS"
+  },
+  "restrictions_honored": [
+    "No fabricated diagnostic codes",
+    "No invented 71 CDI profiles",
+    "No deletion of cdi-genius/ original",
+    "No production deployment",
+    "No paid Work credits"
+  ]
+}

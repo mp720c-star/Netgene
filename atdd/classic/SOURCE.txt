@@ -1,0 +1,5 @@
+ATDD classic v1.2.0 source mirrored from:
+https://cursor-kathy-health-app-cfb3-noisy-pond-2dc8.michaelepaine.workers.dev/index.html
+
+Imported into Netgene on 2026-11-20 for Bluetooth · Connect FIXD topbar integration.
+Do not treat this Workers hostname as production Netgene hub unless Michael says so.
