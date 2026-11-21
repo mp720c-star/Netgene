@@ -28,6 +28,8 @@ fs.mkdirSync(site, { recursive: true });
 fs.copyFileSync(path.join(root, "index.html"), path.join(site, "index.html"));
 copyDir(path.join(root, "forma"), path.join(site, "forma"));
 copyDir(path.join(root, "vehicle-genius"), path.join(site, "vehicle-genius"));
+copyDir(path.join(root, "atdd"), path.join(site, "atdd"));
+
 fs.mkdirSync(path.join(site, "cdi-genius"), { recursive: true });
 fs.copyFileSync(path.join(root, "cdi-genius", "index.html"), path.join(site, "cdi-genius", "index.html"));
 fs.copyFileSync(path.join(root, "cdi-genius", "README.md"), path.join(site, "cdi-genius", "README.md"));
