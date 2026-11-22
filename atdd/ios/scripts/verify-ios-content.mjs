@@ -13,7 +13,7 @@ assert.match(entry, /<title>Auto\/Truck Diagnostics for Dummies<\/title>/);
 for (const label of ["Diagnose", "Listen", "Look", "Code"]) assert.ok(entry.includes(">" + label + "</button>"), label);
 assert.ok(entry.includes('id="btnBluetoothTop"'));
 assert.ok(entry.includes('src="./scanner/iphone-scanner.js"'));
-for (const file of ["app.js", "icon.png", "styles.css", "diagnosticsEngine.js", "vehicleCatalog.js", "dtcGuidance.js", "data/dtc-db.js", "data/common-jobs.js", "data/cdi-pinout-db.js", "data/cdi-pinout-db.json", "data/cdi-pinout-db.manifest.json", "data/vehicle-index.js", "data/vehicle-index.json", "data/dtc-sae-generic-additions.js", "data/dtc-guidance-overlay.js", "data/dtc-guidance.manifest.json"]) {
+for (const file of ["app.js", "icon.png", "styles.css", "diagnosticsEngine.js", "vehicleCatalog.js", "dtcGuidance.js", "symptomRepair.js", "data/dtc-db.js", "data/common-jobs.js", "data/cdi-pinout-db.js", "data/cdi-pinout-db.json", "data/cdi-pinout-db.manifest.json", "data/vehicle-index.js", "data/vehicle-index.json", "data/dtc-sae-generic-additions.js", "data/dtc-guidance-overlay.js", "data/dtc-guidance.manifest.json", "data/symptom-repair-db.js", "data/symptom-repair.manifest.json"]) {
   const packed = fs.readFileSync(path.join(root, file));
   assert.ok(packed.equals(fs.readFileSync(path.join(classic, file))), "Changed original " + file);
 }
@@ -24,6 +24,9 @@ assert.match(entry, /src="\.\/vehicleCatalog\.js"/);
 assert.match(entry, /src="\.\/data\/dtc-sae-generic-additions\.js"/);
 assert.match(entry, /src="\.\/data\/dtc-guidance-overlay\.js"/);
 assert.match(entry, /src="\.\/dtcGuidance\.js"/);
+assert.match(entry, /src="\.\/data\/symptom-repair-db\.js"/);
+assert.match(entry, /src="\.\/symptomRepair\.js"/);
+assert.match(entry, /id="symptomRepairCard"/);
 const scanner = fs.readFileSync(path.join(root, "scanner/iphone-scanner.js"));
 assert.ok(scanner.equals(fs.readFileSync(path.join(ios, "scanner/iphone-scanner.js"))));
 assert.doesNotMatch(scanner.toString("utf8"), /\bAT(?:Z|E0|L0|S1|H0|SP0)\b/);
@@ -55,6 +58,16 @@ assert.equal(G.allCodes().length, 4783 + 7395);
 const sample = G.guidanceFor("P0420", context.window.DTC_DB_DATA.find((r) => r.code === "P0420"));
 assert.equal(sample.tier, "detailed-existing");
 assert.ok(sample.causes.length >= 1 && sample.causes.every((c) => c.tests.length && c.tests[0].spec === "per service manual"));
+
+const symptomCtx = { window: {} };
+runInNewContext(fs.readFileSync(path.join(root, "data/symptom-repair-db.js"), "utf8"), symptomCtx);
+runInNewContext(fs.readFileSync(path.join(root, "symptomRepair.js"), "utf8"), { window: symptomCtx.window, globalThis: symptomCtx.window });
+const SR = symptomCtx.window.SymptomRepair;
+const symptomManifest = JSON.parse(fs.readFileSync(path.join(root, "data/symptom-repair.manifest.json"), "utf8"));
+assert.equal(SR.allEntries().length, symptomManifest.entry_count);
+assert.ok(SR.allEntries().length >= 200);
+assert.ok(SR.allEntries().every((e) => e.causes.length && e.causes.every((c) => c.tests.length && c.tests[0].spec)));
+assert.match(fs.readFileSync(path.join(root, "index.html"), "utf8"), /id="symptomRepairCard"/);
 
 // The previous 3-model check required tools/data/cdi-models.json (SHA-256
 // 7df7c0858b3d7bf6e323cc30d73fd4ba2a9971b1a548c50ce68371d0c6ed39ee) to be
@@ -93,6 +106,6 @@ assert.equal(manifest.source_app_js_sha256, "b01eee6cd36be89a57eec5888a0aead3793
 assert.equal(manifest.profile_count, 69);
 assert.ok(Array.isArray(manifest.excluded_from_ship));
 
-console.log("Original ATDD launch page, 4783 baseline DTCs plus 7395 SAE generic additions, repair jobs, diagnostic engine and native scanner verified.");
+console.log("Original ATDD launch page, 4783 baseline DTCs plus 7395 SAE generic additions, symptom repair database, repair jobs, diagnostic engine and native scanner verified.");
 console.log("Packaged DTC database SHA-256 " + createHash("sha256").update(data).digest("hex"));
 console.log("Packaged CDI pinoutDB " + pinout.profile_count + " profiles, vehicle index " + index.counts.entries + " entries.");

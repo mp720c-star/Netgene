@@ -54,6 +54,7 @@ function loadStats(){
     <div class="stat"><strong>${stats.byFamily.Body || 0}</strong><div class="small">Body</div></div>
     <div class="stat"><strong>${stats.byFamily.Chassis || 0}</strong><div class="small">Chassis</div></div>
     <div class="stat"><strong>${stats.byFamily.Network || 0}</strong><div class="small">Network</div></div>
+    ${typeof window.SymptomRepair !== 'undefined' ? `<div class="stat"><strong>${window.SymptomRepair.stats().total.toLocaleString()}</strong><div class="small">Symptom repairs ready offline</div></div>` : ''}
   `);
 }
 
@@ -213,6 +214,168 @@ function renderStructuredGuidance(code, record){
   `;
 }
 
+
+function openSymptomEntry(id){
+  const card = byId('symptomRepairCard');
+  if(card) showEl('symptomRepairCard');
+  renderSymptomEntry(id);
+  const view = byId('symptomEntryView');
+  if(view) view.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function relatedSymptomLinks(entries){
+  if(!entries || !entries.length) return '';
+  return `<div class="mt-8"><strong>Related symptoms</strong>
+    <div class="mt-6">${entries.map((e) => `<button type="button" class="chip" data-open-symptom="${esc(e.id)}">${esc(e.title)}</button>`).join('')}</div>
+  </div>`;
+}
+
+function bindSymptomButtons(root){
+  const box = typeof root === 'string' ? byId(root) : root;
+  if(!box || !box.querySelectorAll) return;
+  box.querySelectorAll('[data-open-symptom]').forEach((btn) => {
+    btn.onclick = () => openSymptomEntry(btn.getAttribute('data-open-symptom'));
+  });
+}
+
+function renderSymptomEntryHtml(entry){
+  if(!entry) return '<div class="small">That symptom entry was not found.</div>';
+  const sources = (entry.sources || []).map((s) => {
+    const bit = s.url ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.name)}</a>` : esc(s.name);
+    return `<li>${bit}${s.license ? ' <span class="small">(' + esc(s.license) + ')</span>' : ''}${s.used_for ? ' — ' + esc(s.used_for) : ''}</li>`;
+  }).join('');
+  const safety = (entry.safety || []).map((s) => `<div class="notice mt-8">${esc(s)}</div>`).join('');
+  const causes = (entry.causes || []).map((cause, i) => {
+    const like = cause.likelihood ? ` <span class="badge">${esc(cause.likelihood)} likelihood</span>` : '';
+    const tests = (cause.tests || []).map((t, j) => `
+      <div class="test-step">
+        <div><span class="label">Test ${j + 1}.</span> <span class="label">Tool:</span> ${esc(t.tool)}</div>
+        <div class="mt-6"><span class="label">Check:</span> ${esc(t.check)}</div>
+        <div class="mt-6"><span class="label">Good:</span> ${esc(t.good)}</div>
+        <div class="mt-6"><span class="label">Bad:</span> ${esc(t.bad)}</div>
+        <div class="mt-6"><span class="label">Spec:</span> ${esc(t.spec)}</div>
+      </div>
+    `).join('');
+    const fix = (cause.fix || []).map((s) => `<li>${esc(s)}</li>`).join('');
+    return `<div class="cause-block"><h4>Cause ${i + 1}: ${esc(cause.title)}${like}</h4>${tests}${fix ? `<div class="small mt-8"><strong>Fix</strong></div><ol class="checks diy-list">${fix}</ol>` : ''}</div>`;
+  }).join('');
+  const dtcs = (entry.related_dtcs || []).map((c) => `<button type="button" class="chip" data-use-dtc="${esc(c)}">${esc(c)}</button>`).join('');
+  const cdi = entry.cdi_workflow ? '<div class="notice mt-8">This entry can use the CDI pinout workflow. Select the machine in Vehicle search to open a pinout if one is filed. A pinout is not an OBD code.</div>' : '';
+  return `
+    <div class="code-card" id="symptom-entry-${esc(entry.id)}">
+      <div><span class="badge ${entry.tier === 'generated-general' ? 'generic' : 'cited'}">${esc(entry.tier)}</span><span class="badge">${esc(entry.systemLabel || entry.system)}</span><span class="badge">${esc(entry.difficulty || '')}</span></div>
+      <h3>${esc(entry.title)}</h3>
+      <div class="small mt-6"><strong>${esc(entry.tierLabel || '')}</strong></div>
+      <div class="mt-8"><strong>Symptom</strong><div class="small mt-6">${esc(entry.symptom)}</div></div>
+      <div class="mt-8"><strong>What this is</strong><div class="small mt-6">${esc(entry.means)}</div></div>
+      ${safety}
+      <div class="small mt-8"><strong>Time:</strong> ${esc(entry.time || '')}</div>
+      ${(entry.tools || []).length ? `<div class="small mt-6"><strong>Tools:</strong> ${esc(entry.tools.join(', '))}</div>` : ''}
+      ${(entry.parts || []).length ? `<div class="small mt-6"><strong>Parts:</strong> ${esc(entry.parts.join(', '))}</div>` : ''}
+      <div class="mt-10"><strong>How to test each listed cause</strong></div>
+      ${causes}
+      ${dtcs ? `<div class="mt-8"><strong>Related codes</strong><div class="chip-row mt-6">${dtcs}</div></div>` : ''}
+      ${cdi}
+      <div class="small mt-8"><strong>Sources and licenses</strong></div>
+      <ul class="source-list">${sources}</ul>
+    </div>
+  `;
+}
+
+function currentSymptomFilters(){
+  const audience = (state.selectedVehicle && typeof window.SymptomRepair !== 'undefined')
+    ? window.SymptomRepair.audienceForVehicle(state.selectedVehicle)
+    : '';
+  return {
+    system: value('symptomSystemFilter'),
+    tier: value('symptomTierFilter'),
+    audience: audience || 'all'
+  };
+}
+
+function renderSymptomSearch(){
+  if(typeof window.SymptomRepair === 'undefined') return;
+  const stats = byId('symptomSearchStats');
+  const box = byId('symptomSearchResults');
+  if(!box) return;
+  const q = value('symptomQuery');
+  const filters = currentSymptomFilters();
+  const hits = window.SymptomRepair.search(q, filters);
+  const all = window.SymptomRepair.stats();
+  if(stats){
+    stats.textContent = hits.length + ' shown · ' + all.total + ' symptom entries offline · ' + all.byTier.cited + ' cited / ' + all.byTier['generated-general'] + ' general';
+  }
+  const limit = 25;
+  const shown = hits.slice(0, limit);
+  if(!shown.length){
+    box.innerHTML = '<div class="small">No symptom entry matches that search. Try a system chip or a shorter word (smoke, crank, leak).</div>';
+    return;
+  }
+  box.innerHTML = shown.map((e) => `
+    <button type="button" class="symptom-card" data-open-symptom="${esc(e.id)}">
+      <h3>${esc(e.title)}</h3>
+      <div class="symptom-meta"><span class="badge ${e.tier === 'generated-general' ? 'generic' : 'cited'}">${esc(e.tier)}</span> ${esc(e.systemLabel)} — ${esc(e.symptom)}</div>
+    </button>
+  `).join('') + (hits.length > limit ? `<div class="small">Showing ${limit} of ${hits.length}. Narrow the search or pick a system.</div>` : '');
+  bindSymptomButtons(box);
+}
+
+function renderSymptomEntry(id){
+  const view = byId('symptomEntryView');
+  if(!view || typeof window.SymptomRepair === 'undefined') return;
+  const entry = window.SymptomRepair.byId(id);
+  view.hidden = !entry;
+  view.innerHTML = entry ? renderSymptomEntryHtml(entry) : '';
+  if(!entry) return;
+  bindSymptomButtons(view);
+  view.querySelectorAll('[data-use-dtc]').forEach((btn) => {
+    btn.onclick = () => {
+      const field = byId('codes');
+      if(field) field.value = btn.getAttribute('data-use-dtc');
+      showEl('lookupCard');
+      quickLookup();
+    };
+  });
+}
+
+function fillSymptomFilters(){
+  if(typeof window.SymptomRepair === 'undefined') return;
+  const sel = byId('symptomSystemFilter');
+  const chips = byId('symptomSystemChips');
+  const systems = window.SymptomRepair.systems().filter((s) => s.count);
+  if(sel && sel.options.length <= 1){
+    systems.forEach((s) => {
+      const opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = s.label + ' (' + s.count + ')';
+      sel.appendChild(opt);
+    });
+  }
+  if(chips){
+    const current = value('symptomSystemFilter');
+    chips.innerHTML = systems.map((s) => `<button type="button" class="system-chip${current === s.id ? ' is-on' : ''}" data-system="${esc(s.id)}">${esc(s.label)} (${s.count})</button>`).join('');
+    chips.querySelectorAll('[data-system]').forEach((btn) => {
+      btn.onclick = () => {
+        if(byId('symptomSystemFilter')) byId('symptomSystemFilter').value = btn.getAttribute('data-system');
+        renderSymptomSearch();
+        fillSymptomFilters();
+      };
+    });
+  }
+}
+
+function initSymptomRepair(){
+  if(typeof window.SymptomRepair === 'undefined' || !byId('symptomRepairCard')) return;
+  fillSymptomFilters();
+  renderSymptomSearch();
+  const q = byId('symptomQuery');
+  const sys = byId('symptomSystemFilter');
+  const tier = byId('symptomTierFilter');
+  if(q) q.oninput = renderSymptomSearch;
+  if(sys) sys.onchange = () => { fillSymptomFilters(); renderSymptomSearch(); };
+  if(tier) tier.onchange = renderSymptomSearch;
+}
+
 function renderLookupCards(items){
   if(!items.length){ html('codeResults','<div class="code-card">No matching codes.</div>'); showEl('codeResults'); return; }
   html('codeResults', items.map(item => {
@@ -248,10 +411,12 @@ function renderLookupCards(items){
         ${parts}
         ${diy}
         ${renderStructuredGuidance(item.code, item)}
+        ${typeof window.SymptomRepair !== 'undefined' ? relatedSymptomLinks(window.SymptomRepair.byDtc(item.code)) : ''}
       </div>
     `;
   }).join(''));
   showEl('lookupCard');
+  bindSymptomButtons('codeResults');
 }
 
 function quickLookup(){
@@ -731,9 +896,11 @@ function renderAnalysis(analysis){
     ${relatedJobs ? `<div class="result-block"><h3>Related jobs for this diagnosis only</h3>${relatedJobs}</div>` : ''}
     ${otherCodes ? `<div class="result-block"><h3>Other codes in this case</h3><div class="cards">${otherCodes}</div></div>` : ''}
     ${((analysis.codeCards || [])[0] ? `<div class="result-block"><h3>Tests for each listed cause</h3>${renderStructuredGuidance(analysis.codeCards[0].code, analysis.codeCards[0])}</div>` : '')}
+    ${typeof window.SymptomRepair !== 'undefined' ? `<div class="result-block"><h3>Related symptom repairs</h3>${relatedSymptomLinks((() => { const fromCodes = (analysis.codeCards || []).flatMap((c) => window.SymptomRepair.byDtc(c.code)); const fromSym = window.SymptomRepair.byKeywords((analysis.symptoms || []).concat(checkedSymptoms())); const seen = new Set(); return fromCodes.concat(fromSym).filter((e) => { if(seen.has(e.id)) return false; seen.add(e.id); return true; }).slice(0, 8); })())}</div>` : ''}
     <div class="result-block"><h3>Disclaimers</h3><ol class="checks">${list(analysis.disclaimers)}</ol></div>
   `);
   showEl('resultsCard');
+  bindSymptomButtons('results');
   showStatus('Diagnosis ready: ' + outcome.title, 'ok');
 }
 
@@ -983,6 +1150,7 @@ function selectVehicle(id){
   renderSelectedVehicle();
   renderCdiPinout();
   renderVehicleSearch();
+  if(typeof renderSymptomSearch === 'function') renderSymptomSearch();
 }
 
 function clearSelectedVehicle(){
@@ -992,6 +1160,7 @@ function clearSelectedVehicle(){
   if(panel){ panel.hidden = true; panel.innerHTML = ''; }
   if(pin){ pin.hidden = true; pin.innerHTML = ''; }
   if(byId('vehicleSearchResults')) renderVehicleSearch();
+  if(typeof renderSymptomSearch === 'function') renderSymptomSearch();
 }
 
 function renderSelectedVehicle(){
@@ -1006,11 +1175,11 @@ function renderSelectedVehicle(){
   const near = (entry.near_matches || []).map((n) => `<div class="near-match">Not merged: ${esc(n.label)} — ${esc(n.reason)}</div>`).join('');
   let workflow = '';
   if(entry.workflow === 'generic_automotive'){
-    workflow = '<p class="small">Use Diagnose, Listen, Look, and Code as usual. Guides and jobs stay generic automotive.</p>';
+    workflow = '<p class="small">Use Diagnose, Listen, Look, and Code as usual. Guides and jobs stay generic automotive. <button type="button" class="chip" id="btnBrowseAutoSymptoms">Browse automotive symptoms</button></p>';
   } else if(entry.has_cdi_pinout){
-    workflow = '<p class="small">CDI ignition pinout is shown below. It is not an OBD code and is not mixed into a DTC diagnosis.</p>';
+    workflow = '<p class="small">CDI ignition pinout is shown below. It is not an OBD code and is not mixed into a DTC diagnosis. <button type="button" class="chip" id="btnBrowsePowerSymptoms">Browse powersports symptoms (including CDI / stator)</button></p>';
   } else {
-    workflow = '<p class="small">No CDI pinout is filed for this vehicle. Generic automotive DTC and job content may not apply.</p>';
+    workflow = '<p class="small">No CDI pinout is filed for this vehicle. Generic automotive DTC and job content may not apply. <button type="button" class="chip" id="btnBrowsePowerSymptoms">Browse powersports symptoms</button></p>';
   }
   panel.innerHTML = `
     <div class="notice">
@@ -1023,6 +1192,16 @@ function renderSelectedVehicle(){
   `;
   const clearBtn = byId('btnClearSelectedVehicle');
   if(clearBtn) clearBtn.onclick = clearSelectedVehicle;
+  const browseAuto = byId('btnBrowseAutoSymptoms');
+  const browsePower = byId('btnBrowsePowerSymptoms');
+  const openBrowse = () => {
+    renderSymptomSearch();
+    const card = byId('symptomRepairCard');
+    if(card) showEl('symptomRepairCard');
+    if(card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+  if(browseAuto) browseAuto.onclick = openBrowse;
+  if(browsePower) browsePower.onclick = openBrowse;
 }
 
 function renderCdiPinout(){
@@ -1095,6 +1274,7 @@ async function init(){
   restoreLegalAcceptance();
   bindEvents();
   initVehicleSearch();
+  initSymptomRepair();
   text('appVersion', 'v' + APP_VERSION);
   text('footerVersion', 'v' + APP_VERSION);
   await loadDb();

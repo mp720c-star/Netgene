@@ -1,0 +1,99 @@
+{
+  "file": "symptom-repair-db.js",
+  "sha256": "d48dd02bb43a68d6daaff0a2184d74b9135f05d217b3aed85a8f360cac21643b",
+  "entry_count": 212,
+  "by_system": {
+    "body_srs": 6,
+    "brakes": 12,
+    "cooling": 12,
+    "drivetrain": 8,
+    "electrical": 10,
+    "engine_no_start": 14,
+    "exhaust_emissions": 8,
+    "four_wd": 6,
+    "fuel": 10,
+    "hvac": 8,
+    "ignition": 8,
+    "leaks": 8,
+    "misfire": 8,
+    "noises_vibrations": 14,
+    "powersports_carb": 6,
+    "powersports_cdi": 6,
+    "powersports_engine": 8,
+    "powersports_snowmobile": 6,
+    "smells": 7,
+    "smoke": 7,
+    "starting_charging": 12,
+    "steering_suspension": 12,
+    "transmission_auto": 10,
+    "transmission_manual": 6
+  },
+  "by_tier": {
+    "cited": 82,
+    "generated-general": 130
+  },
+  "sources": [
+    {
+      "id": "ftc_basics",
+      "name": "FTC, Auto Repair Basics (August 2012)",
+      "url": "https://www.govinfo.gov/content/pkg/GOVPUB-FT-PURL-gpo61874/pdf/GOVPUB-FT-PURL-gpo61874.pdf",
+      "license": "U.S. government work, public domain (17 U.S.C. \u00a7 105)"
+    },
+    {
+      "id": "epa_obd",
+      "name": "EPA, Do you drive a 1996 or newer car or light truck? (EPA-420-F-02-016, rev. Sept. 2012)",
+      "url": "https://www.epa.gov/sites/default/files/2013-08/documents/420f02016.pdf",
+      "license": "U.S. government work, public domain (17 U.S.C. \u00a7 105)"
+    },
+    {
+      "id": "nhtsa_tires",
+      "name": "NHTSA TireWise tire safety consumer guidance",
+      "url": "https://www.nhtsa.gov/vehicle-safety/tires",
+      "license": "U.S. government work, public domain (17 U.S.C. \u00a7 105)"
+    },
+    {
+      "id": "oregon_smoke",
+      "name": "Oregon DEQ, Smoking Vehicles (updated 2015-02-18)",
+      "url": "https://www.oregon.gov/deq/FilterDocs/SmokingVehicles.pdf",
+      "license": "Oregon state government consumer publication; facts cited, wording original (see manifest note)"
+    },
+    {
+      "id": "pa_dep_smoke",
+      "name": "Pennsylvania DEP, Automobiles \u2014 Car Care (visible smoke table, citing TCEQ 2002)",
+      "url": "https://www.pa.gov/agencies/dep/programs-and-services/air/bureau-of-air-quality/automobiles/car-care",
+      "license": "Pennsylvania state government consumer publication; facts cited, wording original (see manifest note)"
+    },
+    {
+      "id": "fueleconomy",
+      "name": "DOE / EPA FuelEconomy.gov FAQ \u2014 excessively low fuel economy",
+      "url": "https://www.fueleconomy.gov/feg/info.shtml",
+      "license": "U.S. government work, public domain (17 U.S.C. \u00a7 105)"
+    },
+    {
+      "id": "doe_battery",
+      "name": "DOE-HDBK-1084-95, Primer on Lead-Acid Storage Batteries",
+      "url": "https://www.energy.gov/sites/default/files/2026-05/DOE-HDBK-1084-95.pdf",
+      "license": "U.S. government work, public domain (17 U.S.C. \u00a7 105)"
+    },
+    {
+      "id": "this_app",
+      "name": "Original structured diagnostic procedure written for this app",
+      "url": "",
+      "license": "generated-general / original wording; not a vehicle-specific service procedure"
+    },
+    {
+      "id": "service_manual",
+      "name": "Vehicle service manual for exact test values, torque, and pinouts",
+      "url": "",
+      "license": "manufacturer documentation (not reproduced)"
+    }
+  ],
+  "licenses_note": "U.S. federal publications cited here (FTC, EPA, NHTSA, DOE / FuelEconomy.gov, DOE-HDBK-1084-95) are U.S. government works and are treated as public domain under 17 U.S.C. \u00a7 105. Oregon DEQ and Pennsylvania DEP smoking-vehicle tables are state government consumer publications; this app cites the facts (smoke-color meanings, condensation note) in original wording and does not copy the tables. SAE, ISO, and vehicle-maker manuals are not reproduced. Test procedures are original wording written for this app.",
+  "cited_universal_specs": [
+    "2/32 inch \u2014 NHTSA TireWise: replace the tire when tread is worn to 2/32 inch, when the built-in wear bars are flush with the tread, or when a penny placed in the tread with Lincoln's head upside down shows the top of Lincoln's head",
+    "NHTSA TireWise: check pressure when the tires are cold (vehicle not driven for at least three hours). Use the pressure on the driver's door sticker or owner's manual, not the number molded on the tire sidewall",
+    "FTC Auto Repair Basics: after you bounce that corner of the vehicle hard and let go, more than one rebound indicates weak shock absorbers or struts",
+    "DOE-HDBK-1084-95: a lead-acid cell's open-circuit voltage is approximately specific gravity + 0.845. Compare the rested pack reading to the voltage or specific-gravity table in the service manual for this battery; this app does not invent a single pack voltage"
+  ],
+  "generated_by": "atdd/scripts/build-symptom-repair-db.py"
+}
