@@ -1,5 +1,5 @@
 // Bump whenever Home Screen first-paint / Connect Scanner changes.
-const CACHE = "atdd-cdi-unified-v5-iphone-connect-scanner";
+const CACHE = "atdd-cdi-unified-v6-connect-no-crash";
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();

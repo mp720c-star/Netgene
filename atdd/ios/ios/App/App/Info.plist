@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-        <string>ATDD Connect</string>
+        <string>Auto/Truck Diagnostics for Dummies</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -45,10 +45,14 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Look uses your camera to capture inspection photos and video.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Listen uses your microphone to record vehicle sounds.</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>ATDD Connect uses Bluetooth to talk to your FIXD / OBD adapter for live diagnostics.</string>
+	<string>Auto/Truck Diagnostics for Dummies uses Bluetooth to talk to a FIXD or generic ELM327-style OBD-II adapter for read-only diagnostics. FIXD compatibility is unverified until a live test succeeds.</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
-	<string>ATDD Connect uses Bluetooth to talk to your FIXD / OBD adapter for live diagnostics.</string>
+	<string>Auto/Truck Diagnostics for Dummies uses Bluetooth to talk to a FIXD or generic ELM327-style OBD-II adapter for read-only diagnostics. FIXD compatibility is unverified until a live test succeeds.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>bluetooth-central</string>

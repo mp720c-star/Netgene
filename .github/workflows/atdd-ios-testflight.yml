@@ -6,11 +6,20 @@ on:
       upload:
         description: Upload the signed build to TestFlight
         type: boolean
-        default: true
+        default: false
       marketing_version:
         description: iOS marketing version
         type: string
         default: "1.2.0"
+
+      private_device_test:
+        description: Check the iPhone simulator and use an existing registered-device profile if available
+        type: boolean
+        default: false
+      artifact_recipient:
+        description: Optional public encryption certificate (base64 DER) for a private build download
+        type: string
+        required: false
 
 permissions:
   contents: read
@@ -70,7 +79,20 @@ jobs:
           test -d node_modules/@capacitor-community/bluetooth-le
           test -d node_modules/@capacitor/ios
           npm run sync:ios
-          grep -q 'registerPlugin("BluetoothLe")' ios/App/App/public/js/capacitor-ble-transport.js
+          node scripts/verify-ios-content.mjs ios/App/App/public
+          node tests/stored-codes.test.mjs
+
+      - name: Open the actual app in the iPhone simulator
+        if: ${{ inputs.private_device_test }}
+        run: bash atdd/ios/tests/verify-simulator.sh
+
+      - name: Find existing registered-device profiles for ATDD
+        if: ${{ inputs.private_device_test && !inputs.upload }}
+        env:
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+        run: node atdd/ios/scripts/find-test-profiles.cjs
 
       - name: Import the distribution certificate
         uses: apple-actions/import-codesign-certs@v3
@@ -95,6 +117,7 @@ jobs:
           import pathlib
           import plistlib
           import shutil
+          import subprocess
 
           temp = pathlib.Path(os.environ["RUNNER_TEMP"])
           with (temp / "atdd-profile.plist").open("rb") as stream:
@@ -106,11 +129,31 @@ jobs:
                   or profile["Entitlements"]["application-identifier"] != f"{team}.{bundle}"
                   or profile["ExpirationDate"] <= datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)):
               raise SystemExit("The profile does not match this ATDD release or has expired.")
+          method = "app-store-connect"
+          source = temp / "atdd.mobileprovision"
+          candidates = []
+          for candidate in sorted((temp / "atdd-device-profiles").glob("*.mobileprovision")):
+              decoded = subprocess.check_output(["security", "cms", "-D", "-i", str(candidate)])
+              other = plistlib.loads(decoded)
+              if (other.get("ProvisionedDevices") and not other["Entitlements"].get("get-task-allow")
+                      and other["Entitlements"].get("application-identifier") == f"{team}.{bundle}"
+                      and team in other["TeamIdentifier"]
+                      and set(other["DeveloperCertificates"]).intersection(profile["DeveloperCertificates"])
+                      and other["ExpirationDate"] > datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)):
+                  candidates.append((other, candidate))
+          if candidates:
+              all_devices = set().union(*(set(row["ProvisionedDevices"]) for row, _ in candidates))
+              for row, candidate in candidates:
+                  if set(row["ProvisionedDevices"]) == all_devices:
+                      profile, source, method = row, candidate, "release-testing"
+                      break
+          print(f"ATDD_EXPORT_METHOD={method}; matching existing registered-device profiles={len(candidates)}")
           destination = pathlib.Path.home() / "Library/Developer/Xcode/UserData/Provisioning Profiles"
           destination.mkdir(parents=True, exist_ok=True)
-          shutil.copyfile(temp / "atdd.mobileprovision", destination / (profile["UUID"] + ".mobileprovision"))
+          shutil.copyfile(source, destination / (profile["UUID"] + ".mobileprovision"))
           with open(os.environ["GITHUB_OUTPUT"], "a") as output:
               print(f"name={profile['Name']}", file=output)
+              print(f"method={method}", file=output)
           PY
 
       - name: Configure signing on the app target and archive
@@ -150,6 +193,7 @@ jobs:
       - name: Export the signed iPhone build
         id: export
         env:
+          EXPORT_METHOD: ${{ steps.profile.outputs.method }}
           IOS_TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
           PROFILE_NAME: ${{ steps.profile.outputs.name }}
         run: |
@@ -160,7 +204,7 @@ jobs:
           import plistlib
 
           options = {
-              "method": "app-store-connect",
+              "method": os.environ["EXPORT_METHOD"],
               "destination": "export",
               "signingStyle": "manual",
               "teamID": os.environ["IOS_TEAM_ID"],
@@ -178,8 +222,48 @@ jobs:
           test -f "${files[0]}"
           echo "path=${files[0]}" >> "$GITHUB_OUTPUT"
 
+      - name: Verify the contents and signature of the exported iPhone app
+        env:
+          IPA_PATH: ${{ steps.export.outputs.path }}
+        run: |
+          set -euo pipefail
+          /usr/bin/ditto -x -k "$IPA_PATH" "$RUNNER_TEMP/ipa-check"
+          apps=("$RUNNER_TEMP"/ipa-check/Payload/*.app)
+          test "${#apps[@]}" = 1
+          app="${apps[0]}"
+          /usr/bin/codesign --verify --deep --strict "$app"
+          test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app/Info.plist")" = "$BUNDLE_ID"
+          test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$app/Info.plist")" = "$GITHUB_RUN_NUMBER"
+          test -f "$app/embedded.mobileprovision"
+          node atdd/ios/scripts/verify-ios-content.mjs "$app/public"
+          node -e 'const c=require(process.argv[1]); if(!c.packageClassList.includes("BluetoothLe"))process.exit(1)' "$app/capacitor.config.json"
+          shasum -a 256 "$IPA_PATH"
+
+      - name: Encrypt the build for the requesting computer
+        if: ${{ !inputs.upload && inputs.artifact_recipient != '' }}
+        env:
+          RECIPIENT: ${{ inputs.artifact_recipient }}
+          IPA_PATH: ${{ steps.export.outputs.path }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$RECIPIENT" | /usr/bin/base64 -D | openssl x509 -inform DER -out "$RUNNER_TEMP/recipient.pem"
+          openssl cms -encrypt -binary -aes-256-cbc -outform DER -in "$IPA_PATH" -out "$RUNNER_TEMP/ATDD.ipa.cms" "$RUNNER_TEMP/recipient.pem"
+
+          if test -f "$RUNNER_TEMP/ATDD-iPhone.png"; then
+            openssl cms -encrypt -binary -aes-256-cbc -outform DER -in "$RUNNER_TEMP/ATDD-iPhone.png" -out "$RUNNER_TEMP/ATDD-iPhone.png.cms" "$RUNNER_TEMP/recipient.pem"
+          fi
+
+      - name: Save encrypted build for download
+        if: ${{ !inputs.upload && inputs.artifact_recipient != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: atdd-ios-${{ github.run_number }}-encrypted
+          path: ${{ runner.temp }}/ATDD*.cms
+          retention-days: 3
+          if-no-files-found: error
+
       - name: Upload the verified build to TestFlight
-        if: ${{ github.event_name == 'push' || inputs.upload }}
+        if: ${{ inputs.upload }}
         uses: apple-actions/upload-testflight-build@v2
         with:
           app-path: ${{ steps.export.outputs.path }}
@@ -188,7 +272,7 @@ jobs:
           api-private-key: ${{ secrets.ASC_PRIVATE_KEY }}
 
       - name: Record Apple processing status
-        if: ${{ github.event_name == 'push' || inputs.upload }}
+        if: ${{ inputs.upload }}
         env:
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
@@ -197,52 +281,10 @@ jobs:
         run: |
           set -euo pipefail
           node <<'NODE'
-          const crypto = require("node:crypto");
+          const { asc, token } = require("./atdd/ios/scripts/app-store-connect.cjs");
           const bundleId = process.env.BUNDLE_ID;
           const buildNumber = process.env.GITHUB_RUN_NUMBER;
           const marketingVersion = process.env.MARKETING_VERSION;
-
-          function pem() {
-            let key = process.env.ASC_PRIVATE_KEY || "";
-            if (!key.includes("BEGIN")) {
-              key = Buffer.from(key, "base64").toString("utf8");
-            }
-            return key.replace(/\\n/g, "\n");
-          }
-
-          function token() {
-            const header = Buffer.from(JSON.stringify({
-              alg: "ES256",
-              kid: process.env.ASC_KEY_ID,
-              typ: "JWT",
-            })).toString("base64url");
-            const now = Math.floor(Date.now() / 1000);
-            const body = Buffer.from(JSON.stringify({
-              iss: process.env.ASC_ISSUER_ID,
-              iat: now,
-              exp: now + 600,
-              aud: "appstoreconnect-v1",
-            })).toString("base64url");
-            const data = `${header}.${body}`;
-            const signature = crypto.sign("SHA256", Buffer.from(data), {
-              key: pem(),
-              dsaEncoding: "ieee-p1363",
-            });
-            return `${data}.${signature.toString("base64url")}`;
-          }
-
-          async function asc(path, jwt) {
-            const response = await fetch(`https://api.appstoreconnect.apple.com${path}`, {
-              headers: { Authorization: `Bearer ${jwt}` },
-            });
-            const text = await response.text();
-            if (!response.ok) {
-              const error = new Error(`App Store Connect returned HTTP ${response.status}`);
-              error.status = response.status;
-              throw error;
-            }
-            return JSON.parse(text);
-          }
 
           function report(state, detail) {
             console.log(`APPLE_PROCESSING_STATE=${state}`);

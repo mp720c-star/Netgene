@@ -1,84 +1,229 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-title" content="ATDD+CDI" />
-  <meta name="theme-color" content="#0f2a24" />
-  <meta name="atdd-build" content="16.iphone-pwa.2" />
-  <title>ATDD — Connect Scanner</title>
-  <link rel="manifest" href="./manifest.webmanifest" />
-  <link rel="icon" href="./icon-180.png" />
-  <link rel="apple-touch-icon" href="./icon-180.png" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./styles.css" />
-<meta name="atdd-shell" content="capacitor-ios-ble" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="ATDD">
+  <meta name="theme-color" content="#b8121b">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; media-src 'self' blob: data:; connect-src 'self'">
+  <title>Auto/Truck Diagnostics for Dummies</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icon.png">
+  <link rel="apple-touch-icon" href="./icon.png">
+  <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
-  <header class="top">
-    <div>
-      <p class="brand">Auto/Truck Diagnostics for Dummies</p>
-      <h1>ATDD+CDI</h1>
-      <p class="lead">Home Screen build <code id="buildStamp">…</code> — Connect Scanner opens your FIXD when Bluetooth is available.</p>
-    </div>
-    <div class="badges">
-      <span id="integrityBadge" class="badge">…</span>
-      <span id="profileBadge" class="badge">…</span>
-    </div>
-  </header>
-
-  <nav class="nav" aria-label="Primary">
-    <button type="button" data-nav="home">Home</button>
-    <button type="button" data-nav="obd2" class="active">Connect Scanner</button>
-    <button type="button" data-nav="cdi">CDI Ignition</button>
-    <button type="button" data-nav="status">Verify</button>
-  </nav>
-
-  <p id="bootError" class="warn" hidden></p>
-
-  <main>
-    <section data-mode-panel="home" hidden>
-      <h2>ATDD</h2>
-      <p class="note">This Home Screen icon opens the <strong>ATDD+CDI</strong> web app (PWA). Live FIXD needs Bluetooth — native Cap BLE inside ATDD Connect, or Chrome/Edge on Android/Windows/Mac.</p>
-      <div class="row">
-        <button type="button" class="primary" data-nav="obd2" id="homeConnectScanner" data-autostart="1">Connect Scanner</button>
-        <button type="button" class="ghost" data-nav="cdi">CDI diagnostics</button>
-        <button type="button" class="ghost" data-nav="status">Verify</button>
+  <div class="topbar" role="navigation" aria-label="Main actions">
+    <button class="warn" id="btnRunDiagnosisTop">Diagnose</button>
+    <button id="btnLookupTop">Listen</button>
+    <button id="btnJobsTop">Look</button>
+    <button id="btnRebuildTop">Code</button>
+    <button class="warn connect-bar" id="btnBluetoothTop" title="Connect scanner over Bluetooth">Connect</button>
+    <button class="good topbar-extra" id="btnSaveCaseTop">Save</button>
+    <button class="secondary topbar-extra" id="btnExportTop">Export</button>
+    <button class="secondary topbar-extra" id="btnComputerTop">Computer</button>
+  </div>
+  <div class="wrap">
+    <div class="hero">
+      <h1>Auto/Truck Diagnostics for Dummies <span class="ver" id="appVersion">v1.2.0</span></h1>
+      <div class="sub">Use the microphone and camera. The app diagnoses what is wrong, then shows only the repair steps for that finding.</div>
+      <div class="stats" id="dbStats"></div>
+      <div class="acceptance">
+        <input type="checkbox" id="acceptLegal">
+        <div>I know this is an assistant, not a guaranteed repair. <span class="small">(Saved on this device after one check.)</span></div>
       </div>
-      <h3>Saved vehicles</h3>
-      <div id="vehiclesHome"></div>
-    </section>
+    </div>
 
-    <section data-mode-panel="cdi" hidden>
-      <h2>CDI Ignition Diagnostics</h2>
-      <div id="cdiBody"></div>
-    </section>
+    <div id="statusBanner" class="status-banner" hidden role="status" aria-live="polite"></div>
 
-    <section data-mode-panel="obd2">
-      <h2>Connect Scanner</h2>
-      <div id="vehiclesObd" class="vehicles-strip"></div>
-      <div id="obd2Body"></div>
-    </section>
+    <div class="stack mt-14">
+      <section class="card" id="bluetoothCard" hidden>
+        <h2>Bluetooth · Connect FIXD</h2>
+        <p class="lead">Pair your real FIXD over Bluetooth, read codes, and drop them into the scanner field above. Demo is separate and labeled SIMULATED — it never pretends to be FIXD.</p>
+        <p class="small" id="btSupport">Checking Bluetooth…</p>
+        <div class="status-banner warn" id="btIphoneGate" hidden></div>
+        <div class="row secondary-actions">
+          <button class="warn" id="btnBtConnect">Connect FIXD</button>
+          <button class="secondary" id="btnBtScanAll">Scan any BLE device</button>
+          <button class="secondary" id="btnBtReadCodes" disabled>Read codes</button>
+          <button class="secondary" id="btnBtDisconnect" disabled>Disconnect</button>
+          <button class="secondary" id="btnBtDemo">Demo only (SIMULATED)</button>
+        </div>
+        <pre id="btLog" class="bt-log" aria-live="polite">Idle. Tap Connect, with the adapter powered in the OBD port.</pre>
+        <p class="small mt-8">FIXD protocol claim stays <code>UNVERIFIED</code> until a live Mode 03 round-trip succeeds on a physical truck. Live connect never silently falls back to Demo.</p>
+      </section>
 
-    <section data-mode-panel="status" hidden>
-      <h2>Transfer verification</h2>
-      <div id="statusBody"></div>
-    </section>
-  </main>
+      <section class="card primary-card" id="lookupCard">
+        <h2>1. Capture evidence</h2>
+        <p class="lead">Listen to the engine, look at exhaust or under-hood, then diagnose. Optional scanner codes sharpen the result.</p>
 
-  <footer>
-    <p>Build <code id="buildStampFoot">…</code> · branch <code>cursor/complete-platform-atdd-scanner-e3f0</code> · FIXD protocol <code>UNVERIFIED</code></p>
-  </footer>
+        <div class="capture-grid">
+          <div class="capture-panel" id="listenPanel">
+            <h3>Listen</h3>
+            <p class="small">Record idle knock, tick, squeal, or grind (10–20 seconds).</p>
+            <div class="row">
+              <button id="btnAudioRecord">Start listening</button>
+              <button class="secondary" id="btnAudioUpload">Upload audio</button>
+            </div>
+            <input type="file" id="audioFile" accept="audio/*" hidden>
+            <audio id="audioPreview" controls class="full-w mt-8"></audio>
+            <div class="small" id="audioSummary">No audio yet.</div>
+          </div>
 
-  <script type="module" src="./js/app.js"></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js').catch(() => {});
-    }
-  </script>
+          <div class="capture-panel" id="lookPanel">
+            <h3>Look</h3>
+            <p class="small">Point at exhaust smoke or the belt/pulley area, then capture a frame.</p>
+            <div class="row">
+              <button id="btnStartCamera">Open camera</button>
+              <button class="secondary" id="btnCaptureFrame">Capture frame</button>
+            </div>
+            <div class="row mt-8">
+              <button class="secondary" id="btnStopCamera">Stop camera</button>
+              <button class="secondary" id="btnPhotoUpload">Upload photo</button>
+              <button class="secondary" id="btnVideoUpload">Upload video</button>
+            </div>
+            <input type="file" id="photoFile" accept="image/*" hidden>
+            <input type="file" id="videoFile" accept="video/*" hidden>
+            <video id="videoPreview" playsinline muted controls class="mt-8"></video>
+            <canvas id="frameCanvas" hidden></canvas>
+            <img id="frameImage" hidden alt="Captured frame" class="mt-8">
+            <img id="photoPreview" hidden alt="Photo evidence" class="mt-8">
+            <div class="small" id="imageSummary">No photo or frame yet.</div>
+          </div>
+        </div>
+
+        <label for="codes">Scanner code (optional)</label>
+        <textarea id="codes" placeholder="P0300" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false"></textarea>
+        <div class="chip-row" id="exampleCodes" aria-label="Example codes">
+          <button type="button" class="chip" data-code="P0300">P0300</button>
+          <button type="button" class="chip" data-code="P0420">P0420</button>
+          <button type="button" class="chip" data-code="P0171">P0171</button>
+          <button type="button" class="chip" data-code="P0301">P0301</button>
+        </div>
+        <div class="row secondary-actions">
+          <button class="secondary" id="btnLookup">Code-only lookup</button>
+          <button class="secondary" id="btnSearchDtc">Search words</button>
+          <button class="secondary" id="btnClearCodes">Clear code</button>
+        </div>
+        <label for="dbQuery">Search a word (optional)</label>
+        <input id="dbQuery" placeholder="thermostat, misfire, starter">
+        <div id="codeResults" class="cards mt-10"></div>
+
+        <h3 class="mt-14">Quick symptoms (optional)</h3>
+        <div class="symptoms" id="symptoms"></div>
+        <label for="notes">Notes</label>
+        <textarea id="notes" placeholder="Stalls warm, fuel smell, battery light on."></textarea>
+
+        <div class="row primary-actions mt-10">
+          <button class="warn" id="btnRunDiagnosis">Diagnose now</button>
+        </div>
+        <p class="small mt-8">Repair instructions appear below only after diagnosis decides what is needed.</p>
+      </section>
+
+      <section class="card" id="resultsCard">
+        <h2>2. Diagnosis &amp; instructions</h2>
+        <div class="row results-toolbar">
+          <button class="secondary" id="btnSaveCase">Save</button>
+          <button class="secondary" id="btnLoadCase">Load last</button>
+          <button class="secondary" id="btnClearCase">Clear</button>
+          <button class="secondary" id="btnExport">Export</button>
+        </div>
+        <div id="results" class="out rich mt-10">Nothing yet. Capture sound or a photo, or enter a code, then tap <strong>Diagnose now</strong>.</div>
+      </section>
+
+      <details class="card collapsible" id="jobsCard">
+        <summary><strong>Browse how-to jobs</strong> <span class="small">(manual — diagnosis already pulls the right job when needed)</span></summary>
+        <div class="small">Full driveway procedures stay available here if you already know the job. Diagnosis does not dump this list into every result.</div>
+        <label for="jobQuery">Find a job</label>
+        <input id="jobQuery" placeholder="starter, brakes, oil, axle, stereo">
+        <div id="commonJobs" class="mt-10"></div>
+      </details>
+
+      <details class="card collapsible" id="rebuildCard">
+        <summary><strong>Browse engine rebuild</strong> <span class="small">(shown automatically only when rebuild is indicated)</span></summary>
+        <div class="small" id="rebuildSummary">Prove it is a bottom-end or head job, then pull, measure, assemble, and break in. Torque comes from your engine’s service data.</div>
+        <div class="symptoms mt-10" id="rebuildFlags">
+          <label><input type="checkbox" id="flagRodKnock"> <span>Rod knock</span></label>
+          <label><input type="checkbox" id="flagLowCompression"> <span>Low compression</span></label>
+          <label><input type="checkbox" id="flagBurnsOil"> <span>Burns oil</span></label>
+          <label><input type="checkbox" id="flagMetalInOil"> <span>Metal in the oil</span></label>
+          <label><input type="checkbox" id="flagNeedRebuild"> <span>I already know it needs a rebuild</span></label>
+        </div>
+        <div class="row mt-10">
+          <button class="warn" id="btnRebuildDiagnosis">Start rebuild diagnosis</button>
+        </div>
+        <div id="rebuildStages" class="mt-10"></div>
+      </details>
+
+      <details class="card collapsible" id="solutionsCardWrap">
+        <summary><strong>All repair solutions library</strong></summary>
+        <div id="solutionsCard">
+          <div class="small">Reference index of every playbook in the app. Day-to-day use should go through Diagnose, not this list.</div>
+          <label for="solutionQuery">Find a repair</label>
+          <input id="solutionQuery" placeholder="P0442, starter, brakes, rebuild">
+          <div id="allSolutions" class="mt-10"></div>
+        </div>
+      </details>
+
+      <details class="card collapsible" id="computerCard">
+        <summary><strong>Use on a computer</strong></summary>
+        <div class="small" id="computerStatus">Same app on a PC. Useful when you want a bigger screen or an offline folder.</div>
+        <ol class="checks diy-list mt-10">
+          <li><strong>Fastest:</strong> on the computer, open Chrome or Edge and go to the same page you are reading now. Bookmark it.</li>
+          <li><strong>Offline folder:</strong> on the computer open GitHub → Code → Download ZIP. Unzip it. Double-click <code>GET_ON_COMPUTER.bat</code> (Windows) or <code>web/index.html</code> (any computer).</li>
+          <li><strong>Windows app window:</strong> after the unzip, install Node.js LTS, then double-click <code>windows\START_APP_FOR_TESTING.bat</code>. For a Setup EXE, use <code>windows\BUILD_WINDOWS_INSTALLER.bat</code>.</li>
+        </ol>
+        <div class="row mt-10">
+          <a class="button" href="./docs/computer.html">Full computer steps</a>
+        </div>
+      </details>
+
+      <details class="extra card">
+        <summary>Vehicle (optional)</summary>
+        <div class="grid g3">
+          <div><label for="year">Year</label><select id="year"></select></div>
+          <div><label for="make">Make</label><input id="make" placeholder="Chevy, Ford, Toyota, Harley"></div>
+          <div><label for="model">Model</label><input id="model" placeholder="Sierra, Ram, Explorer"></div>
+          <div><label for="engine">Engine</label><input id="engine" placeholder="5.3L V8"></div>
+          <div><label for="mileage">Mileage</label><input id="mileage" inputmode="numeric" placeholder="286583"></div>
+          <div><label for="trans">Transmission</label><select id="trans"><option value="">Select</option><option>Automatic</option><option>Manual</option><option>CVT</option><option>DCT</option><option>Unknown</option></select></div>
+          <div><label for="fuel">Fuel</label><select id="fuel"><option value="">Select</option><option>Gasoline</option><option>Diesel</option><option>Hybrid</option><option>Electric</option><option>Flex Fuel</option><option>Other</option></select></div>
+          <div><label for="nickname">Nickname</label><input id="nickname" placeholder="Work truck"></div>
+        </div>
+      </details>
+
+      <details class="extra card">
+        <summary>Fluid assistant (optional)</summary>
+        <div class="grid g3">
+          <div><label for="fluidType">Fluid type</label><select id="fluidType"><option value="">Select</option><option>Engine oil</option><option>Transmission fluid</option><option>Coolant</option><option>Brake fluid</option><option>Power steering</option><option>Differential oil</option></select></div>
+          <div><label for="fluidLevel">Observed level</label><select id="fluidLevel"><option value="">Select</option><option>Below stick / dry</option><option>At or near add mark</option><option>Halfway between add and full</option><option>At full mark</option><option>Above full mark</option></select></div>
+          <div><label for="fluidColor">Fluid color</label><select id="fluidColor"><option value="">Select</option><option>Amber / honey</option><option>Dark brown</option><option>Black</option><option>Pink / red</option><option>Green</option><option>Orange</option><option>Milky</option><option>Metallic glitter</option></select></div>
+          <div><label for="fluidSmell">Smell</label><select id="fluidSmell"><option value="">Select</option><option>Normal</option><option>Burnt</option><option>Fuel smell</option><option>Sweet coolant smell</option></select></div>
+          <div><label for="fluidCapacity">Capacity known</label><input id="fluidCapacity" placeholder="6 quarts"></div>
+          <div><label for="fluidNotes">Notes</label><input id="fluidNotes" placeholder="Foamy, metallic, watery"></div>
+        </div>
+        <div class="out mt-10" id="fluidOut">Fluid guidance will show here.</div>
+      </details>
+
+      <p><a href="./tools/index.html#cdi">CDI ignition diagnostics</a></p>
+      <details class="extra card">
+        <summary>Privacy / disclaimer / fees</summary>
+        <div class="row">
+          <a class="button ghost" href="./docs/privacy.html">Privacy Policy</a>
+          <a class="button ghost" href="./docs/disclaimer.html">Disclaimer</a>
+          <a class="button ghost" href="./docs/pricing.html">Fees / Pricing</a>
+          <a class="button ghost" href="./docs/computer.html">Use on a computer</a>
+        </div>
+      </details>
+    </div>
+
+    <div class="footer">Auto/Truck Diagnostics for Dummies <span id="footerVersion">v1.2.0</span> · Camera + mic diagnose first · Offline on this device</div>
+  </div>
+  <script src="./data/dtc-db.js"></script>
+  <script src="./data/common-jobs.js"></script>
+  <script src="./diagnosticsEngine.js"></script>
+  <script type="module" src="./scanner/iphone-scanner.js"></script>
+  <script src="./app.js"></script>
 </body>
 </html>

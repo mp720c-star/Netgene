@@ -74,12 +74,8 @@ export function mountScannerUi(root, options = {}) {
     const isiOS = /iPhone|iPad|iPod/i.test(navigator.userAgent || "");
     if (isiOS && installGate) {
       installGate.hidden = false;
-      installGate.innerHTML =
-        "<strong>iPhone Home Screen app = web shell (no Bluetooth).</strong> " +
-        "There is <em>no verified TestFlight / IPA install link yet</em> — Xcode build is <code>SKIPPED</code> " +
-        "(Linux agent; GitHub macOS runners unavailable). " +
-        "Native ATDD Connect source is in the repo under <code>atdd/ios</code>; a Mac (or enabled macOS CI) is required to install on this iPhone. " +
-        "Saved vehicles on this device are preserved in local storage.";
+      installGate.textContent =
+        "Bluetooth is not available in this screen. Open the ATDD Connect app from the Home Screen or TestFlight, then tap Connect Scanner.";
     }
     outEl.textContent =
       "Live FIXD connect is blocked in this web shell.\n\n" +
@@ -260,11 +256,13 @@ export function mountScannerUi(root, options = {}) {
     outEl.textContent += "\nDisconnected.\n";
   });
 
-  // Auto-start = attempt LIVE FIXD connect only when Web Bluetooth exists.
-  if (autoStart) {
-    if (bleOk) void run(() => startLive({ preferFixdName: true }));
-    else {
-      statusEl.textContent = "Status: blocked — cannot live-connect FIXD in this browser";
-    }
+  // autoStart is only set from a button tap. Page load leaves it false so iOS
+  // does not present the Bluetooth sheet before the view controller is ready.
+  if (autoStart && bleOk) {
+    void run(() => startLive({ preferFixdName: true }));
+  } else if (bleOk) {
+    statusEl.textContent = "Status: ready — tap Connect Scanner";
+  } else if (autoStart) {
+    statusEl.textContent = "Status: Bluetooth is not available in this screen";
   }
 }

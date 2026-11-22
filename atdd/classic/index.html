@@ -19,7 +19,7 @@
     <button id="btnLookupTop">Listen</button>
     <button id="btnJobsTop">Look</button>
     <button id="btnRebuildTop">Code</button>
-    <button id="btnBluetoothTop">Bluetooth</button>
+    <button class="warn connect-bar" id="btnBluetoothTop" title="Connect scanner over Bluetooth">Connect</button>
     <button class="good topbar-extra" id="btnSaveCaseTop">Save</button>
     <button class="secondary topbar-extra" id="btnExportTop">Export</button>
     <button class="secondary topbar-extra" id="btnComputerTop">Computer</button>
@@ -50,7 +50,7 @@
           <button class="secondary" id="btnBtDisconnect" disabled>Disconnect</button>
           <button class="secondary" id="btnBtDemo">Demo only (SIMULATED)</button>
         </div>
-        <pre id="btLog" class="bt-log" aria-live="polite">Idle. Tap Bluetooth in the top bar, then Connect FIXD with the adapter powered in the OBD port.</pre>
+        <pre id="btLog" class="bt-log" aria-live="polite">Idle. Tap Connect, with the adapter powered in the OBD port.</pre>
         <p class="small mt-8">FIXD protocol claim stays <code>UNVERIFIED</code> until a live Mode 03 round-trip succeeds on a physical truck. Live connect never silently falls back to Demo.</p>
       </section>
 

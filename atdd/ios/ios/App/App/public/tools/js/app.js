@@ -313,13 +313,6 @@ function wireNavigation() {
   });
 }
 
-function isStandaloneHomeScreen() {
-  return (
-    window.matchMedia?.('(display-mode: standalone)')?.matches ||
-    window.navigator.standalone === true
-  );
-}
-
 async function boot() {
   // Nav must work even if CDI inventory fails — Connect Scanner is independent.
   wireNavigation();
@@ -343,16 +336,13 @@ async function boot() {
   }
 
   let { mode, autoStart } = parseHashMode();
-  // Home Screen reopen: land on Connect Scanner (manifest start_url + standalone).
-  if ((!location.hash || location.hash === '#home') && isStandaloneHomeScreen()) {
+  // Open on Connect Scanner. Do not start Bluetooth from page load — that runs
+  // before the first tap and before the iOS view controller can present the sheet.
+  if (!location.hash || location.hash === '#home' || location.hash === '#obd2-connect') {
     mode = 'obd2';
-    autoStart = true;
+    autoStart = false;
   }
-  if (!location.hash) {
-    mode = 'obd2';
-    autoStart = true;
-  }
-  setMode(mode, { autoStart });
+  setMode(mode, { autoStart, force: mode === 'obd2' });
 }
 
 boot();

@@ -1,6 +1,6 @@
 {
   "appId": "com.netgene.atdd.ble",
-  "appName": "ATDD Connect",
+  "appName": "Auto/Truck Diagnostics for Dummies",
   "webDir": "www",
   "server": {
     "androidScheme": "https"
@@ -10,7 +10,7 @@
       "displayStrings": {
         "scanning": "Scanning for FIXD / OBD…",
         "cancel": "Cancel",
-        "availableServices": "Available services",
+        "availableDevices": "Available devices",
         "noDeviceFound": "No FIXD/OBD device found"
       }
     }

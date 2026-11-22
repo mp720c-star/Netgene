@@ -18,6 +18,7 @@ body{margin:0;background:linear-gradient(180deg,#050505,#0c0c0c 45%,#121212);col
 a{color:var(--gold)}
 .topbar{position:sticky;top:0;z-index:40;background:rgba(8,8,8,.96);backdrop-filter:blur(10px);border-bottom:1px solid #402707;padding:10px 16px;display:flex;gap:8px;flex-wrap:wrap}
 .topbar button,.topbar a.button{flex:1 1 140px}
+.topbar button.connect-bar{flex:1 1 100%}
 .wrap{max-width:1380px;margin:0 auto;padding:18px}
 .hero{background:linear-gradient(135deg,#200408,#43080f 55%,#2b1802);border:1px solid #7a4200;border-radius:22px;padding:18px;box-shadow:0 14px 34px rgba(0,0,0,.35)}
 .hero h1{margin:.1rem 0 .5rem;font-size:clamp(1.35rem,4vw,2rem);line-height:1.2}
