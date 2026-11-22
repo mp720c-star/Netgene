@@ -35,27 +35,47 @@ function fillYears(){
   }
 }
 
+const SYMPTOM_GROUPS = [
+  { title: 'Starting and running', names: ['No crank','Cranks no start','Hard start','Stalling','Rough idle','Misfire','Low power','Poor fuel economy'] },
+  { title: 'Engine mechanical', names: ['Overheating','Tick','Knock','Rod knock','Low compression','Burns oil','Needs engine rebuild'] },
+  { title: 'Noises', names: ['Squeal','Hiss','Whine','Grind'] },
+  { title: 'Leaks and smells', names: ['Smoke','Fuel smell','Oil leak','Coolant loss'] },
+  { title: 'Electrical and drivetrain', names: ['Electrical weirdness','Transmission slip','ABS / brake issue','Charging problem','Battery light','No heat','Won’t shift','Gauge acting weird'] }
+];
+
 function renderSymptoms(){
   const box = byId('symptoms');
+  if(!box) return;
+  const grouped = new Set(SYMPTOM_GROUPS.flatMap((g) => g.names));
+  const leftover = symptoms.filter((name) => !grouped.has(name));
+  const groups = leftover.length ? SYMPTOM_GROUPS.concat([{ title: 'Other', names: leftover }]) : SYMPTOM_GROUPS;
   box.innerHTML = '';
-  symptoms.forEach((name, i) => {
-    const label = document.createElement('label');
-    label.innerHTML = `<input type="checkbox" id="sym_${i}"> <span>${esc(name)}</span>`;
-    box.appendChild(label);
+  groups.forEach((group) => {
+    const names = group.names.filter((name) => symptoms.indexOf(name) >= 0);
+    if(!names.length) return;
+    const details = document.createElement('details');
+    details.className = 'symptom-group';
+    details.innerHTML = `<summary>${esc(group.title)} <span class="small">(${names.length})</span></summary><div class="symptom-group-body"></div>`;
+    const body = details.querySelector('.symptom-group-body');
+    names.forEach((name) => {
+      const i = symptoms.indexOf(name);
+      const label = document.createElement('label');
+      label.innerHTML = `<input type="checkbox" id="sym_${i}"> <span>${esc(name)}</span>`;
+      body.appendChild(label);
+    });
+    box.appendChild(details);
   });
 }
 
 function loadStats(){
   const stats = DiagEngine.computeStats(state.dtcDb);
-  html('dbStats', `
-    <div class="stat"><strong>${stats.total.toLocaleString()}</strong><div class="small">Codes ready offline${state.dtcBaselineCount && state.dtcDb.length > state.dtcBaselineCount ? " (" + state.dtcBaselineCount.toLocaleString() + " original + " + (state.dtcDb.length - state.dtcBaselineCount).toLocaleString() + " SAE generic additions)" : ""}</div></div>
-    <div class="stat"><strong>Mic + cam</strong><div class="small">Diagnose first</div></div>
-    <div class="stat"><strong>${stats.byFamily.Powertrain || 0}</strong><div class="small">Powertrain</div></div>
-    <div class="stat"><strong>${stats.byFamily.Body || 0}</strong><div class="small">Body</div></div>
-    <div class="stat"><strong>${stats.byFamily.Chassis || 0}</strong><div class="small">Chassis</div></div>
-    <div class="stat"><strong>${stats.byFamily.Network || 0}</strong><div class="small">Network</div></div>
-    ${typeof window.SymptomRepair !== 'undefined' ? `<div class="stat"><strong>${window.SymptomRepair.stats().total.toLocaleString()}</strong><div class="small">Symptom repairs ready offline</div></div>` : ''}
-  `);
+  const extra = state.dtcBaselineCount && state.dtcDb.length > state.dtcBaselineCount
+    ? ' (' + state.dtcBaselineCount.toLocaleString() + ' original + ' + (state.dtcDb.length - state.dtcBaselineCount).toLocaleString() + ' SAE generic additions)'
+    : '';
+  const symptomBit = typeof window.SymptomRepair !== 'undefined'
+    ? ' · ' + window.SymptomRepair.stats().total.toLocaleString() + ' symptom repairs'
+    : '';
+  html('dbStats', `<div class="stat-line">${stats.total.toLocaleString()} codes ready offline${extra} · P ${stats.byFamily.Powertrain || 0} / B ${stats.byFamily.Body || 0} / C ${stats.byFamily.Chassis || 0} / U ${stats.byFamily.Network || 0}${symptomBit}</div>`);
 }
 
 function showStatus(message, kind){
@@ -109,13 +129,13 @@ function catalogWorkflowNotice(analysis){
   const selected = state.selectedVehicle;
   const bits = [];
   if(selected && selected.workflow === 'generic_automotive'){
-    bits.push('<div class="notice mt-8"><span class="badge generic">Generic automotive</span> DTC lookup, how-to jobs, and repair guides are generic. They are not written for this exact year, make, and model.</div>');
+    bits.push('<div class="notice mt-8">DTC lookup, how-to jobs, and repair guides are generic automotive. They are not written for this exact year, make, and model.</div>');
   } else if(selected && selected.has_cdi_pinout){
     bits.push('<div class="notice mt-8">OBD diagnostic trouble codes are a separate workflow from CDI ignition pinouts. This diagnosis does not include a CDI pinout, and a pinout never emits a P, B, C, or U code.</div>');
   } else if(selected && selected.workflow === 'index_only'){
     bits.push('<div class="notice mt-8">This vehicle is in the index, but no CDI pinout is filed for it. DTC lookup and how-to jobs here are generic automotive and may not apply to this machine.</div>');
   } else {
-    bits.push('<div class="notice mt-8"><span class="badge generic">Generic automotive</span> DTC lookup, how-to jobs, and repair guides are generic. They are not written for one exact vehicle.</div>');
+    bits.push('<div class="notice mt-8">DTC lookup, how-to jobs, and repair guides are generic automotive. They are not written for one exact vehicle.</div>');
   }
   // Never attach pinout HTML to an OBD diagnosis result.
   return bits.join('');
@@ -166,13 +186,69 @@ function requireLegalAcceptance(){
   return false;
 }
 
+const ATDD_TABS = ['scan','vehicle','symptoms','results','more'];
+const ATDD_TAB_FOR = {
+  lookupCard:'scan', listenPanel:'scan', lookPanel:'scan', bluetoothCard:'scan', scanIntro:'scan',
+  vehicleSearchCard:'vehicle', selectedVehiclePanel:'vehicle', cdiPinoutView:'vehicle',
+  symptomRepairCard:'symptoms', symptomEntryView:'symptoms', symptomSearchResults:'symptoms',
+  resultsCard:'results', results:'results',
+  jobsCard:'more', rebuildCard:'more', solutionsCardWrap:'more', computerCard:'more',
+  vehicleFieldsCard:'more', fluidCard:'more', privacyCard:'more', moreIntro:'more'
+};
+
+function showTab(name, options){
+  const opts = options || {};
+  const tab = ATDD_TABS.indexOf(name) >= 0 ? name : 'scan';
+  document.body.setAttribute('data-active-tab', tab);
+  document.querySelectorAll('.tab-panel').forEach((panel) => {
+    const on = panel.getAttribute('data-tab') === tab;
+    panel.hidden = !on;
+    panel.classList.toggle('is-active', on);
+  });
+  document.querySelectorAll('.tabbar [data-tab]').forEach((btn) => {
+    const on = btn.getAttribute('data-tab') === tab;
+    btn.setAttribute('aria-selected', on ? 'true' : 'false');
+    btn.classList.toggle('is-active', on);
+  });
+  if(opts.scroll !== false){
+    window.scrollTo(0, 0);
+  }
+  try{
+    if(location.hash !== '#' + tab) history.replaceState(null, '', '#' + tab);
+  }catch(_){ /* ignore */ }
+  window.showAtddTab = showTab;
+}
+
+function initTabs(){
+  document.querySelectorAll('.tabbar [data-tab]').forEach((btn) => {
+    btn.onclick = () => showTab(btn.getAttribute('data-tab'));
+  });
+  window.addEventListener('hashchange', () => {
+    const name = (location.hash || '').replace(/^#/, '');
+    if(ATDD_TABS.indexOf(name) >= 0) showTab(name);
+  });
+  const initial = (location.hash || '').replace(/^#/, '');
+  showTab(ATDD_TABS.indexOf(initial) >= 0 ? initial : 'scan', { scroll:false });
+}
+
+function tabForNode(id, node){
+  if(id && ATDD_TAB_FOR[id]) return ATDD_TAB_FOR[id];
+  const panel = node && node.closest && node.closest('.tab-panel');
+  return panel ? panel.getAttribute('data-tab') : null;
+}
+
 function showEl(id){
   const node = byId(id);
+  const tab = tabForNode(id, node);
+  const sectionIds = ['resultsCard','results','lookupCard','vehicleSearchCard','symptomRepairCard','scanIntro','moreIntro'];
+  if(tab) showTab(tab, { scroll: sectionIds.indexOf(id) >= 0 });
   if(!node) return;
   if(node.tagName === 'DETAILS') node.open = true;
   const wrap = node.closest && node.closest('details');
   if(wrap) wrap.open = true;
-  node.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if(sectionIds.indexOf(id) === -1){
+    node.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 }
 
 
@@ -300,8 +376,14 @@ function renderSymptomSearch(){
   if(!box) return;
   const q = value('symptomQuery');
   const filters = currentSymptomFilters();
-  const hits = window.SymptomRepair.search(q, filters);
   const all = window.SymptomRepair.stats();
+  const hasIntent = !!(q || filters.system);
+  if(!hasIntent){
+    if(stats) stats.textContent = all.total + ' symptom entries offline · ' + all.byTier.cited + ' cited / ' + all.byTier['generated-general'] + ' general. Search or pick a system to see entries.';
+    box.innerHTML = '<div class="small">No list yet. Type a symptom or pick a system above.</div>';
+    return;
+  }
+  const hits = window.SymptomRepair.search(q, filters);
   if(stats){
     stats.textContent = hits.length + ' shown · ' + all.total + ' symptom entries offline · ' + all.byTier.cited + ' cited / ' + all.byTier['generated-general'] + ' general';
   }
@@ -507,6 +589,7 @@ function loadCase(){
     state.lastAnalysis = saved.lastAnalysis;
     state.lastAnalysisText = saved.lastAnalysisText || '';
     renderAnalysis(saved.lastAnalysis);
+    if(typeof showTab === 'function') showTab('results', { scroll:false });
   }
   showStatus('Saved case loaded.', 'ok');
 }
@@ -818,18 +901,55 @@ async function runDiagnosis(){
   renderAnalysis(analysis);
 }
 
+function evidenceKey(s){
+  return String(s || '').replace(/[—–-]/g, ' ').replace(/^code:\s*/i, '').replace(/\s+/g, ' ').trim().toLowerCase();
+}
+
+function dedupeEvidence(items){
+  const seen = new Set();
+  const out = [];
+  (items || []).forEach((item) => {
+    const key = evidenceKey(item);
+    if(!key || seen.has(key)) return;
+    seen.add(key);
+    out.push(item);
+  });
+  return out;
+}
+
+function topCauseLines(analysis, outcome){
+  const lines = [];
+  (analysis.rankedHypotheses || []).forEach((h) => { if(h && h.title) lines.push(h.title); });
+  ((outcome && outcome.likelyParts) || []).forEach((part) => lines.push(part));
+  const seen = new Set();
+  return lines.filter((line) => {
+    const key = String(line).replace(/\s+/g, ' ').trim().toLowerCase();
+    if(!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  }).slice(0, 3);
+}
+
+function resultDetails(title, inner, open){
+  if(!inner) return '';
+  return `<details class="result-details"${open ? ' open' : ''}><summary>${title}</summary>${inner}</details>`;
+}
+
 function renderAnalysis(analysis){
   state.lastAnalysisText = analysisToText(analysis);
   const v = analysis.vehicle || {};
   const vehicleLine = [v.year, v.make, v.model, v.engine, v.nickname].filter(Boolean).join(' ') || '';
   const outcome = analysis.outcome || (typeof DiagEngine !== 'undefined' && DiagEngine.resolveOutcome ? DiagEngine.resolveOutcome(analysis) : null);
-  const evidence = [];
-  if(state.audioSummary && state.audioSummary.durationSec != null) evidence.push('Mic measurements: ' + state.audioSummary.durationSec + 's, RMS ' + state.audioSummary.rms + ', ZCR ' + state.audioSummary.zeroCrossRate + ' (not a diagnosis)');
-  if(state.imageSummary && (state.imageSummary.whiteRatio != null)) evidence.push('Camera measurements: white ' + state.imageSummary.whiteRatio + ', blue ' + state.imageSummary.blueRatio + ', dark ' + state.imageSummary.darkRatio + ' (not a diagnosis)');
-  (analysis.codeCards || []).slice(0, 3).forEach((card) => evidence.push('Code: ' + card.code + ' — ' + card.description));
-  (analysis.rankedHypotheses || []).slice(0, 2).forEach((h) => {
-    if(h.reasons && h.reasons[0]) evidence.push(h.reasons[0]);
-  });
+  const evidence = dedupeEvidence((() => {
+    const items = [];
+    if(state.audioSummary && state.audioSummary.durationSec != null) items.push('Mic measurements: ' + state.audioSummary.durationSec + 's, RMS ' + state.audioSummary.rms + ', ZCR ' + state.audioSummary.zeroCrossRate + ' (not a diagnosis)');
+    if(state.imageSummary && (state.imageSummary.whiteRatio != null)) items.push('Camera measurements: white ' + state.imageSummary.whiteRatio + ', blue ' + state.imageSummary.blueRatio + ', dark ' + state.imageSummary.darkRatio + ' (not a diagnosis)');
+    (analysis.codeCards || []).slice(0, 3).forEach((card) => items.push('Code: ' + card.code + ' — ' + card.description));
+    (analysis.rankedHypotheses || []).slice(0, 2).forEach((h) => {
+      if(h.reasons && h.reasons[0]) items.push(h.reasons[0]);
+    });
+    return items;
+  })());
   const list = (items) => (items || []).map(x => `<li>${esc(x)}</li>`).join('') || '<li>None listed for this finding.</li>';
 
   if(!outcome || outcome.kind === 'needs_more_evidence' || outcome.kind === 'unknown_code'){
@@ -843,9 +963,10 @@ function renderAnalysis(analysis){
       ${catalogWorkflowNotice(analysis)}
       </div>
       <div class="result-block"><h3>${unknown ? 'Unknown code – not in database' : 'What to capture next'}</h3><ol class="checks diy-list">${list((outcome && outcome.instructions) || [])}</ol></div>
-      ${evidence.length ? `<div class="result-block"><h3>Evidence so far</h3><ul class="evidence-list">${evidence.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div>` : ''}
+      ${evidence.length ? resultDetails('Evidence so far', `<ul class="evidence-list">${evidence.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>`) : ''}
     `);
     showEl('resultsCard');
+    if(typeof showTab === 'function') showTab('results', { scroll:false });
     showStatus(unknown ? 'Unknown code – not in database. No diagnosis was invented.' : 'No data – not enough information.', 'warn');
     return;
   }
@@ -878,54 +999,164 @@ function renderAnalysis(analysis){
     </div>
   `).join('');
 
+  const primaryCard = (analysis.codeCards || [])[0];
+  const causes = topCauseLines(analysis, outcome);
+  const general = (outcome.likelyParts && outcome.kind !== 'code') || (analysis.rankedHypotheses && analysis.rankedHypotheses[0] && analysis.rankedHypotheses[0].generic);
+  const relatedSymptoms = typeof window.SymptomRepair !== 'undefined'
+    ? relatedSymptomLinks((() => { const fromCodes = (analysis.codeCards || []).flatMap((c) => window.SymptomRepair.byDtc(c.code)); const fromSym = window.SymptomRepair.byKeywords((analysis.symptoms || []).concat(checkedSymptoms())); const seen = new Set(); return fromCodes.concat(fromSym).filter((e) => { if(seen.has(e.id)) return false; seen.add(e.id); return true; }).slice(0, 8); })())
+    : '';
   html('results', `
     <div class="outcome-banner">
       <div class="kind">${esc(outcome.kind)}</div>
       <h3>${esc(outcome.title)}</h3>
-      <div>${outcome.confidence ? `<span class="badge">${esc(outcome.confidence)} (score from matched evidence)</span> ` : ''}<span class="small">${esc(outcome.reason || '')}</span></div>
-      ${(outcome.likelyParts && outcome.kind !== 'code') || (analysis.rankedHypotheses && analysis.rankedHypotheses[0] && analysis.rankedHypotheses[0].generic) ? `<div class="small mt-6"><span class="badge generic">General guidance</span> General guidance – not a diagnosis for this exact vehicle.</div>` : ''}
+      ${primaryCard && !(outcome.title || '').includes(primaryCard.code) ? `<div class="small mt-6"><strong>${esc(primaryCard.code)}</strong> — ${esc(primaryCard.description)}</div>` : ''}
+      <div class="small mt-6">${esc(outcome.reason || '')}${outcome.confidence ? ' (score ' + esc(outcome.confidence) + ')' : ''}</div>
+      ${general ? `<div class="small mt-6">General guidance – not a diagnosis for this exact vehicle.</div>` : ''}
       ${vehicleLine ? `<div class="small mt-6">${esc(vehicleLine)}</div>` : ''}
       ${catalogWorkflowNotice(analysis)}
+      ${(outcome.warnings || []).length ? `<div class="notice mt-8">${(outcome.warnings || []).map((w) => esc(w)).join(' ')}</div>` : ''}
+      ${causes.length ? `<div class="mt-8"><strong>Top causes</strong><ul class="top-causes">${causes.map((c) => `<li>${esc(c)}</li>`).join('')}</ul></div>` : ''}
     </div>
-    ${evidence.length ? `<div class="result-block"><h3>Evidence used</h3><ul class="evidence-list">${evidence.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div>` : ''}
-    <div class="result-block"><h3>Repair instructions — ${esc(outcome.instructionTitle || outcome.title)}</h3><ol class="checks diy-list">${list(outcome.instructions)}</ol></div>
+    ${evidence.length ? resultDetails('Evidence used', `<ul class="evidence-list">${evidence.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>`) : ''}
+    ${resultDetails('Repair instructions — ' + esc(outcome.instructionTitle || outcome.title), `<ol class="checks diy-list">${list(outcome.instructions)}</ol>`)}
     ${rebuildHtml}
-    ${(outcome.firstChecks || []).length ? `<div class="result-block"><h3>First checks</h3><ol class="checks">${list(outcome.firstChecks)}</ol></div>` : ''}
-    ${(outcome.likelyParts || []).length ? `<div class="result-block"><h3>Likely parts / paths</h3><ol class="checks">${list(outcome.likelyParts)}</ol></div>` : ''}
-    ${(outcome.warnings || []).length ? `<div class="result-block"><h3>Warnings</h3><ol class="checks warn-list">${list(outcome.warnings)}</ol></div>` : ''}
-    ${relatedJobs ? `<div class="result-block"><h3>Related jobs for this diagnosis only</h3>${relatedJobs}</div>` : ''}
-    ${otherCodes ? `<div class="result-block"><h3>Other codes in this case</h3><div class="cards">${otherCodes}</div></div>` : ''}
-    ${((analysis.codeCards || [])[0] ? `<div class="result-block"><h3>Tests for each listed cause</h3>${renderStructuredGuidance(analysis.codeCards[0].code, analysis.codeCards[0])}</div>` : '')}
-    ${typeof window.SymptomRepair !== 'undefined' ? `<div class="result-block"><h3>Related symptom repairs</h3>${relatedSymptomLinks((() => { const fromCodes = (analysis.codeCards || []).flatMap((c) => window.SymptomRepair.byDtc(c.code)); const fromSym = window.SymptomRepair.byKeywords((analysis.symptoms || []).concat(checkedSymptoms())); const seen = new Set(); return fromCodes.concat(fromSym).filter((e) => { if(seen.has(e.id)) return false; seen.add(e.id); return true; }).slice(0, 8); })())}</div>` : ''}
-    <div class="result-block"><h3>Disclaimers</h3><ol class="checks">${list(analysis.disclaimers)}</ol></div>
+    ${(outcome.firstChecks || []).length ? resultDetails('First checks', `<ol class="checks">${list(outcome.firstChecks)}</ol>`) : ''}
+    ${(outcome.likelyParts || []).length ? resultDetails('Likely parts / paths', `<ol class="checks">${list(outcome.likelyParts)}</ol>`) : ''}
+    ${relatedJobs ? resultDetails('Related jobs for this diagnosis only', relatedJobs) : ''}
+    ${otherCodes ? resultDetails('Other codes in this case', `<div class="cards">${otherCodes}</div>`) : ''}
+    ${primaryCard ? resultDetails('Tests and fixes', renderStructuredGuidance(primaryCard.code, primaryCard)) : ''}
+    ${relatedSymptoms ? resultDetails('Related symptom repairs', relatedSymptoms) : ''}
+    ${resultDetails('Disclaimers', `<ol class="checks">${list(analysis.disclaimers)}</ol>`)}
   `);
   showEl('resultsCard');
+  if(typeof showTab === 'function') showTab('results', { scroll:false });
   bindSymptomButtons('results');
   showStatus('Diagnosis ready: ' + outcome.title, 'ok');
 }
 
+
+function stopCaptureMedia(){
+  if(mediaRecorder){
+    try{
+      mediaRecorder.ondataavailable = null;
+      mediaRecorder.onstop = null;
+      if(mediaRecorder.state === 'recording') mediaRecorder.stop();
+    }catch(_){ /* ignore */ }
+    mediaRecorder = null;
+    mediaChunks = [];
+  }
+  if(typeof stopCamera === 'function'){
+    try{ stopCamera(); }catch(_){ /* preview nodes may be absent in tests */ }
+  }
+  state.audioBlob = null;
+}
+
+async function resetScannerSession(){
+  if(window.ATDDBluetooth && typeof window.ATDDBluetooth.resetSession === 'function'){
+    await window.ATDDBluetooth.resetSession();
+  }
+  if(window.ATDDIphoneScanner && typeof window.ATDDIphoneScanner.resetSession === 'function'){
+    await window.ATDDIphoneScanner.resetSession();
+  }
+}
+
+function openNewScanDialog(){
+  const dialog = byId('newScanDialog');
+  const box = byId('chkDeleteSavedHistory');
+  if(box) box.checked = false;
+  if(!dialog){
+    const ok = confirm('Start a new scan / new vehicle? This clears the current codes, readings, diagnosis, symptoms, notes, and selected vehicle. Saved vehicles and history are kept.');
+    if(ok) confirmNewScan({ deleteSaved: false });
+    return;
+  }
+  if(typeof dialog.showModal === 'function'){
+    if(!dialog.open) dialog.showModal();
+  } else {
+    dialog.hidden = false;
+  }
+}
+
+function closeNewScanDialog(){
+  const dialog = byId('newScanDialog');
+  if(!dialog) return;
+  if(typeof dialog.close === 'function' && dialog.open) dialog.close();
+  else dialog.hidden = true;
+}
+
+async function confirmNewScan(options){
+  const checked = !!(byId('chkDeleteSavedHistory') && byId('chkDeleteSavedHistory').checked);
+  const deleteSaved = options && Object.prototype.hasOwnProperty.call(options, 'deleteSaved')
+    ? !!options.deleteSaved
+    : checked;
+  closeNewScanDialog();
+  stopCaptureMedia();
+  const Reset = window.ATDDSessionReset;
+  if(!Reset || typeof Reset.clearCurrentSession !== 'function'){
+    showStatus('Could not reset the current scan.', 'warn');
+    return;
+  }
+  Reset.clearCurrentSession({
+    storage: window.localStorage,
+    deleteSaved,
+    byId,
+    state,
+    symptomCount: symptoms.length
+  });
+  await resetScannerSession();
+  if(typeof refreshVehicleFilters === 'function') refreshVehicleFilters(true);
+  if(typeof renderVehicleSearch === 'function') renderVehicleSearch();
+  if(typeof fillSymptomFilters === 'function') fillSymptomFilters();
+  if(typeof renderSymptomSearch === 'function') renderSymptomSearch();
+  const vehicleCard = byId('vehicleSearchCard');
+  if(vehicleCard && typeof vehicleCard.scrollIntoView === 'function'){
+    vehicleCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  if(typeof showTab === 'function') showTab('scan');
+  showStatus(deleteSaved
+    ? 'Started a new scan. Current data and saved vehicles/history were deleted.'
+    : 'Started a new scan. Current data was cleared. Saved vehicles and history were kept.',
+    'ok');
+}
+
+function bindNewScanButtons(){
+  ['btnNewScanTop','btnNewScanVehicle','btnNewScanResults'].forEach((id) => {
+    const btn = byId(id);
+    if(btn) btn.onclick = openNewScanDialog;
+  });
+  const cancel = byId('btnNewScanCancel');
+  if(cancel) cancel.onclick = (e) => { e.preventDefault(); closeNewScanDialog(); };
+  const form = byId('newScanForm');
+  if(form) form.addEventListener('submit', (e) => { e.preventDefault(); confirmNewScan(); });
+  const dialog = byId('newScanDialog');
+  if(dialog){
+    dialog.addEventListener('cancel', (e) => { e.preventDefault(); closeNewScanDialog(); });
+  }
+}
+
 function bindEvents(){
-  byId('btnLookup').onclick = quickLookup;
-  byId('btnLookupTop').onclick = () => { showEl('listenPanel'); const btn = byId('btnAudioRecord'); if(btn) btn.focus(); };
-  byId('btnSearchDtc').onclick = searchLocalDb;
-  byId('btnClearCodes').onclick = () => { byId('codes').value = ''; html('codeResults',''); showStatus(''); };
-  byId('btnRunDiagnosis').onclick = runDiagnosis;
-  byId('btnRunDiagnosisTop').onclick = runDiagnosis;
+  initTabs();
+  if(byId('btnLookup')) byId('btnLookup').onclick = quickLookup;
+  if(byId('btnLookupTop')) byId('btnLookupTop').onclick = () => { showEl('listenPanel'); const btn = byId('btnAudioRecord'); if(btn) btn.focus(); };
+  if(byId('btnSearchDtc')) byId('btnSearchDtc').onclick = searchLocalDb;
+  if(byId('btnClearCodes')) byId('btnClearCodes').onclick = () => { byId('codes').value = ''; html('codeResults',''); showStatus(''); };
+  if(byId('btnRunDiagnosis')) byId('btnRunDiagnosis').onclick = runDiagnosis;
+  if(byId('btnRunDiagnosisTop')) byId('btnRunDiagnosisTop').onclick = runDiagnosis;
   const rebuildBtn = byId('btnRebuildTop');
-  if(rebuildBtn) rebuildBtn.onclick = () => { showEl('lookupCard'); const field = byId('codes'); if(field){ field.focus(); field.scrollIntoView({ behavior:'smooth', block:'center' }); } };
+  if(rebuildBtn) rebuildBtn.onclick = () => { showEl('codes'); const field = byId('codes'); if(field){ field.focus(); } };
   if(window.ATDDBluetooth && typeof window.ATDDBluetooth.bind === 'function') window.ATDDBluetooth.bind();
+  bindNewScanButtons();
   const jobsBtn = byId('btnJobsTop');
   if(jobsBtn) jobsBtn.onclick = () => { showEl('lookPanel'); const btn = byId('btnStartCamera'); if(btn) btn.focus(); };
   const computerBtn = byId('btnComputerTop');
   if(computerBtn) computerBtn.onclick = () => showEl('computerCard');
   const rebuildDiag = byId('btnRebuildDiagnosis');
   if(rebuildDiag) rebuildDiag.onclick = startRebuildDiagnosis;
-  byId('btnSaveCase').onclick = saveCase;
-  byId('btnSaveCaseTop').onclick = saveCase;
-  byId('btnLoadCase').onclick = loadCase;
-  byId('btnClearCase').onclick = clearCase;
-  byId('btnExport').onclick = exportReport;
-  byId('btnExportTop').onclick = exportReport;
+  if(byId('btnSaveCase')) byId('btnSaveCase').onclick = saveCase;
+  if(byId('btnSaveCaseTop')) byId('btnSaveCaseTop').onclick = saveCase;
+  if(byId('btnLoadCase')) byId('btnLoadCase').onclick = loadCase;
+  if(byId('btnClearCase')) byId('btnClearCase').onclick = clearCase;
+  if(byId('btnExport')) byId('btnExport').onclick = exportReport;
+  if(byId('btnExportTop')) byId('btnExportTop').onclick = exportReport;
   document.querySelectorAll('[data-code]').forEach((chip) => {
     chip.addEventListener('click', () => useExampleCode(chip.getAttribute('data-code')));
   });

@@ -316,6 +316,7 @@
   function showBluetoothPanel() {
     const card = byId("bluetoothCard");
     if (!card) return;
+    if (typeof window.showAtddTab === "function") window.showAtddTab("scan", { scroll: false });
     card.hidden = false;
     card.scrollIntoView({ behavior: "smooth", block: "start" });
   }
@@ -410,5 +411,6 @@
     claim: FIXD_CLAIM,
     parseMode03Response,
     decodeDtcPair,
+    resetSession: disconnect,
   };
 })(window);
