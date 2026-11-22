@@ -771,6 +771,24 @@ const DiagEngine = (() => {
     ]
   };
 
+  const UNKNOWN_CODE = 'Unknown code – not in database';
+  const NO_DATA = 'No data – not enough information';
+  const GENERAL_GUIDANCE_LABEL = 'General guidance – not a diagnosis for this exact vehicle';
+
+  function unknownGuide(code) {
+    return {
+      title: UNKNOWN_CODE,
+      firstChecks: [],
+      likelyParts: [],
+      warnings: [],
+      diySteps: [],
+      generic: false,
+      unknown: true,
+      inDatabase: false,
+      guidanceLabel: UNKNOWN_CODE
+    };
+  }
+
   function diyStepsFor(code, subsystem) {
     const detailed = DETAILED_GUIDANCE[code];
     if (detailed && detailed.diySteps && detailed.diySteps.length) return detailed.diySteps;
@@ -779,12 +797,29 @@ const DiagEngine = (() => {
 
   function guideFor(code, subsystem, description) {
     const detailed = DETAILED_GUIDANCE[code] || null;
+    if (detailed) {
+      return {
+        title: detailed.title || description || code,
+        firstChecks: detailed.firstChecks || [],
+        likelyParts: detailed.likelyParts || [],
+        warnings: detailed.warnings || [],
+        diySteps: detailed.diySteps || [],
+        generic: false,
+        unknown: false,
+        inDatabase: true,
+        guidanceLabel: ''
+      };
+    }
     return {
-      title: (detailed && detailed.title) || description || 'Repair path',
-      firstChecks: (detailed && detailed.firstChecks) || checksFor(subsystem),
-      likelyParts: (detailed && detailed.likelyParts) || partsFor(subsystem),
-      warnings: (detailed && detailed.warnings) || [],
-      diySteps: diyStepsFor(code, subsystem)
+      title: description || 'General guidance',
+      firstChecks: checksFor(subsystem),
+      likelyParts: partsFor(subsystem),
+      warnings: [],
+      diySteps: diyStepsFor(code, subsystem),
+      generic: true,
+      unknown: false,
+      inDatabase: true,
+      guidanceLabel: GENERAL_GUIDANCE_LABEL
     };
   }
 
@@ -871,15 +906,16 @@ const DiagEngine = (() => {
     return (codes || []).map(code => {
       const normalized = String(code || '').trim().toUpperCase();
       const item = dtcMap.get(normalized);
-      if (item) return { ...item, detailed: guideFor(normalized, item.subsystem, item.description) };
-      const subsystem = normalized[0] === 'B' ? 'body_electrical' : normalized[0] === 'C' ? 'driveline_chassis' : normalized[0] === 'U' ? 'network' : 'powertrain_general';
-      const description = 'Code not found in bundled database. Use the DIY steps below, then confirm with service data for this exact vehicle.';
+      if (item) {
+        return { ...item, inDatabase: true, detailed: guideFor(normalized, item.subsystem, item.description) };
+      }
       return {
         code: normalized,
-        description,
-        family: normalized[0] === 'B' ? 'Body' : normalized[0] === 'C' ? 'Chassis' : normalized[0] === 'U' ? 'Network' : 'Powertrain',
-        subsystem,
-        detailed: guideFor(normalized, subsystem, description)
+        description: UNKNOWN_CODE,
+        family: '',
+        subsystem: '',
+        inDatabase: false,
+        detailed: unknownGuide(normalized)
       };
     });
   }
@@ -964,21 +1000,44 @@ const DiagEngine = (() => {
       };
     }
 
-    if (!primary || score < 24) {
+    const unknownOnly = codeCards.length > 0 && codeCards.every((card) => card.inDatabase === false || (card.guidance && card.guidance.unknown));
+    const noRankedHit = !primary || score < 24;
+
+    if (unknownOnly && noRankedHit) {
+      return {
+        kind: 'unknown_code',
+        id: 'unknown_code',
+        title: UNKNOWN_CODE,
+        confidence: 0,
+        reason: 'That identifier is not in the bundled database. No cause, reading, or fix was invented for it.',
+        instructionTitle: UNKNOWN_CODE,
+        instructions: [
+          'Confirm the code characters with the scanner or service information.',
+          'If the code is real for this vehicle, look it up in the service manual. This app will not invent a diagnosis for an unknown identifier.'
+        ],
+        firstChecks: [],
+        likelyParts: [],
+        warnings: [],
+        playbook: null,
+        relatedJobs: [],
+        codeCards: codeCards.slice(0, 3)
+      };
+    }
+
+    if (noRankedHit) {
       return {
         kind: 'needs_more_evidence',
         id: 'needs_more_evidence',
-        title: 'Need more evidence',
-        confidence: Math.max(confidence, 35),
-        reason: 'Listen with the mic, capture exhaust or under-hood with the camera, and/or enter a scanner code, then diagnose again.',
+        title: NO_DATA,
+        confidence: 0,
+        reason: 'There is not enough matched information to name a finding. No likely cause or part list was invented.',
         instructionTitle: 'What to capture next',
         instructions: [
-          'Record 10–20 seconds of engine noise at idle (knock, tick, squeal).',
-          'Point the camera at the exhaust while someone revs lightly, or at the belt area if it squeals.',
-          'If you have an OBD scanner code (example P0300), enter it and diagnose again.',
-          'Add one clear symptom chip if you already know what the truck is doing.'
+          'Enter a scanner code that is in the bundled database, or confirm the identifier first.',
+          'Add a symptom you actually observed.',
+          'Record sound or a photo if you want those measurements on the case. The app will not turn them into a diagnosis by itself.'
         ],
-        firstChecks: checksFor('general'),
+        firstChecks: [],
         likelyParts: [],
         warnings: [],
         playbook: null,
@@ -1166,6 +1225,7 @@ const DiagEngine = (() => {
     const scores = {};
 
     codeEntries.forEach(entry => {
+      if (!entry.inDatabase || !entry.subsystem) return;
       scoreBucket(scores, entry.subsystem, 22, `code: ${entry.code} ${entry.description}`);
       if (/high|low|circuit|open|short/i.test(entry.description)) scoreBucket(scores, entry.subsystem, 4, `code detail: electrical wording on ${entry.code}`);
       if (DETAILED_GUIDANCE[entry.code]) scoreBucket(scores, entry.subsystem, 8, `detailed guide available for ${entry.code}`);
@@ -1182,40 +1242,36 @@ const DiagEngine = (() => {
         bucket,
         title: SUBSYSTEM_LABELS[bucket] || SUBSYSTEM_LABELS.general,
         score: meta.score,
-        confidence: Math.max(35, Math.min(97, meta.score)),
+        confidence: Math.max(0, Math.min(97, meta.score)),
         reasons: meta.reasons.slice(0, 8),
         firstChecks: checksFor(bucket),
         likelyParts: partsFor(bucket),
-        diySteps: diyStepsFor('', bucket)
+        diySteps: diyStepsFor('', bucket),
+        generic: true,
+        guidanceLabel: GENERAL_GUIDANCE_LABEL
       }))
       .sort((a, b) => b.score - a.score)
       .slice(0, 5);
 
     const topSubsystems = ranked.map(x => x.bucket);
-    const primary = ranked[0] || {
-      bucket: 'general',
-      title: SUBSYSTEM_LABELS.general,
-      score: 35,
-      confidence: 35,
-      reasons: ['Not enough hard evidence.'],
-      firstChecks: checksFor('general'),
-      likelyParts: partsFor('general'),
-      diySteps: diyStepsFor('', 'general')
-    };
+    const primary = ranked[0] || null;
 
     const detailedCodeCards = codeEntries.slice(0, 10).map(entry => ({
       code: entry.code,
       description: entry.description,
       family: entry.family,
       subsystem: entry.subsystem,
-      guidance: entry.detailed || guideFor(entry.code, entry.subsystem, entry.description)
+      inDatabase: !!entry.inDatabase,
+      guidance: entry.inDatabase ? (entry.detailed || guideFor(entry.code, entry.subsystem, entry.description)) : unknownGuide(entry.code)
     }));
 
+    const knownCodeEntries = codeEntries.filter((entry) => entry.inDatabase);
     const wantsRebuild = (symptoms || []).some((s) => ['Needs engine rebuild', 'Low compression', 'Rod knock', 'Burns oil'].includes(s))
       || /rebuild|rod knock|spun bearing|low compression|metal in oil/i.test(notes);
-    const rebuildIndicated = wantsRebuild || primary.bucket === 'engine_mechanical';
-    let primaryDiy = (codeEntries[0] && codeEntries[0].detailed && codeEntries[0].detailed.diySteps) || primary.diySteps || SUBSYSTEM_DIY.general;
-    let diyTitle = (codeEntries[0] && codeEntries[0].detailed && codeEntries[0].detailed.title) || primary.title;
+    const rebuildIndicated = wantsRebuild || (primary && primary.bucket === 'engine_mechanical');
+    const knownGuide = knownCodeEntries[0] && knownCodeEntries[0].detailed;
+    let primaryDiy = (knownGuide && knownGuide.diySteps && knownGuide.diySteps.length) ? knownGuide.diySteps : ((primary && primary.diySteps) || []);
+    let diyTitle = (knownGuide && knownGuide.title) || (primary && primary.title) || NO_DATA;
     if (rebuildIndicated) {
       primaryDiy = ENGINE_REBUILD.stages[0].steps.concat([
         'Continue with Engine rebuild stages 2–10 in this app: pull, teardown, machine shop, parts, short block, heads, timing, first start, break-in.'
@@ -1231,15 +1287,17 @@ const DiagEngine = (() => {
       dbStats: computeStats(dtcDb),
       vehicle: input.vehicle || {},
       summary: {
-        primaryFinding: rebuildIndicated ? ENGINE_REBUILD.title + ' indicated' : primary.title,
-        confidence: primary.confidence,
-        shortReason: rebuildIndicated ? (primary.reasons[0] || ENGINE_REBUILD.summary) : (primary.reasons[0] || 'Combined DTC / symptom / media evidence.')
+        primaryFinding: rebuildIndicated ? ENGINE_REBUILD.title + ' indicated' : (primary ? primary.title : NO_DATA),
+        confidence: primary ? primary.confidence : 0,
+        shortReason: rebuildIndicated
+          ? ((primary && primary.reasons[0]) || ENGINE_REBUILD.summary)
+          : ((primary && primary.reasons[0]) || NO_DATA)
       },
       rankedHypotheses: ranked,
-      firstChecks: rebuildIndicated ? ENGINE_REBUILD.stages[0].steps.slice(0, 4) : primary.firstChecks,
+      firstChecks: rebuildIndicated ? ENGINE_REBUILD.stages[0].steps.slice(0, 4) : ((primary && primary.firstChecks) || []),
       likelyParts: rebuildIndicated
         ? ['Machine work (hone/bore, crank, heads)', 'Rebuild kit (bearings, rings, gaskets, TTY bolts)', 'Timing set / oil pump', 'Replacement engine if the block is walked']
-        : primary.likelyParts,
+        : ((primary && primary.likelyParts) || []),
       diyTitle,
       diySteps: primaryDiy,
       rebuildGuide: rebuildIndicated ? ENGINE_REBUILD : null,
@@ -1293,7 +1351,9 @@ const DiagEngine = (() => {
     return Array.from(seen.values());
   }
 
-  return { APP_VERSION, computeStats, searchDtc, lookupCodes, buildAnalysis, resolveOutcome, listRepairPlaybooks, diyStepsFor, engineRebuildGuide, listCommonJobs };
+  return { APP_VERSION, UNKNOWN_CODE, NO_DATA, GENERAL_GUIDANCE_LABEL, computeStats, searchDtc, lookupCodes, buildAnalysis, resolveOutcome, listRepairPlaybooks, diyStepsFor, engineRebuildGuide, listCommonJobs };
 })();
 
+if (typeof window !== 'undefined') window.DiagEngine = DiagEngine;
+if (typeof globalThis !== 'undefined') globalThis.DiagEngine = DiagEngine;
 if (typeof module !== 'undefined' && module.exports) module.exports = DiagEngine;

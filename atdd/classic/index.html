@@ -38,9 +38,34 @@
     <div id="statusBanner" class="status-banner" hidden role="status" aria-live="polite"></div>
 
     <div class="stack mt-14">
+
+      <section class="card" id="vehicleSearchCard">
+        <h2>Vehicle search</h2>
+        <p class="lead">Search the shared index of cars, trucks, bikes, ATVs, and snowmobiles. Cars and trucks use the generic automotive DTC, job, and how-to guides. Bikes, ATVs, 3-wheelers, and sleds with a CDI pinout open a separate ignition view — never an OBD code.</p>
+        <div class="grid g3">
+          <div>
+            <label for="vehicleTypeFilter">Type</label>
+            <select id="vehicleTypeFilter"><option value="">All types</option></select>
+          </div>
+          <div>
+            <label for="vehicleMakeFilter">Make</label>
+            <select id="vehicleMakeFilter"><option value="">All makes</option></select>
+          </div>
+          <div>
+            <label for="vehicleYearFilter">Year</label>
+            <select id="vehicleYearFilter"><option value="">Any year</option></select>
+          </div>
+        </div>
+        <label for="vehicleQuery">Search year, make, or model</label>
+        <input id="vehicleQuery" placeholder="XR650L, F-150, Indy, Foreman" autocomplete="off">
+        <div class="small mt-8" id="vehicleSearchStats"></div>
+        <div id="vehicleSearchResults" class="vehicle-results mt-10" role="listbox" aria-label="Matching vehicles"></div>
+        <div id="selectedVehiclePanel" class="mt-10" hidden></div>
+        <div id="cdiPinoutView" class="mt-10" hidden></div>
+      </section>
       <section class="card" id="bluetoothCard" hidden>
         <h2>Bluetooth · Connect FIXD</h2>
-        <p class="lead">Pair your real FIXD over Bluetooth, read codes, and drop them into the scanner field above. Demo is separate and labeled SIMULATED — it never pretends to be FIXD.</p>
+        <p class="lead">Pair your real FIXD over Bluetooth, read codes, and drop them into the scanner field above. The app does not invent demo or simulated scan results.</p>
         <p class="small" id="btSupport">Checking Bluetooth…</p>
         <div class="status-banner warn" id="btIphoneGate" hidden></div>
         <div class="row secondary-actions">
@@ -48,10 +73,9 @@
           <button class="secondary" id="btnBtScanAll">Scan any BLE device</button>
           <button class="secondary" id="btnBtReadCodes" disabled>Read codes</button>
           <button class="secondary" id="btnBtDisconnect" disabled>Disconnect</button>
-          <button class="secondary" id="btnBtDemo">Demo only (SIMULATED)</button>
         </div>
         <pre id="btLog" class="bt-log" aria-live="polite">Idle. Tap Connect, with the adapter powered in the OBD port.</pre>
-        <p class="small mt-8">FIXD protocol claim stays <code>UNVERIFIED</code> until a live Mode 03 round-trip succeeds on a physical truck. Live connect never silently falls back to Demo.</p>
+        <p class="small mt-8">FIXD protocol claim stays <code>UNVERIFIED</code> until a live Mode 03 round-trip succeeds on a physical truck. A failed connect does not invent codes.</p>
       </section>
 
       <section class="card primary-card" id="lookupCard">
@@ -181,6 +205,7 @@
 
       <details class="extra card">
         <summary>Vehicle (optional)</summary>
+        <div class="small">Freeform fields for a vehicle that is not in the index, or to add engine, mileage, and a nickname. Picking a catalog vehicle above fills year, make, and model.</div>
         <div class="grid g3">
           <div><label for="year">Year</label><select id="year"></select></div>
           <div><label for="make">Make</label><input id="make" placeholder="Chevy, Ford, Toyota, Harley"></div>
@@ -221,6 +246,9 @@
   </div>
   <script src="./data/dtc-db.js"></script>
   <script src="./data/common-jobs.js"></script>
+  <script src="./data/cdi-pinout-db.js"></script>
+  <script src="./data/vehicle-index.js"></script>
+  <script src="./vehicleCatalog.js"></script>
   <script src="./diagnosticsEngine.js"></script>
   <script src="./bluetooth.js"></script>
   <script src="./app.js"></script>

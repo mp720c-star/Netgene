@@ -6,7 +6,6 @@ import { fileURLToPath } from 'node:url';
 const root = fileURLToPath(new URL('..', import.meta.url));
 const sourceRoot = join(root, '../cdi-genius');
 const importRoot = join(root, 'source-import/cdi-genius');
-const webDb = join(root, 'web/data/cdi-models.json');
 const EXPECTED_SAMPLE_SHA =
   '7df7c0858b3d7bf6e323cc30d73fd4ba2a9971b1a548c50ce68371d0c6ed39ee';
 
@@ -43,13 +42,11 @@ if (sourceText !== importText) {
 }
 
 const sampleSha = sha256File(join(importRoot, 'src/data/sample-models.json'));
-const webSha = sha256File(webDb);
-if (sampleSha !== EXPECTED_SAMPLE_SHA || webSha !== EXPECTED_SAMPLE_SHA) {
-  console.error('FAIL: sample-models / web DB checksum mismatch', { sampleSha, webSha });
+if (sampleSha !== EXPECTED_SAMPLE_SHA) {
+  console.error('FAIL: source-import sample-models.json changed', { sampleSha });
   process.exit(1);
 }
 
-const models = JSON.parse(readFileSync(webDb, 'utf8')).models;
 console.log(
   JSON.stringify(
     {
@@ -57,11 +54,9 @@ console.log(
       source_files: sourceManifest.length,
       import_files: importManifest.length,
       checksum_match: true,
-      profiles_found: models.length,
-      profiles_expected_claimed: 71,
-      profiles_missing: 71 - models.length,
       sample_models_sha256: sampleSha,
-      profile_ids: models.map((m) => m.model_id)
+      sample_models_shipped_in_atdd: false,
+      note: 'source-import and cdi-genius sample models stay on disk for tests and are not shipped or shown in ATDD'
     },
     null,
     2

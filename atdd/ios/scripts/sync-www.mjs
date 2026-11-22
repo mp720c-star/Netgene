@@ -12,7 +12,7 @@ if (!["ios", "android"].includes(platform)) throw new Error("Choose ios or andro
 function copySite(source, destination) {
   fs.cpSync(source, destination, {
     recursive: true,
-    filter: (file) => !["sw.js", "tests", "SOURCE.txt"].includes(path.basename(file)),
+    filter: (file) => !["sw.js", "tests", "SOURCE.txt", "cdi-models.json"].includes(path.basename(file)),
   });
 }
 
