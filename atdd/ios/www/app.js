@@ -48,7 +48,7 @@ function renderSymptoms(){
 function loadStats(){
   const stats = DiagEngine.computeStats(state.dtcDb);
   html('dbStats', `
-    <div class="stat"><strong>${stats.total.toLocaleString()}</strong><div class="small">Codes ready offline</div></div>
+    <div class="stat"><strong>${stats.total.toLocaleString()}</strong><div class="small">Codes ready offline${state.dtcBaselineCount && state.dtcDb.length > state.dtcBaselineCount ? " (" + state.dtcBaselineCount.toLocaleString() + " original + " + (state.dtcDb.length - state.dtcBaselineCount).toLocaleString() + " SAE generic additions)" : ""}</div></div>
     <div class="stat"><strong>Mic + cam</strong><div class="small">Diagnose first</div></div>
     <div class="stat"><strong>${stats.byFamily.Powertrain || 0}</strong><div class="small">Powertrain</div></div>
     <div class="stat"><strong>${stats.byFamily.Body || 0}</strong><div class="small">Body</div></div>
@@ -93,7 +93,10 @@ function restoreLegalAcceptance(){
 }
 
 async function loadDb(){
-  state.dtcDb = window.DTC_DB_DATA || [];
+  const baseline = window.DTC_DB_DATA || [];
+  const additions = window.DTC_SAE_GENERIC_ADDITIONS || [];
+  state.dtcBaselineCount = baseline.length;
+  state.dtcDb = baseline.concat(additions);
 }
 
 
@@ -171,6 +174,45 @@ function showEl(id){
   node.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+
+function renderStructuredGuidance(code, record){
+  if(typeof window.DtcGuidance === 'undefined' || !window.DtcGuidance.guidanceFor) return '';
+  if(record && (record.inDatabase === false || (record.detailed && record.detailed.unknown))) return '';
+  const g = window.DtcGuidance.guidanceFor(code, record || { code: code, description: '', family: '', subsystem: '' });
+  if(g.unknown || g.tier === 'unknown'){
+    return `<div class="guidance-tier mt-10"><span class="badge generic">Unknown</span><div class="small mt-6"><strong>Unknown code – not in database</strong></div><div class="small mt-6">No cause, test, or fix was invented for this identifier.</div></div>`;
+  }
+  const sources = (g.sources || []).map((s) => {
+    const bit = s.url ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.name)}</a>` : esc(s.name);
+    return `<li>${bit}${s.license ? ' <span class="small">(' + esc(s.license) + ')</span>' : ''}</li>`;
+  }).join('');
+  const safety = (g.safety || []).map((s) => `<div class="notice mt-8">${esc(s)}</div>`).join('');
+  const causes = (g.causes || []).map((cause, i) => {
+    const like = cause.likelihood ? ` <span class="badge">${esc(cause.likelihood)} likelihood</span>` : '';
+    const tests = (cause.tests || []).map((t, j) => `
+      <div class="test-step">
+        <div><span class="label">Test ${j + 1}.</span> <span class="label">Tool:</span> ${esc(t.tool)}</div>
+        <div class="mt-6"><span class="label">Check:</span> ${esc(t.check)}</div>
+        <div class="mt-6"><span class="label">Good:</span> ${esc(t.good)}</div>
+        <div class="mt-6"><span class="label">Bad:</span> ${esc(t.bad)}</div>
+        <div class="mt-6"><span class="label">Spec:</span> ${esc(t.spec)}</div>
+      </div>
+    `).join('');
+    return `<div class="cause-block"><h4>Cause ${i + 1}: ${esc(cause.title)}${like}</h4>${tests}</div>`;
+  }).join('');
+  return `
+    <div class="guidance-tier mt-10">
+      <span class="badge ${g.tier === 'generated-general' ? 'generic' : 'cited'}">${esc(g.tier)}</span>
+      <div class="small mt-6"><strong>${esc(g.tierLabel)}</strong></div>
+      ${safety}
+      <div class="mt-8"><strong>How to test each listed cause</strong></div>
+      ${causes || '<div class="small">No structured tests are available for this identifier.</div>'}
+      <div class="small mt-8"><strong>Sources</strong></div>
+      <ul class="source-list">${sources}</ul>
+    </div>
+  `;
+}
+
 function renderLookupCards(items){
   if(!items.length){ html('codeResults','<div class="code-card">No matching codes.</div>'); showEl('codeResults'); return; }
   html('codeResults', items.map(item => {
@@ -205,6 +247,7 @@ function renderLookupCards(items){
         ${checks}
         ${parts}
         ${diy}
+        ${renderStructuredGuidance(item.code, item)}
       </div>
     `;
   }).join(''));
@@ -687,6 +730,7 @@ function renderAnalysis(analysis){
     ${(outcome.warnings || []).length ? `<div class="result-block"><h3>Warnings</h3><ol class="checks warn-list">${list(outcome.warnings)}</ol></div>` : ''}
     ${relatedJobs ? `<div class="result-block"><h3>Related jobs for this diagnosis only</h3>${relatedJobs}</div>` : ''}
     ${otherCodes ? `<div class="result-block"><h3>Other codes in this case</h3><div class="cards">${otherCodes}</div></div>` : ''}
+    ${((analysis.codeCards || [])[0] ? `<div class="result-block"><h3>Tests for each listed cause</h3>${renderStructuredGuidance(analysis.codeCards[0].code, analysis.codeCards[0])}</div>` : '')}
     <div class="result-block"><h3>Disclaimers</h3><ol class="checks">${list(analysis.disclaimers)}</ol></div>
   `);
   showEl('resultsCard');
