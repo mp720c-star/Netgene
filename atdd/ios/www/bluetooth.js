@@ -391,5 +391,6 @@
     claim: FIXD_CLAIM,
     parseMode03Response,
     decodeDtcPair,
+    resetSession: disconnect,
   };
 })(window);
