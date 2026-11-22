@@ -74,6 +74,7 @@ const scannerUi = fs.readFileSync(path.join(atdd, "web/js/scanner-ui.js"), "utf8
 assert.doesNotMatch(scannerUi, /createSimulatedTransport/);
 assert.doesNotMatch(scannerUi, /function startDemo/);
 assert.doesNotMatch(scannerUi, /id="demoBtn"/);
+assert.doesNotMatch(scannerUi, /Demo only/);
 
 const webApp = fs.readFileSync(path.join(atdd, "web/js/app.js"), "utf8");
 assert.doesNotMatch(webApp, /fetch\('\.\/data\/cdi-models\.json'/);

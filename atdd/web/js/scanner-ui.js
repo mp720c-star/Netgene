@@ -79,7 +79,7 @@ export function mountScannerUi(root, options = {}) {
       "Live FIXD connect is blocked in this web shell.\n\n" +
       (blockReason || "") +
       "\n\nConnect Scanner cannot reach FIXD until native Bluetooth is available.\n" +
-      "Demo only (SIMULATED) does not talk to your FIXD.\n";
+      "No simulated or demo codes are invented.\n";
   }
 
   function setBusy(next) {
