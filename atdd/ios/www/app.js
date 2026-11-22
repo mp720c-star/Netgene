@@ -904,6 +904,104 @@ function renderAnalysis(analysis){
   showStatus('Diagnosis ready: ' + outcome.title, 'ok');
 }
 
+
+function stopCaptureMedia(){
+  if(mediaRecorder){
+    try{
+      mediaRecorder.ondataavailable = null;
+      mediaRecorder.onstop = null;
+      if(mediaRecorder.state === 'recording') mediaRecorder.stop();
+    }catch(_){ /* ignore */ }
+    mediaRecorder = null;
+    mediaChunks = [];
+  }
+  if(typeof stopCamera === 'function'){
+    try{ stopCamera(); }catch(_){ /* preview nodes may be absent in tests */ }
+  }
+  state.audioBlob = null;
+}
+
+async function resetScannerSession(){
+  if(window.ATDDBluetooth && typeof window.ATDDBluetooth.resetSession === 'function'){
+    await window.ATDDBluetooth.resetSession();
+  }
+  if(window.ATDDIphoneScanner && typeof window.ATDDIphoneScanner.resetSession === 'function'){
+    await window.ATDDIphoneScanner.resetSession();
+  }
+}
+
+function openNewScanDialog(){
+  const dialog = byId('newScanDialog');
+  const box = byId('chkDeleteSavedHistory');
+  if(box) box.checked = false;
+  if(!dialog){
+    const ok = confirm('Start a new scan / new vehicle? This clears the current codes, readings, diagnosis, symptoms, notes, and selected vehicle. Saved vehicles and history are kept.');
+    if(ok) confirmNewScan({ deleteSaved: false });
+    return;
+  }
+  if(typeof dialog.showModal === 'function'){
+    if(!dialog.open) dialog.showModal();
+  } else {
+    dialog.hidden = false;
+  }
+}
+
+function closeNewScanDialog(){
+  const dialog = byId('newScanDialog');
+  if(!dialog) return;
+  if(typeof dialog.close === 'function' && dialog.open) dialog.close();
+  else dialog.hidden = true;
+}
+
+async function confirmNewScan(options){
+  const checked = !!(byId('chkDeleteSavedHistory') && byId('chkDeleteSavedHistory').checked);
+  const deleteSaved = options && Object.prototype.hasOwnProperty.call(options, 'deleteSaved')
+    ? !!options.deleteSaved
+    : checked;
+  closeNewScanDialog();
+  stopCaptureMedia();
+  const Reset = window.ATDDSessionReset;
+  if(!Reset || typeof Reset.clearCurrentSession !== 'function'){
+    showStatus('Could not reset the current scan.', 'warn');
+    return;
+  }
+  Reset.clearCurrentSession({
+    storage: window.localStorage,
+    deleteSaved,
+    byId,
+    state,
+    symptomCount: symptoms.length
+  });
+  await resetScannerSession();
+  if(typeof refreshVehicleFilters === 'function') refreshVehicleFilters(true);
+  if(typeof renderVehicleSearch === 'function') renderVehicleSearch();
+  if(typeof fillSymptomFilters === 'function') fillSymptomFilters();
+  if(typeof renderSymptomSearch === 'function') renderSymptomSearch();
+  const vehicleCard = byId('vehicleSearchCard');
+  if(vehicleCard && typeof vehicleCard.scrollIntoView === 'function'){
+    vehicleCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  showStatus(deleteSaved
+    ? 'Started a new scan. Current data and saved vehicles/history were deleted.'
+    : 'Started a new scan. Current data was cleared. Saved vehicles and history were kept.',
+    'ok');
+}
+
+function bindNewScanButtons(){
+  ['btnNewScanTop','btnNewScanVehicle','btnNewScanResults'].forEach((id) => {
+    const btn = byId(id);
+    if(btn) btn.onclick = openNewScanDialog;
+  });
+  const cancel = byId('btnNewScanCancel');
+  if(cancel) cancel.onclick = (e) => { e.preventDefault(); closeNewScanDialog(); };
+  const form = byId('newScanForm');
+  if(form) form.addEventListener('submit', (e) => { e.preventDefault(); confirmNewScan(); });
+  const dialog = byId('newScanDialog');
+  if(dialog){
+    dialog.addEventListener('cancel', (e) => { e.preventDefault(); closeNewScanDialog(); });
+  }
+}
+
 function bindEvents(){
   byId('btnLookup').onclick = quickLookup;
   byId('btnLookupTop').onclick = () => { showEl('listenPanel'); const btn = byId('btnAudioRecord'); if(btn) btn.focus(); };
@@ -914,6 +1012,7 @@ function bindEvents(){
   const rebuildBtn = byId('btnRebuildTop');
   if(rebuildBtn) rebuildBtn.onclick = () => { showEl('lookupCard'); const field = byId('codes'); if(field){ field.focus(); field.scrollIntoView({ behavior:'smooth', block:'center' }); } };
   if(window.ATDDBluetooth && typeof window.ATDDBluetooth.bind === 'function') window.ATDDBluetooth.bind();
+  bindNewScanButtons();
   const jobsBtn = byId('btnJobsTop');
   if(jobsBtn) jobsBtn.onclick = () => { showEl('lookPanel'); const btn = byId('btnStartCamera'); if(btn) btn.focus(); };
   const computerBtn = byId('btnComputerTop');

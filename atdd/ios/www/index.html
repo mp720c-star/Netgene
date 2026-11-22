@@ -20,6 +20,7 @@
     <button id="btnJobsTop">Look</button>
     <button id="btnRebuildTop">Code</button>
     <button class="warn connect-bar" id="btnBluetoothTop" title="Connect scanner over Bluetooth">Connect</button>
+    <button class="secondary new-scan-bar" id="btnNewScanTop" title="Clear the current scan and selected vehicle and start over">New scan / New vehicle</button>
     <button class="good topbar-extra" id="btnSaveCaseTop">Save</button>
     <button class="secondary topbar-extra" id="btnExportTop">Export</button>
     <button class="secondary topbar-extra" id="btnComputerTop">Computer</button>
@@ -40,7 +41,10 @@
     <div class="stack mt-14">
 
       <section class="card" id="vehicleSearchCard">
-        <h2>Vehicle search</h2>
+        <div class="row section-heading">
+          <h2>Vehicle search</h2>
+          <button type="button" class="secondary" id="btnNewScanVehicle">New scan / New vehicle</button>
+        </div>
         <p class="lead">Search the shared index of cars, trucks, bikes, ATVs, and snowmobiles. Cars and trucks use the generic automotive DTC, job, and how-to guides. Bikes, ATVs, 3-wheelers, and sleds with a CDI pinout open a separate ignition view — never an OBD code.</p>
         <div class="grid g3">
           <div>
@@ -171,7 +175,10 @@
       </section>
 
       <section class="card" id="resultsCard">
-        <h2>2. Diagnosis &amp; instructions</h2>
+        <div class="row section-heading">
+          <h2>2. Diagnosis &amp; instructions</h2>
+          <button type="button" class="secondary" id="btnNewScanResults">New scan / New vehicle</button>
+        </div>
         <div class="row results-toolbar">
           <button class="secondary" id="btnSaveCase">Save</button>
           <button class="secondary" id="btnLoadCase">Load last</button>
@@ -270,6 +277,22 @@
 
     <div class="footer">Auto/Truck Diagnostics for Dummies <span id="footerVersion">v1.2.0</span> · Camera + mic diagnose first · Offline on this device</div>
   </div>
+
+  <dialog id="newScanDialog" class="confirm-dialog" aria-labelledby="newScanDialogTitle">
+    <form method="dialog" id="newScanForm">
+      <h2 id="newScanDialogTitle">Start a new scan / new vehicle?</h2>
+      <p>This clears the current codes, scan readings, diagnosis, symptoms, notes, and the selected vehicle. It also disconnects the scanner without sending any command to the vehicle.</p>
+      <p class="small">Saved vehicles and history are kept unless you tick the box below.</p>
+      <label class="dialog-check" for="chkDeleteSavedHistory">
+        <input type="checkbox" id="chkDeleteSavedHistory">
+        <span>Also delete saved vehicles/history</span>
+      </label>
+      <div class="row dialog-actions">
+        <button type="button" class="secondary" id="btnNewScanCancel" value="cancel">Cancel</button>
+        <button type="submit" class="warn" id="btnNewScanConfirm" value="confirm">Start new scan</button>
+      </div>
+    </form>
+  </dialog>
   <script src="./data/dtc-db.js"></script>
   <script src="./data/dtc-sae-generic-additions.js"></script>
   <script src="./data/dtc-guidance-overlay.js"></script>
@@ -281,6 +304,7 @@
   <script src="./data/vehicle-index.js"></script>
   <script src="./vehicleCatalog.js"></script>
   <script src="./diagnosticsEngine.js"></script>
+  <script src="./sessionReset.js"></script>
   <script type="module" src="./scanner/iphone-scanner.js"></script>
   <script src="./app.js"></script>
 </body>

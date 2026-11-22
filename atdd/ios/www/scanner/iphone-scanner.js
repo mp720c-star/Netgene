@@ -123,3 +123,10 @@ disconnect.onclick = () => perform(async () => {
   log("Disconnected.");
 });
 buttons();
+
+window.ATDDIphoneScanner = {
+  async resetSession() {
+    await release(active);
+    if (output) output.textContent = "Idle. Tap Connect, with the adapter powered in the OBD port.";
+  },
+};

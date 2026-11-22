@@ -13,7 +13,7 @@ assert.match(entry, /<title>Auto\/Truck Diagnostics for Dummies<\/title>/);
 for (const label of ["Diagnose", "Listen", "Look", "Code"]) assert.ok(entry.includes(">" + label + "</button>"), label);
 assert.ok(entry.includes('id="btnBluetoothTop"'));
 assert.ok(entry.includes('src="./scanner/iphone-scanner.js"'));
-for (const file of ["app.js", "icon.png", "styles.css", "diagnosticsEngine.js", "vehicleCatalog.js", "dtcGuidance.js", "symptomRepair.js", "data/dtc-db.js", "data/common-jobs.js", "data/cdi-pinout-db.js", "data/cdi-pinout-db.json", "data/cdi-pinout-db.manifest.json", "data/vehicle-index.js", "data/vehicle-index.json", "data/dtc-sae-generic-additions.js", "data/dtc-guidance-overlay.js", "data/dtc-guidance.manifest.json", "data/symptom-repair-db.js", "data/symptom-repair.manifest.json"]) {
+for (const file of ["app.js", "icon.png", "styles.css", "diagnosticsEngine.js", "vehicleCatalog.js", "sessionReset.js", "dtcGuidance.js", "symptomRepair.js", "data/dtc-db.js", "data/common-jobs.js", "data/cdi-pinout-db.js", "data/cdi-pinout-db.json", "data/cdi-pinout-db.manifest.json", "data/vehicle-index.js", "data/vehicle-index.json", "data/dtc-sae-generic-additions.js", "data/dtc-guidance-overlay.js", "data/dtc-guidance.manifest.json", "data/symptom-repair-db.js", "data/symptom-repair.manifest.json"]) {
   const packed = fs.readFileSync(path.join(root, file));
   assert.ok(packed.equals(fs.readFileSync(path.join(classic, file))), "Changed original " + file);
 }
@@ -21,6 +21,10 @@ assert.match(entry, /id="vehicleSearchCard"/);
 assert.match(entry, /src="\.\/data\/cdi-pinout-db\.js"/);
 assert.match(entry, /src="\.\/data\/vehicle-index\.js"/);
 assert.match(entry, /src="\.\/vehicleCatalog\.js"/);
+assert.match(entry, /src="\.\/sessionReset\.js"/);
+assert.match(entry, /id="btnNewScanTop"/);
+assert.match(entry, /id="newScanDialog"/);
+assert.match(entry, /New scan \/ New vehicle/);
 assert.match(entry, /src="\.\/data\/dtc-sae-generic-additions\.js"/);
 assert.match(entry, /src="\.\/data\/dtc-guidance-overlay\.js"/);
 assert.match(entry, /src="\.\/dtcGuidance\.js"/);
