@@ -1,4 +1,4 @@
-name: atdd-ios-testflight
+name: ATDD private iPhone test
 
 on:
   workflow_dispatch:
@@ -14,6 +14,14 @@ on:
 
       private_device_test:
         description: Check the iPhone simulator and use an existing registered-device profile if available
+        type: boolean
+        default: false
+      lookup_only:
+        description: Check registration and the existing certificate without changing Apple records
+        type: boolean
+        default: false
+      allow_registration:
+        description: Register the selected test phone if it is missing
         type: boolean
         default: false
       artifact_recipient:
@@ -35,7 +43,25 @@ env:
   WORKSPACE: atdd/ios/ios/App/App.xcworkspace
 
 jobs:
+  check-device:
+    name: Check Apple device registration
+    if: ${{ inputs.lookup_only && !inputs.upload }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Read the target device and the certificate for the original app
+        env:
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+          PRIVATE_DEVICE_UDID: ${{ secrets.ATDD_PRIVATE_TEST_DEVICE_20261121 }}
+        run: node atdd/ios/scripts/provision-private-device.cjs --lookup
+
   build-and-upload:
+    if: ${{ !inputs.lookup_only && inputs.private_device_test && !inputs.upload && inputs.artifact_recipient != '' }}
     name: Archive ATDD Connect
     runs-on: macos-26
     timeout-minutes: 45
@@ -48,6 +74,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+
+      - name: Prepare signing for the selected iPhone
+        env:
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+          PRIVATE_DEVICE_UDID: ${{ secrets.ATDD_PRIVATE_TEST_DEVICE_20261121 }}
+          REGISTER_DEVICE: ${{ inputs.allow_registration }}
+        run: node atdd/ios/scripts/provision-private-device.cjs
 
       - name: Check the iOS SDK and release version
         env:
@@ -86,14 +121,6 @@ jobs:
         if: ${{ inputs.private_device_test }}
         run: bash atdd/ios/tests/verify-simulator.sh
 
-      - name: Find existing registered-device profiles for ATDD
-        if: ${{ inputs.private_device_test && !inputs.upload }}
-        env:
-          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
-          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
-          ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
-        run: node atdd/ios/scripts/find-test-profiles.cjs
-
       - name: Import the distribution certificate
         uses: apple-actions/import-codesign-certs@v3
         with:
@@ -103,6 +130,7 @@ jobs:
       - name: Install the matching App Store provisioning profile
         id: profile
         env:
+          PRIVATE_DEVICE_UDID: ${{ secrets.ATDD_PRIVATE_TEST_DEVICE_20261121 }}
           PROFILE_BASE64: ${{ secrets.IOS_PROVISION_PROFILE_BASE64 }}
           IOS_TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
         run: |
@@ -147,6 +175,9 @@ jobs:
                   if set(row["ProvisionedDevices"]) == all_devices:
                       profile, source, method = row, candidate, "release-testing"
                       break
+          device = os.environ["PRIVATE_DEVICE_UDID"].strip().upper()
+          if method != "release-testing" or {item.upper() for item in profile.get("ProvisionedDevices", [])} != {device}:
+              raise SystemExit("The private profile must contain exactly the requested iPhone.")
           print(f"ATDD_EXPORT_METHOD={method}; matching existing registered-device profiles={len(candidates)}")
           destination = pathlib.Path.home() / "Library/Developer/Xcode/UserData/Provisioning Profiles"
           destination.mkdir(parents=True, exist_ok=True)
@@ -225,6 +256,7 @@ jobs:
       - name: Verify the contents and signature of the exported iPhone app
         env:
           IPA_PATH: ${{ steps.export.outputs.path }}
+          PRIVATE_DEVICE_UDID: ${{ secrets.ATDD_PRIVATE_TEST_DEVICE_20261121 }}
         run: |
           set -euo pipefail
           /usr/bin/ditto -x -k "$IPA_PATH" "$RUNNER_TEMP/ipa-check"
@@ -234,7 +266,8 @@ jobs:
           /usr/bin/codesign --verify --deep --strict "$app"
           test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app/Info.plist")" = "$BUNDLE_ID"
           test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$app/Info.plist")" = "$GITHUB_RUN_NUMBER"
-          test -f "$app/embedded.mobileprovision"
+          security cms -D -i "$app/embedded.mobileprovision" | python3 -c 'import os, plistlib, sys; p=plistlib.load(sys.stdin.buffer); assert {u.upper() for u in p.get("ProvisionedDevices", [])} == {os.environ["PRIVATE_DEVICE_UDID"].strip().upper()}'
+          printf '%s  %s\n' ed75aeb0a429ae920969bf65d324b2b006a252a4c15da42a1f2c75778070a923 "$app/public/data/dtc-db.js" | shasum -a 256 -c -
           node atdd/ios/scripts/verify-ios-content.mjs "$app/public"
           node -e 'const c=require(process.argv[1]); if(!c.packageClassList.includes("BluetoothLe"))process.exit(1)' "$app/capacitor.config.json"
           shasum -a 256 "$IPA_PATH"
@@ -261,64 +294,3 @@ jobs:
           path: ${{ runner.temp }}/ATDD*.cms
           retention-days: 3
           if-no-files-found: error
-
-      - name: Upload the verified build to TestFlight
-        if: ${{ inputs.upload }}
-        uses: apple-actions/upload-testflight-build@v2
-        with:
-          app-path: ${{ steps.export.outputs.path }}
-          issuer-id: ${{ secrets.ASC_ISSUER_ID }}
-          api-key-id: ${{ secrets.ASC_KEY_ID }}
-          api-private-key: ${{ secrets.ASC_PRIVATE_KEY }}
-
-      - name: Record Apple processing status
-        if: ${{ inputs.upload }}
-        env:
-          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
-          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
-          ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
-          MARKETING_VERSION: ${{ inputs.marketing_version || '1.2.0' }}
-        run: |
-          set -euo pipefail
-          node <<'NODE'
-          const { asc, token } = require("./atdd/ios/scripts/app-store-connect.cjs");
-          const bundleId = process.env.BUNDLE_ID;
-          const buildNumber = process.env.GITHUB_RUN_NUMBER;
-          const marketingVersion = process.env.MARKETING_VERSION;
-
-          function report(state, detail) {
-            console.log(`APPLE_PROCESSING_STATE=${state}`);
-            console.log(`APPLE_BUILD_NUMBER=${buildNumber}`);
-            console.log(`MARKETING_VERSION=${marketingVersion}`);
-            if (detail) console.log(detail);
-          }
-
-          (async () => {
-            const apps = await asc(`/v1/apps?filter[bundleId]=${encodeURIComponent(bundleId)}&limit=1`, token());
-            const app = apps.data && apps.data[0];
-            if (!app) {
-              report("APP_NOT_FOUND", `No App Store Connect app for ${bundleId}`);
-              return;
-            }
-            const deadline = Date.now() + 12 * 60 * 1000;
-            let last = "NOT_YET_LISTED";
-            let uploaded = "";
-            while (Date.now() < deadline) {
-              const builds = await asc(
-                `/v1/builds?filter[app]=${app.id}&filter[version]=${encodeURIComponent(buildNumber)}&sort=-uploadedDate&limit=5`,
-                token(),
-              );
-              const match = (builds.data || []).find((item) => item.attributes && item.attributes.version === buildNumber);
-              if (match) {
-                last = match.attributes.processingState || "UNKNOWN";
-                uploaded = match.attributes.uploadedDate || "";
-                if (last !== "PROCESSING") break;
-              }
-              await new Promise((resolve) => setTimeout(resolve, 20000));
-            }
-            report(last, uploaded ? `APPLE_UPLOADED_DATE=${uploaded}` : "Build is not listed yet.");
-          })().catch((error) => {
-            report("UNKNOWN", `APPLE_STATUS_ERROR=${error.message}`);
-            process.exitCode = 0;
-          });
-          NODE
