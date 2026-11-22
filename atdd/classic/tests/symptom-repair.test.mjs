@@ -74,4 +74,8 @@ assert.ok(shock.causes.some((c) => c.tests.some((t) => /more than one rebound/i.
 const tread = S.byId("sus-uneven-tire-wear");
 assert.ok(tread.causes.some((c) => c.tests.some((t) => t.spec.startsWith("2/32 inch"))));
 
+const none = S.search("zzzxq-not-a-real-symptom");
+assert.equal(none.length, 0);
+assert.equal(S.byId("not-a-real-entry"), null);
+
 console.log("symptom-repair tests passed", { total: entries.length, tiers, systems: Object.keys(manifest.by_system).length });
