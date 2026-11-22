@@ -266,7 +266,7 @@ jobs:
           /usr/bin/codesign --verify --deep --strict "$app"
           test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app/Info.plist")" = "$BUNDLE_ID"
           test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$app/Info.plist")" = "$GITHUB_RUN_NUMBER"
-          security cms -D -i "$app/embedded.mobileprovision" | python3 -c 'import os, plistlib, sys; p=plistlib.load(sys.stdin.buffer); assert {u.upper() for u in p.get("ProvisionedDevices", [])} == {os.environ["PRIVATE_DEVICE_UDID"].strip().upper()}'
+          security cms -D -i "$app/embedded.mobileprovision" | python3 -c 'import os, plistlib, sys; p=plistlib.loads(sys.stdin.buffer.read()); assert {u.upper() for u in p.get("ProvisionedDevices", [])} == {os.environ["PRIVATE_DEVICE_UDID"].strip().upper()}'
           printf '%s  %s\n' ed75aeb0a429ae920969bf65d324b2b006a252a4c15da42a1f2c75778070a923 "$app/public/data/dtc-db.js" | shasum -a 256 -c -
           node atdd/ios/scripts/verify-ios-content.mjs "$app/public"
           node -e 'const c=require(process.argv[1]); if(!c.packageClassList.includes("BluetoothLe"))process.exit(1)' "$app/capacitor.config.json"
