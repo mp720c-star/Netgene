@@ -22,6 +22,14 @@ assert.ok(scanner.equals(fs.readFileSync(path.join(ios, "scanner/iphone-scanner.
 assert.doesNotMatch(scanner.toString("utf8"), /\bAT(?:Z|E0|L0|S1|H0|SP0)\b/);
 assert.match(scanner.toString("utf8"), /FIXD_COMPATIBILITY/);
 assert.match(scanner.toString("utf8"), /scanner\.send\("03"\)/);
+assert.match(scanner.toString("utf8"), /Copy diagnostics/);
+assert.match(scanner.toString("utf8"), /Vehicle communication has not been checked yet/);
+for (const file of ["stored-codes.js", "elm-adapter.js"]) {
+  assert.ok(fs.readFileSync(path.join(root, "scanner", file)).equals(fs.readFileSync(path.join(ios, "scanner", file))), file);
+}
+assert.match(entry, /name="atdd-source"/);
+assert.match(entry, /name="atdd-build"/);
+if (process.env.GITHUB_SHA) assert.ok(entry.includes('content="' + process.env.GITHUB_SHA + '"'));
 
 for (const file of ["capacitor-ble-transport.js", "fixd-protocol-probe.js", "obd-command-guard.js", "obd-protocol-v3-frame-aware.js", "web-bluetooth-transport.js"]) {
   assert.ok(fs.readFileSync(path.join(root, "tools/js", file)).equals(fs.readFileSync(path.join(ios, "../web/js", file))), file);

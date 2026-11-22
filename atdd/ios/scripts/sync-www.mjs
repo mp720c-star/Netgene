@@ -34,6 +34,10 @@ if (platform === "android") {
   fs.cpSync(path.join(root, "scanner"), path.join(out, "scanner"), { recursive: true });
   const entry = path.join(out, "index.html");
   let html = fs.readFileSync(entry, "utf8").replace(/\r\n/g, "\n");
+  const source = process.env.GITHUB_SHA || "local";
+  const build = process.env.GITHUB_RUN_NUMBER || "local";
+  if (!/^(?:local|[a-f0-9]{40})$/.test(source) || !/^(?:local|[0-9]+)$/.test(build)) throw new Error("Invalid build identity");
+  html = replaceOnce(html, "</head>", '<meta name="atdd-source" content="' + source + '" />\n<meta name="atdd-build" content="' + build + '" />\n</head>');
   html = replaceOnce(html, '<script src="./bluetooth.js"></script>', '<script type="module" src="./scanner/iphone-scanner.js"></script>');
   html = replaceOnce(html, '<details class="extra card">\n        <summary>Privacy', '<p><a href="./tools/index.html#cdi">CDI ignition diagnostics</a></p>\n      <details class="extra card">\n        <summary>Privacy');
   fs.writeFileSync(entry, html);
