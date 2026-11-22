@@ -19,7 +19,11 @@ for (const file of ["app.js", "icon.png", "styles.css", "diagnosticsEngine.js", 
 }
 const scanner = fs.readFileSync(path.join(root, "scanner/iphone-scanner.js"));
 assert.ok(scanner.equals(fs.readFileSync(path.join(ios, "scanner/iphone-scanner.js"))));
-for (const file of ["capacitor-ble-transport.js", "fixd-protocol-probe.js", "obd-protocol-v3-frame-aware.js", "web-bluetooth-transport.js"]) {
+assert.doesNotMatch(scanner.toString("utf8"), /\bAT(?:Z|E0|L0|S1|H0|SP0)\b/);
+assert.match(scanner.toString("utf8"), /FIXD_COMPATIBILITY/);
+assert.match(scanner.toString("utf8"), /scanner\.send\("03"\)/);
+
+for (const file of ["capacitor-ble-transport.js", "fixd-protocol-probe.js", "obd-command-guard.js", "obd-protocol-v3-frame-aware.js", "web-bluetooth-transport.js"]) {
   assert.ok(fs.readFileSync(path.join(root, "tools/js", file)).equals(fs.readFileSync(path.join(ios, "../web/js", file))), file);
 }
 const data = fs.readFileSync(path.join(root, "data/dtc-db.js"));

@@ -1,6 +1,6 @@
 {
   "appId": "com.netgene.atdd.ble",
-  "appName": "ATDD Connect",
+  "appName": "Auto/Truck Diagnostics for Dummies",
   "webDir": "www",
   "server": {
     "androidScheme": "https"

@@ -6,6 +6,7 @@
 
 import { CANDIDATE_GATT_PROFILES } from "./fixd-protocol-probe.js";
 import { pickCharacteristics } from "./web-bluetooth-transport.js";
+import { assertAllowedObdCommand } from "./obd-command-guard.js";
 
 function getCapacitor() {
   return typeof window !== "undefined" ? window.Capacitor : null;
@@ -266,9 +267,10 @@ export function createCapacitorBleTransport({ onDisconnect, requireKnownProfile 
       return lastServices;
     },
     async send(cmd) {
+      const allowed = assertAllowedObdCommand(cmd);
       const target = deviceId;
       const ble = plugin();
-      const value = textToBleHex(String(cmd).trim() + "\r");
+      const value = textToBleHex(allowed + "\r");
       const run = () => new Promise((resolve, reject) => {
         if (!connected || !write || !target || target !== deviceId) {
           reject(new Error("Scanner disconnected."));

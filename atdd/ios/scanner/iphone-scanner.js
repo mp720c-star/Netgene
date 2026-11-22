@@ -1,4 +1,5 @@
 import { capacitorBleAvailable, createCapacitorBleTransport } from "../tools/js/capacitor-ble-transport.js";
+import { FIXD_COMPATIBILITY } from "../tools/js/obd-command-guard.js";
 import { storedCodes } from "./stored-codes.js";
 
 const el = (id) => document.getElementById(id);
@@ -56,7 +57,9 @@ async function choose() {
   await perform(async () => {
     output.textContent = "";
     const scanner = createCapacitorBleTransport({
-      requireKnownProfile: true,
+      // Prefer known FIXD/ELM GATT profiles, then fall back to a generic UART
+      // service so off-brand ELM327-style BLE adapters can still be chosen.
+      requireKnownProfile: false,
       onDisconnect() {
         if (active !== scanner) return;
         log("Scanner disconnected.");
@@ -64,12 +67,15 @@ async function choose() {
       },
     });
     active = scanner;
-    log("Choose the scanner plugged into your vehicle.");
+    log("Choose a FIXD or generic ELM327-style BLE OBD-II adapter plugged into the vehicle.");
+    log("FIXD compatibility is " + FIXD_COMPATIBILITY + " until a real-device Mode 03 round-trip is confirmed.");
     const [device] = await scanner.scan();
     await scanner.connect(device.id);
     if (active !== scanner) throw new Error("Scanner disconnected.");
     ready = true;
-    log("Connected to " + device.name + ". Tap Read codes to ask the vehicle for stored faults.");
+    const name = device.name || "BLE adapter";
+    const fixdName = device.isFixdName ? " (FIXD-named device; protocol still " + FIXD_COMPATIBILITY + ")" : "";
+    log("Connected to " + name + fixdName + ". Tap Read codes to request stored faults (Mode 03 only).");
   });
 }
 
@@ -77,12 +83,7 @@ async function readVehicle() {
   if (!ready) return;
   await perform(async () => {
     const scanner = active;
-    // These commands set the adapter's text format and select automatic OBD protocol.
-    // Mode 03 is the only vehicle diagnostic request in this workflow.
-    for (const command of ["ATE0", "ATL0", "ATS1", "ATH0", "ATSP0"]) {
-      const reply = await scanner.send(command);
-      if (!/\bOK\b/i.test(reply)) throw new Error("Scanner did not accept " + command + ".");
-    }
+    // Read-only: Mode 03 stored DTCs only. No AT init, no Mode 04 clear.
     const reply = await scanner.send("03");
     log("Vehicle reply for Mode 03\n" + reply.trim());
     const codes = storedCodes(reply);
@@ -98,16 +99,22 @@ async function readVehicle() {
   });
 }
 
-panel.querySelector(".lead").textContent = "Choose your Bluetooth OBD scanner, then read stored codes from the vehicle.";
-panel.querySelector("h2").textContent = "Bluetooth scanner";
-panel.querySelector("p.small.mt-8").textContent = "A successful read shows the vehicle’s reply here and sends its codes to the offline lookup.";
-connect.textContent = "Connect scanner";
+panel.querySelector(".lead").textContent =
+  "Connect a FIXD or generic ELM327-style BLE OBD-II scanner, then read stored codes (Mode 01/03 only). FIXD compatibility is " +
+  FIXD_COMPATIBILITY +
+  ".";
+panel.querySelector("h2").textContent = "Connect OBD-II Scanner";
+panel.querySelector("p.small.mt-8").textContent =
+  "A successful Mode 03 read shows the vehicle’s reply here and sends its codes to the offline lookup. Mode 04 clear-codes and AT writes are blocked. No simulated scanner data is used.";
+connect.textContent = "Connect OBD-II Scanner";
 top.textContent = "Connect Scanner";
 el("btnBtScanAll").hidden = true;
 el("btnBtDemo").hidden = true;
 el("btIphoneGate").hidden = true;
 try { available = capacitorBleAvailable(); } catch { available = false; }
-el("btSupport").textContent = available ? "iPhone Bluetooth is available." : "The native Bluetooth connection is unavailable in this copy.";
+el("btSupport").textContent = available
+  ? "iPhone Bluetooth is available. FIXD compatibility is " + FIXD_COMPATIBILITY + "."
+  : "The native Bluetooth connection is unavailable in this copy.";
 top.onclick = connect.onclick = choose;
 read.onclick = readVehicle;
 disconnect.onclick = () => perform(async () => {
