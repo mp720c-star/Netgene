@@ -5,13 +5,14 @@
   "type": "module",
   "description": "Auto/Truck Diagnostics for Dummies + CDI Genius unified development build",
   "scripts": {
-    "test": "node tests/verify-import.mjs && node tests/ddt-engine.test.mjs && node obd/tests/obd-protocol-v3.test.mjs && node tests/scanner-session.test.mjs && node tests/capacitor-ble-available.test.mjs && node tests/capacitor-ble-payload.test.mjs && node classic/tests/bluetooth-parse.test.mjs && node classic/tests/vehicle-index.test.mjs && node classic/tests/no-fabricated-outputs.test.mjs && node tests/obd-command-guard.test.mjs && node classic/tests/dtc-guidance.test.mjs && node ios/scripts/verify-ios-content.mjs",
+    "test": "node tests/verify-import.mjs && node tests/ddt-engine.test.mjs && node obd/tests/obd-protocol-v3.test.mjs && node tests/scanner-session.test.mjs && node tests/capacitor-ble-available.test.mjs && node tests/capacitor-ble-payload.test.mjs && node classic/tests/bluetooth-parse.test.mjs && node classic/tests/vehicle-index.test.mjs && node classic/tests/no-fabricated-outputs.test.mjs && node tests/obd-command-guard.test.mjs && node classic/tests/dtc-guidance.test.mjs && node classic/tests/symptom-repair.test.mjs && node ios/scripts/verify-ios-content.mjs",
     "test:obd": "node obd/tests/obd-protocol-v3.test.mjs",
     "verify": "node tests/verify-import.mjs",
     "serve": "python3 -m http.server 8765 --bind 127.0.0.1 --directory web",
     "test:bluetooth-classic": "node classic/tests/bluetooth-parse.test.mjs",
     "test:vehicle-index": "node classic/tests/vehicle-index.test.mjs",
     "test:no-fabricated-outputs": "node classic/tests/no-fabricated-outputs.test.mjs",
-    "test:dtc-guidance": "node classic/tests/dtc-guidance.test.mjs"
+    "test:dtc-guidance": "node classic/tests/dtc-guidance.test.mjs",
+    "test:symptom-repair": "node classic/tests/symptom-repair.test.mjs"
   }
 }

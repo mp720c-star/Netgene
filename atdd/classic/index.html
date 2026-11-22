@@ -63,6 +63,31 @@
         <div id="selectedVehiclePanel" class="mt-10" hidden></div>
         <div id="cdiPinoutView" class="mt-10" hidden></div>
       </section>
+
+      <section class="card" id="symptomRepairCard">
+        <h2>What's wrong? Symptom repair</h2>
+        <p class="lead">Search or browse a system-based repair database: what the symptom means, ranked causes, and a test for each cause (tool, what to check, good vs bad, and a spec). Meanings that a public government source supports are labeled <strong>cited</strong>. Everything else is labeled <strong>general guidance</strong> and must be verified with the service manual for your vehicle.</p>
+        <label for="symptomQuery">Describe the symptom</label>
+        <input id="symptomQuery" placeholder="won't crank, blue smoke, click on turns, no spark CDI" autocomplete="off">
+        <div class="row mt-8">
+          <div>
+            <label for="symptomSystemFilter">System</label>
+            <select id="symptomSystemFilter"><option value="">All systems</option></select>
+          </div>
+          <div>
+            <label for="symptomTierFilter">Tier</label>
+            <select id="symptomTierFilter">
+              <option value="">All tiers</option>
+              <option value="cited">Cited</option>
+              <option value="generated-general">General guidance</option>
+            </select>
+          </div>
+        </div>
+        <div class="chip-row mt-10" id="symptomSystemChips" aria-label="Systems"></div>
+        <div class="small mt-8" id="symptomSearchStats"></div>
+        <div id="symptomSearchResults" class="mt-10"></div>
+        <div id="symptomEntryView" class="mt-10" hidden></div>
+      </section>
       <section class="card" id="bluetoothCard" hidden>
         <h2>Bluetooth · Connect FIXD</h2>
         <p class="lead">Pair your real FIXD over Bluetooth, read codes, and drop them into the scanner field above. The app does not invent demo or simulated scan results.</p>
@@ -248,6 +273,8 @@
   <script src="./data/dtc-sae-generic-additions.js"></script>
   <script src="./data/dtc-guidance-overlay.js"></script>
   <script src="./dtcGuidance.js"></script>
+  <script src="./data/symptom-repair-db.js"></script>
+  <script src="./symptomRepair.js"></script>
   <script src="./data/common-jobs.js"></script>
   <script src="./data/cdi-pinout-db.js"></script>
   <script src="./data/vehicle-index.js"></script>
