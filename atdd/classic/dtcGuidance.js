@@ -357,8 +357,26 @@
     return ((row && row.p) || []).map((i) => (typeof i === "number" ? names[i] : i)).filter(Boolean);
   }
 
+  function unknownGuidance(code) {
+    return {
+      code: code,
+      description: "Unknown code – not in database",
+      family: "",
+      subsystem: "",
+      tier: "unknown",
+      tierLabel: "Unknown code – not in database",
+      sources: [],
+      safety: [],
+      causes: [],
+      unknown: true,
+      existingDetailed: false
+    };
+  }
+
   function guidanceFor(code, record) {
-    const rec = record || findRecord(code) || { code: code, description: "", family: FAMILY[(code || "")[0]] || "", subsystem: "" };
+    const found = findRecord(code);
+    if (!found) return unknownGuidance(code);
+    const rec = found;
     const row = overlayRow(code);
     const description = rec.description || "";
     const subsystem = rec.subsystem || "";

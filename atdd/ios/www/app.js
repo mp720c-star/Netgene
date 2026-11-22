@@ -177,7 +177,11 @@ function showEl(id){
 
 function renderStructuredGuidance(code, record){
   if(typeof window.DtcGuidance === 'undefined' || !window.DtcGuidance.guidanceFor) return '';
+  if(record && (record.inDatabase === false || (record.detailed && record.detailed.unknown))) return '';
   const g = window.DtcGuidance.guidanceFor(code, record || { code: code, description: '', family: '', subsystem: '' });
+  if(g.unknown || g.tier === 'unknown'){
+    return `<div class="guidance-tier mt-10"><span class="badge generic">Unknown</span><div class="small mt-6"><strong>Unknown code – not in database</strong></div><div class="small mt-6">No cause, test, or fix was invented for this identifier.</div></div>`;
+  }
   const sources = (g.sources || []).map((s) => {
     const bit = s.url ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.name)}</a>` : esc(s.name);
     return `<li>${bit}${s.license ? ' <span class="small">(' + esc(s.license) + ')</span>' : ''}</li>`;

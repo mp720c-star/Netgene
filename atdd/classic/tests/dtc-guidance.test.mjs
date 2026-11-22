@@ -88,4 +88,11 @@ assert.equal(manifest.baseline.sha256, EXPECTED_DTC);
 assert.equal(manifest.additions.count, 7395);
 assert.equal(manifest.additions.source.license, "CC0-1.0");
 
+const unknown = G.guidanceFor("Z9999");
+assert.equal(unknown.unknown, true);
+assert.equal(unknown.tier, "unknown");
+assert.equal(unknown.description, "Unknown code – not in database");
+assert.equal(unknown.causes.length, 0);
+assert.equal((unknown.sources || []).length, 0);
+
 console.log("dtc-guidance tests passed", { union: all.length, tiers, added: additions.length });
