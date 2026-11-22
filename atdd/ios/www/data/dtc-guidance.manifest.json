@@ -1,0 +1,46 @@
+{
+  "baseline": {
+    "file": "dtc-db.js",
+    "sha256": "ed75aeb0a429ae920969bf65d324b2b006a252a4c15da42a1f2c75778070a923",
+    "count": 4783,
+    "note": "Unchanged. Do not edit or replace this file for this change."
+  },
+  "additions": {
+    "file": "dtc-sae-generic-additions.js",
+    "sha256": "b5e812d919b78e138b73fba26552e3d50ed15195a6e85e378ad397991a5210de",
+    "count": 7395,
+    "by_prefix": {
+      "B0": 323,
+      "C0": 624,
+      "P0": 2267,
+      "P2": 2900,
+      "P3": 56,
+      "U0": 1051,
+      "U3": 174
+    },
+    "source": {
+      "name": "obdex",
+      "url": "https://github.com/foerbsnavi/obdex",
+      "pages": "https://foerbsnavi.github.io/OBDex/generic.min.json",
+      "license": "CC0-1.0",
+      "license_url": "https://github.com/foerbsnavi/obdex/blob/main/LICENSE-DATA"
+    },
+    "source_file_sha256": "b160e9ea689a1c0aebb67867c7b8c98c0287897ef929efc071683b6a27364a71"
+  },
+  "overlay": {
+    "file": "dtc-guidance-overlay.js",
+    "sha256": "4383e40cfcd42cf63ece3589f5f65e6fbf7a37995dd20b95db94b322715d563c",
+    "codes_with_cited_causes": 9533,
+    "cited_cause_rows": 33401,
+    "interned_urls": 3729,
+    "interned_components": 3259
+  },
+  "union_count": 12178,
+  "licenses": [
+    "obdex data: CC0-1.0 public domain dedication (https://github.com/foerbsnavi/obdex/blob/main/LICENSE-DATA).",
+    "SAE J2012 / ISO 15031-6 text is copyrighted and is not reproduced here. This app uses publicly known code identifiers and independently written or CC0 titles and cause labels.",
+    "Per-cause test procedures in dtcGuidance.js were written for this app. Numeric test limits come only from the vehicle service manual, stated as 'per service manual', not invented.",
+    "Documents linked in the overlay are cited as found by obdex; this app does not copy those documents."
+  ],
+  "note": "Manufacturer-specific baseline codes (P1, B1, C1, U1, and others not in the generic set) keep their original descriptions and receive generated-general guidance, not invented OEM procedures."
+}
