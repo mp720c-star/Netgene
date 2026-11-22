@@ -173,3 +173,13 @@ details.extra[open] summary{margin-bottom:10px}
 .symptom-card{background:#0f0f0f;border:1px solid #4a310e;border-radius:14px;padding:12px;margin:0 0 10px;text-align:left;color:var(--text);width:100%}
 .symptom-card h3{margin:0 0 6px;font-size:1rem}
 .symptom-meta{color:var(--muted);font-size:.82rem}
+
+
+/* Inline Mode 03 readout under Connect OBD-II Scanner */
+#scanReadoutCard .scan-readout{display:grid;gap:8px}
+.scan-code{display:block;width:100%;text-align:left;min-height:44px;background:#0f0f0f;border:1px solid #4a310e;border-radius:14px;padding:12px;color:var(--text);font-weight:600}
+.scan-code .code{display:block}
+.scan-code .meta{display:block;font-weight:400;color:var(--muted);font-size:.9rem;margin-top:4px;line-height:1.4}
+.scan-readout-empty,.scan-readout-error{margin:0;color:var(--text);font-size:1rem;line-height:1.4}
+.scan-readout-error{color:#ffb4b4}
+.scan-readout-raw{margin:8px 0 0;padding:12px;max-height:200px;overflow:auto;white-space:pre-wrap;word-break:break-word;background:#0b0b0b;border:1px solid #5c3a0d;border-radius:12px;color:#f0d7a6;font-size:.88rem;line-height:1.4}

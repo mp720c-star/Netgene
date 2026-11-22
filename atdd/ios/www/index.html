@@ -103,6 +103,11 @@
         <p class="small mt-8">FIXD protocol claim stays <code>UNVERIFIED</code> until a live Mode 03 round-trip succeeds on a physical truck. A failed connect does not invent codes.</p>
       </section>
 
+      <section class="card" id="scanReadoutCard" hidden>
+        <h2>Codes from this scan</h2>
+        <div id="scanReadout" class="scan-readout"></div>
+      </section>
+
       <section class="card primary-card" id="lookupCard">
         <h2>1. Capture evidence</h2>
         <p class="lead">Listen to the engine, look at exhaust or under-hood, then diagnose. Optional scanner codes sharpen the result.</p>
@@ -281,6 +286,7 @@
   <script src="./data/vehicle-index.js"></script>
   <script src="./vehicleCatalog.js"></script>
   <script src="./diagnosticsEngine.js"></script>
+  <script src="./scanReadout.js"></script>
   <script type="module" src="./scanner/iphone-scanner.js"></script>
   <script src="./app.js"></script>
 </body>
