@@ -81,6 +81,10 @@ jobs:
           npm run sync:ios
           node scripts/verify-ios-content.mjs ios/App/App/public
           node tests/stored-codes.test.mjs
+          node ../tests/capacitor-ble-available.test.mjs
+          node ../tests/capacitor-ble-payload.test.mjs
+          node ../tests/obd-command-guard.test.mjs
+          node --test ../tests/native-scanner-connection.test.mjs
 
       - name: Open the actual app in the iPhone simulator
         if: ${{ inputs.private_device_test }}
@@ -105,6 +109,8 @@ jobs:
         env:
           PROFILE_BASE64: ${{ secrets.IOS_PROVISION_PROFILE_BASE64 }}
           IOS_TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
+          PRIVATE_DEVICE_TEST: ${{ inputs.private_device_test && !inputs.upload }}
+          PRIVATE_TEST_DEVICE: ${{ secrets.ATDD_PRIVATE_TEST_DEVICE_20261121 }}
         run: |
           set -euo pipefail
           umask 077
@@ -141,7 +147,17 @@ jobs:
                       and set(other["DeveloperCertificates"]).intersection(profile["DeveloperCertificates"])
                       and other["ExpirationDate"] > datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)):
                   candidates.append((other, candidate))
-          if candidates:
+          if os.environ.get("PRIVATE_DEVICE_TEST") == "true":
+              expected = os.environ.get("PRIVATE_TEST_DEVICE", "").strip().upper()
+              if not expected:
+                  raise SystemExit("The selected private test iPhone is not configured.")
+              exact = [(row, candidate) for row, candidate in candidates
+                       if {value.upper() for value in row["ProvisionedDevices"]} == {expected}]
+              if not exact:
+                  raise SystemExit("No existing ad hoc profile matches exactly the selected test iPhone.")
+              profile, source = exact[0]
+              method = "release-testing"
+          elif candidates:
               all_devices = set().union(*(set(row["ProvisionedDevices"]) for row, _ in candidates))
               for row, candidate in candidates:
                   if set(row["ProvisionedDevices"]) == all_devices:
@@ -225,6 +241,8 @@ jobs:
       - name: Verify the contents and signature of the exported iPhone app
         env:
           IPA_PATH: ${{ steps.export.outputs.path }}
+          PRIVATE_DEVICE_TEST: ${{ inputs.private_device_test && !inputs.upload }}
+          PRIVATE_TEST_DEVICE: ${{ secrets.ATDD_PRIVATE_TEST_DEVICE_20261121 }}
         run: |
           set -euo pipefail
           /usr/bin/ditto -x -k "$IPA_PATH" "$RUNNER_TEMP/ipa-check"
@@ -235,6 +253,17 @@ jobs:
           test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app/Info.plist")" = "$BUNDLE_ID"
           test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$app/Info.plist")" = "$GITHUB_RUN_NUMBER"
           test -f "$app/embedded.mobileprovision"
+          if [[ "$PRIVATE_DEVICE_TEST" == "true" ]]; then
+            security cms -D -i "$app/embedded.mobileprovision" > "$RUNNER_TEMP/exported-profile.plist"
+            python3 - <<'PY'
+          import os, pathlib, plistlib
+          profile = plistlib.loads((pathlib.Path(os.environ["RUNNER_TEMP"]) / "exported-profile.plist").read_bytes())
+          expected = os.environ.get("PRIVATE_TEST_DEVICE", "").strip().upper()
+          if not expected or {value.upper() for value in profile.get("ProvisionedDevices", [])} != {expected}:
+              raise SystemExit("The exported app is not signed for exactly the selected test iPhone.")
+          print("PRIVATE_IPHONE_PROFILE=VERIFIED")
+          PY
+          fi
           node atdd/ios/scripts/verify-ios-content.mjs "$app/public"
           node -e 'const c=require(process.argv[1]); if(!c.packageClassList.includes("BluetoothLe"))process.exit(1)' "$app/capacitor.config.json"
           shasum -a 256 "$IPA_PATH"
