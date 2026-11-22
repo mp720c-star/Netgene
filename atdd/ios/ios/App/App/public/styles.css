@@ -139,3 +139,19 @@ details.extra[open] summary{margin-bottom:10px}
   line-height:1.4;
 }
 #bluetoothCard code{color:#ffd27b}
+
+/* Shared vehicle index + CDI pinout */
+.vehicle-results{display:grid;gap:8px;max-height:320px;overflow:auto}
+.vehicle-result{text-align:left;background:#0f0f0f;border:1px solid #4a310e;border-radius:14px;padding:10px 12px;color:var(--text);font-weight:600}
+.vehicle-result .meta{display:block;font-weight:400;color:var(--muted);font-size:.82rem;margin-top:3px}
+.vehicle-result.is-selected{border-color:#f4b400;background:#1a1408}
+.badge.unverified{background:#3a0b0b;border-color:#a12626;color:#ffb4b4}
+.badge.simulated{background:#2a1840;border-color:#7a4bb8;color:#e3c9ff}
+.badge.reference{background:#1a1a1a;border-color:#777;color:#ddd}
+.badge.cited{background:#102018;border-color:#2f6b45;color:#b6f0c8}
+.badge.generic{background:#241707;border-color:#7d4200;color:#ffd27b}
+.pinout-table{width:100%;border-collapse:collapse;font-size:.88rem}
+.pinout-table th,.pinout-table td{border:1px solid #4a310e;padding:7px 8px;text-align:left;vertical-align:top}
+.pinout-table th{background:#1a1208;color:#ffd27b}
+.pinout-source{background:#0f0f0f;border:1px solid #4a310e;border-radius:12px;padding:10px;color:#e8dfd0;font-size:.85rem;line-height:1.4}
+.near-match{background:#1a1408;border:1px dashed #6f4700;border-radius:12px;padding:8px 10px;margin:6px 0;color:#ffd982;font-size:.85rem}

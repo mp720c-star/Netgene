@@ -8,7 +8,8 @@ const state = {
   currentStream: null,
   imageSummary: null,
   lastAnalysis: null,
-  lastAnalysisText: ''
+  lastAnalysisText: '',
+  selectedVehicle: null
 };
 
 const symptoms = [
@@ -93,6 +94,27 @@ function restoreLegalAcceptance(){
 
 async function loadDb(){
   state.dtcDb = window.DTC_DB_DATA || [];
+}
+
+
+function catalog(){
+  return (typeof VehicleCatalog !== 'undefined') ? VehicleCatalog : null;
+}
+
+function catalogWorkflowNotice(analysis){
+  const selected = state.selectedVehicle;
+  const bits = [];
+  if(selected && selected.workflow === 'generic_automotive'){
+    bits.push('<div class="notice mt-8"><span class="badge generic">Generic automotive</span> DTC lookup, how-to jobs, and repair guides are generic. They are not written for this exact year, make, and model.</div>');
+  } else if(selected && selected.has_cdi_pinout){
+    bits.push('<div class="notice mt-8">OBD diagnostic trouble codes are a separate workflow from CDI ignition pinouts. This diagnosis does not include a CDI pinout, and a pinout never emits a P, B, C, or U code.</div>');
+  } else if(selected && selected.workflow === 'index_only'){
+    bits.push('<div class="notice mt-8">This vehicle is in the index, but no CDI pinout is filed for it. DTC lookup and how-to jobs here are generic automotive and may not apply to this machine.</div>');
+  } else {
+    bits.push('<div class="notice mt-8"><span class="badge generic">Generic automotive</span> DTC lookup, how-to jobs, and repair guides are generic. They are not written for one exact vehicle.</div>');
+  }
+  // Never attach pinout HTML to an OBD diagnosis result.
+  return bits.join('');
 }
 
 function vehicleData(){
@@ -265,6 +287,7 @@ function clearCase(){
   localStorage.removeItem('atd_case_latest');
   ['make','model','engine','mileage','nickname','codes','notes','dbQuery','fluidCapacity','fluidNotes'].forEach(id => { if(byId(id)) byId(id).value = ''; });
   ['year','trans','fuel','fluidType','fluidLevel','fluidColor','fluidSmell'].forEach(id => { if(byId(id)) byId(id).value = ''; });
+  clearSelectedVehicle();
   symptoms.forEach((_, i) => { if(byId(`sym_${i}`)) byId(`sym_${i}`).checked = false; });
   ['flagRodKnock','flagLowCompression','flagBurnsOil','flagMetalInOil','flagNeedRebuild'].forEach(id => { if(byId(id)) byId(id).checked = false; });
   state.lastAnalysis = null;
@@ -596,6 +619,7 @@ function renderAnalysis(analysis){
         <h3>${esc((outcome && outcome.title) || 'Need more evidence')}</h3>
         <div class="small">${esc((outcome && outcome.reason) || (analysis.summary && analysis.summary.shortReason) || '')}</div>
         ${vehicleLine ? `<div class="small mt-6">${esc(vehicleLine)}</div>` : ''}
+      ${catalogWorkflowNotice(analysis)}
       </div>
       <div class="result-block"><h3>What to capture next</h3><ol class="checks diy-list">${list((outcome && outcome.instructions) || [])}</ol></div>
       ${evidence.length ? `<div class="result-block"><h3>Evidence so far</h3><ul class="evidence-list">${evidence.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div>` : ''}
@@ -639,6 +663,7 @@ function renderAnalysis(analysis){
       <h3>${esc(outcome.title)}</h3>
       <div><span class="badge">${esc(outcome.confidence)}%</span> <span class="small">${esc(outcome.reason || '')}</span></div>
       ${vehicleLine ? `<div class="small mt-6">${esc(vehicleLine)}</div>` : ''}
+      ${catalogWorkflowNotice(analysis)}
     </div>
     ${evidence.length ? `<div class="result-block"><h3>Evidence used</h3><ul class="evidence-list">${evidence.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div>` : ''}
     <div class="result-block"><h3>Repair instructions — ${esc(outcome.instructionTitle || outcome.title)}</h3><ol class="checks diy-list">${list(outcome.instructions)}</ol></div>
@@ -805,11 +830,213 @@ function renderAllSolutions(filter){
   `).join('');
 }
 
+function fillSelect(id, values, blankLabel, selected){
+  const sel = byId(id);
+  if(!sel) return;
+  const current = selected != null ? selected : sel.value;
+  sel.innerHTML = '';
+  const blank = document.createElement('option');
+  blank.value = '';
+  blank.textContent = blankLabel;
+  sel.appendChild(blank);
+  values.forEach((value) => {
+    const opt = document.createElement('option');
+    opt.value = value;
+    opt.textContent = value;
+    sel.appendChild(opt);
+  });
+  if(current && values.includes(current)) sel.value = current;
+}
+
+function refreshVehicleFilters(resetMake){
+  const cat = catalog();
+  if(!cat) return;
+  const type = value('vehicleTypeFilter');
+  const typeSel = byId('vehicleTypeFilter');
+  if(typeSel && typeSel.options.length <= 1){
+    typeSel.innerHTML = '<option value="">All types</option>' + cat.types().map((t) => `<option value="${esc(t)}">${esc(cat.typeLabel(t))}</option>`).join('');
+  }
+  const makes = cat.makes(type);
+  if(resetMake && byId('vehicleMakeFilter')) byId('vehicleMakeFilter').value = '';
+  fillSelect('vehicleMakeFilter', makes, 'All makes');
+  const years = cat.years(type, value('vehicleMakeFilter'));
+  fillSelect('vehicleYearFilter', years.map(String), 'Any year');
+}
+
+function renderVehicleSearch(){
+  const cat = catalog();
+  const box = byId('vehicleSearchResults');
+  const stats = byId('vehicleSearchStats');
+  if(!cat || !box) return;
+  const filters = {
+    type: value('vehicleTypeFilter'),
+    make: value('vehicleMakeFilter'),
+    year: value('vehicleYearFilter'),
+    query: value('vehicleQuery')
+  };
+  const matches = cat.search(filters);
+  const counts = cat.data().counts || {};
+  if(stats){
+    stats.textContent = matches.length + ' shown · ' + (counts.entries || matches.length) + ' index entries · ' + (counts.cdi_profiles_represented || 0) + ' CDI pinout profiles · near-matches flagged, not merged';
+  }
+  const limit = 40;
+  const shown = matches.slice(0, limit);
+  if(!shown.length){
+    box.innerHTML = '<div class="small">No index entry matches that search.</div>';
+    return;
+  }
+  box.innerHTML = shown.map((entry) => {
+    const selected = state.selectedVehicle && state.selectedVehicle.id === entry.id;
+    const badges = [];
+    if(entry.workflow === 'generic_automotive') badges.push('<span class="badge generic">Generic automotive</span>');
+    if(entry.has_cdi_pinout){
+      const pinouts = cat.pinoutsFor(entry);
+      pinouts.forEach((profile) => {
+        const b = cat.badge(profile);
+        if(b) badges.push(`<span class="badge ${esc(b.tone)}">${esc(b.label)}</span>`);
+      });
+    } else if(entry.workflow === 'index_only'){
+      badges.push('<span class="badge reference">In index · no CDI pinout filed</span>');
+    }
+    if(entry.near_matches && entry.near_matches.length){
+      badges.push('<span class="badge">Near-match flagged</span>');
+    }
+    return `<button type="button" class="vehicle-result${selected ? ' is-selected' : ''}" data-vehicle-id="${esc(entry.id)}" role="option" aria-selected="${selected ? 'true' : 'false'}">
+      ${esc(cat.entryLabel(entry) || entry.display_name)}
+      <span class="meta">${esc(cat.typeLabel(entry.type))}${entry.cdi_system ? ' · ' + esc(entry.cdi_system) : ''}</span>
+      <span class="meta">${badges.join(' ')}</span>
+    </button>`;
+  }).join('') + (matches.length > limit ? `<div class="small">Showing ${limit} of ${matches.length}. Narrow the search to see the rest.</div>` : '');
+  box.querySelectorAll('[data-vehicle-id]').forEach((btn) => {
+    btn.onclick = () => selectVehicle(btn.getAttribute('data-vehicle-id'));
+  });
+}
+
+function selectVehicle(id){
+  const cat = catalog();
+  if(!cat) return;
+  const entry = cat.get(id);
+  if(!entry) return;
+  state.selectedVehicle = entry;
+  if(byId('year') && entry.year) byId('year').value = String(entry.year);
+  else if(byId('year') && entry.year_start && entry.year_start === entry.year_end) byId('year').value = String(entry.year_start);
+  if(byId('make')) byId('make').value = entry.make || '';
+  if(byId('model')) byId('model').value = entry.model || '';
+  renderSelectedVehicle();
+  renderCdiPinout();
+  renderVehicleSearch();
+}
+
+function clearSelectedVehicle(){
+  state.selectedVehicle = null;
+  const panel = byId('selectedVehiclePanel');
+  const pin = byId('cdiPinoutView');
+  if(panel){ panel.hidden = true; panel.innerHTML = ''; }
+  if(pin){ pin.hidden = true; pin.innerHTML = ''; }
+  if(byId('vehicleSearchResults')) renderVehicleSearch();
+}
+
+function renderSelectedVehicle(){
+  const panel = byId('selectedVehiclePanel');
+  const cat = catalog();
+  const entry = state.selectedVehicle;
+  if(!panel || !cat || !entry){
+    if(panel){ panel.hidden = true; panel.innerHTML = ''; }
+    return;
+  }
+  panel.hidden = false;
+  const near = (entry.near_matches || []).map((n) => `<div class="near-match">Not merged: ${esc(n.label)} — ${esc(n.reason)}</div>`).join('');
+  let workflow = '';
+  if(entry.workflow === 'generic_automotive'){
+    workflow = '<p class="small">Use Diagnose, Listen, Look, and Code as usual. Guides and jobs stay generic automotive.</p>';
+  } else if(entry.has_cdi_pinout){
+    workflow = '<p class="small">CDI ignition pinout is shown below. It is not an OBD code and is not mixed into a DTC diagnosis.</p>';
+  } else {
+    workflow = '<p class="small">No CDI pinout is filed for this vehicle. Generic automotive DTC and job content may not apply.</p>';
+  }
+  panel.innerHTML = `
+    <div class="notice">
+      <strong>Selected:</strong> ${esc(cat.entryLabel(entry) || entry.display_name)}
+      <div class="small mt-6">${esc(cat.typeLabel(entry.type))}${entry.cdi_system ? ' · ' + esc(entry.cdi_system) : ''}</div>
+      ${workflow}
+      <div class="row mt-8"><button type="button" class="secondary" id="btnClearSelectedVehicle">Clear selected vehicle</button></div>
+      ${near}
+    </div>
+  `;
+  const clearBtn = byId('btnClearSelectedVehicle');
+  if(clearBtn) clearBtn.onclick = clearSelectedVehicle;
+}
+
+function renderCdiPinout(){
+  const box = byId('cdiPinoutView');
+  const cat = catalog();
+  const entry = state.selectedVehicle;
+  if(!box || !cat) return;
+  // Only show pinouts from a selected CDI-backed vehicle. Never from an OBD code.
+  const pinouts = entry && entry.has_cdi_pinout ? cat.pinoutsFor(entry) : [];
+  if(!pinouts.length){
+    box.hidden = true;
+    box.innerHTML = '';
+    return;
+  }
+  box.hidden = false;
+  box.innerHTML = pinouts.map((profile) => {
+    const badge = cat.badge(profile);
+    const unverified = badge && (badge.tone === 'unverified' || badge.tone === 'simulated' || badge.tone === 'reference');
+    const slots = (profile.slots || []).map((slot) => `
+      <tr>
+        <td>${esc(slot.pin)}</td>
+        <td>${esc(slot.label)}</td>
+        <td>${esc(slot.role)}</td>
+        <td>${esc((slot.colors || []).join(', '))}</td>
+        <td>${esc(slot.volt)}</td>
+        <td>${esc(slot.desc)}</td>
+      </tr>
+    `).join('');
+    const caution = unverified
+      ? '<div class="notice mt-8">These electrical values are <strong>not verified / not available for action</strong>. Do not copy them as an approved repair specification.</div>'
+      : '<div class="small mt-8">Possible checks from a cited source, not a definite repair. Confirm against a primary service manual before you work on the machine.</div>';
+    return `
+      <div class="code-card">
+        <h3>CDI ignition pinout — ${esc(profile.name)}</h3>
+        ${badge ? `<span class="badge ${esc(badge.tone)}">${esc(badge.label)}</span>` : ''}
+        <span class="badge">${esc(profile.system || '')}</span>
+        <span class="badge">${esc(profile.category || '')}</span>
+        <div class="pinout-source mt-8"><strong>Source:</strong> ${esc(profile.source || 'not available')}</div>
+        ${caution}
+        <div class="mt-10" style="overflow:auto">
+          <table class="pinout-table">
+            <thead><tr><th>Pin</th><th>Label</th><th>Role</th><th>Colors</th><th>Volt</th><th>Description</th></tr></thead>
+            <tbody>${slots}</tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function initVehicleSearch(){
+  const cat = catalog();
+  if(!cat || !byId('vehicleSearchCard')) return;
+  refreshVehicleFilters();
+  renderVehicleSearch();
+  const typeSel = byId('vehicleTypeFilter');
+  const makeSel = byId('vehicleMakeFilter');
+  const yearSel = byId('vehicleYearFilter');
+  const query = byId('vehicleQuery');
+  if(typeSel) typeSel.onchange = () => { refreshVehicleFilters(true); renderVehicleSearch(); };
+  if(makeSel) makeSel.onchange = () => { refreshVehicleFilters(false); renderVehicleSearch(); };
+  if(yearSel) yearSel.onchange = renderVehicleSearch;
+  if(query) query.oninput = renderVehicleSearch;
+}
+
+
 async function init(){
   fillYears();
   renderSymptoms();
   restoreLegalAcceptance();
   bindEvents();
+  initVehicleSearch();
   text('appVersion', 'v' + APP_VERSION);
   text('footerVersion', 'v' + APP_VERSION);
   await loadDb();
