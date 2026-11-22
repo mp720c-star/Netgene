@@ -62,7 +62,12 @@ assert.equal(counts.entries, 440);
 assert.equal(counts.exact_merges, 239);
 assert.equal(counts.near_match_pairs, 22);
 assert.equal(counts.cdi_profiles_represented, 71);
-assert.equal(counts.ravin_sources, 361);
+assert.equal(counts.catalog_sources, 361);
+const sourceKinds = new Set();
+for (const entry of Catalog.data().entries) {
+  for (const s of entry.sources || []) sourceKinds.add(s.kind);
+}
+assert.deepEqual([...sourceKinds].sort(), ["catalog", "cdi", "vehicle_genius"]);
 assert.equal(counts.vehicle_genius_sources, 247);
 assert.equal(counts.by_type.car_truck, 237);
 assert.equal(counts.by_type.dirt_bike, 110);

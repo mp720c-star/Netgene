@@ -12,7 +12,7 @@
 | ATDD 1.2.0 application | **No** | Not in Netgene (any branch), GitHub user repos, Origin repos, Supabase `files` (0 rows), recovery folder, unauthenticated Drive/OneDrive |
 | ATDD OBD2 databases | **No** | Same search set |
 | ATDD Diagnose / Listen / Look / Code | **No** | Same search set |
-| ATDD signed Windows installer | **No** | Closest unrelated artifact: Ravin Lookup Car/Truck `.exe` (not ATDD) |
+| ATDD signed Windows installer | **No** | Closest unrelated artifact: a separate Windows lookup installer in the repo (not ATDD) |
 | ATDD iPhone Home Screen app | **No** | Same search set |
 | CDI Genius source (repo) | **Yes** | `cdi-genius/` on `main` |
 | CDI Genius claimed 1.1.0 complete DB (71 profiles) | **Partial** | Only 3 models in `sample-models.json`; package.json version `0.1.0` |

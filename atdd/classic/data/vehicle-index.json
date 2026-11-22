@@ -22,7 +22,7 @@
       "generic_automotive": 237
     },
     "cdi_profiles_represented": 71,
-    "ravin_sources": 361,
+    "catalog_sources": 361,
     "vehicle_genius_sources": 247,
     "cdi_sources": 71
   },
@@ -284,8 +284,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Can-Am|Defender HD8 2019",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Can-Am|Defender HD8 2019",
           "label": "Can-Am Defender HD8 2019"
         }
       ],
@@ -308,8 +308,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Can-Am|Defender HD8 2020",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Can-Am|Defender HD8 2020",
           "label": "Can-Am Defender HD8 2020"
         }
       ],
@@ -332,8 +332,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Can-Am|Defender HD8 2021",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Can-Am|Defender HD8 2021",
           "label": "Can-Am Defender HD8 2021"
         },
         {
@@ -361,8 +361,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Can-Am|Defender HD8 2022",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Can-Am|Defender HD8 2022",
           "label": "Can-Am Defender HD8 2022"
         }
       ],
@@ -385,8 +385,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Can-Am|Defender HD8 2023",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Can-Am|Defender HD8 2023",
           "label": "Can-Am Defender HD8 2023"
         }
       ],
@@ -409,8 +409,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Can-Am|Maverick X3 2019",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Can-Am|Maverick X3 2019",
           "label": "Can-Am Maverick X3 2019"
         }
       ],
@@ -433,8 +433,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Can-Am|Maverick X3 2020",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Can-Am|Maverick X3 2020",
           "label": "Can-Am Maverick X3 2020"
         },
         {
@@ -462,8 +462,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Can-Am|Maverick X3 2021",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Can-Am|Maverick X3 2021",
           "label": "Can-Am Maverick X3 2021"
         }
       ],
@@ -486,8 +486,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Can-Am|Maverick X3 2022",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Can-Am|Maverick X3 2022",
           "label": "Can-Am Maverick X3 2022"
         }
       ],
@@ -510,8 +510,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Can-Am|Maverick X3 2023",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Can-Am|Maverick X3 2023",
           "label": "Can-Am Maverick X3 2023"
         }
       ],
@@ -534,8 +534,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Can-Am|Outlander 570 2019",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Can-Am|Outlander 570 2019",
           "label": "Can-Am Outlander 570 2019"
         }
       ],
@@ -564,8 +564,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Can-Am|Outlander 570 2020",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Can-Am|Outlander 570 2020",
           "label": "Can-Am Outlander 570 2020"
         }
       ],
@@ -594,8 +594,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Can-Am|Outlander 570 2021",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Can-Am|Outlander 570 2021",
           "label": "Can-Am Outlander 570 2021"
         }
       ],
@@ -624,8 +624,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Can-Am|Outlander 570 2022",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Can-Am|Outlander 570 2022",
           "label": "Can-Am Outlander 570 2022"
         }
       ],
@@ -654,8 +654,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Can-Am|Outlander 570 2023",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Can-Am|Outlander 570 2023",
           "label": "Can-Am Outlander 570 2023"
         }
       ],
@@ -773,8 +773,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Honda|FourTrax Foreman 2019",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Honda|FourTrax Foreman 2019",
           "label": "Honda FourTrax Foreman 2019"
         }
       ],
@@ -808,8 +808,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Honda|FourTrax Foreman 2020",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Honda|FourTrax Foreman 2020",
           "label": "Honda FourTrax Foreman 2020"
         }
       ],
@@ -843,8 +843,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Honda|FourTrax Foreman 2021",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Honda|FourTrax Foreman 2021",
           "label": "Honda FourTrax Foreman 2021"
         }
       ],
@@ -878,8 +878,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Honda|FourTrax Foreman 2022",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Honda|FourTrax Foreman 2022",
           "label": "Honda FourTrax Foreman 2022"
         }
       ],
@@ -913,8 +913,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Honda|FourTrax Foreman 2023",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Honda|FourTrax Foreman 2023",
           "label": "Honda FourTrax Foreman 2023"
         }
       ],
@@ -948,8 +948,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Honda|FourTrax Rancher 2019",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Honda|FourTrax Rancher 2019",
           "label": "Honda FourTrax Rancher 2019"
         }
       ],
@@ -978,8 +978,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Honda|FourTrax Rancher 2020",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Honda|FourTrax Rancher 2020",
           "label": "Honda FourTrax Rancher 2020"
         }
       ],
@@ -1008,8 +1008,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Honda|FourTrax Rancher 2021",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Honda|FourTrax Rancher 2021",
           "label": "Honda FourTrax Rancher 2021"
         }
       ],
@@ -1038,8 +1038,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Honda|FourTrax Rancher 2022",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Honda|FourTrax Rancher 2022",
           "label": "Honda FourTrax Rancher 2022"
         }
       ],
@@ -1068,8 +1068,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Honda|FourTrax Rancher 2023",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Honda|FourTrax Rancher 2023",
           "label": "Honda FourTrax Rancher 2023"
         }
       ],
@@ -1187,8 +1187,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Kawasaki|Brute Force 750 2019",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Kawasaki|Brute Force 750 2019",
           "label": "Kawasaki Brute Force 750 2019"
         }
       ],
@@ -1211,8 +1211,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Kawasaki|Brute Force 750 2020",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Kawasaki|Brute Force 750 2020",
           "label": "Kawasaki Brute Force 750 2020"
         }
       ],
@@ -1235,8 +1235,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Kawasaki|Brute Force 750 2021",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Kawasaki|Brute Force 750 2021",
           "label": "Kawasaki Brute Force 750 2021"
         }
       ],
@@ -1259,8 +1259,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Kawasaki|Brute Force 750 2022",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Kawasaki|Brute Force 750 2022",
           "label": "Kawasaki Brute Force 750 2022"
         }
       ],
@@ -1283,8 +1283,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Kawasaki|Brute Force 750 2023",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Kawasaki|Brute Force 750 2023",
           "label": "Kawasaki Brute Force 750 2023"
         }
       ],
@@ -1307,8 +1307,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Kawasaki|Teryx 2019",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Kawasaki|Teryx 2019",
           "label": "Kawasaki Teryx 2019"
         }
       ],
@@ -1331,8 +1331,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Kawasaki|Teryx 2020",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Kawasaki|Teryx 2020",
           "label": "Kawasaki Teryx 2020"
         }
       ],
@@ -1355,8 +1355,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Kawasaki|Teryx 2021",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Kawasaki|Teryx 2021",
           "label": "Kawasaki Teryx 2021"
         }
       ],
@@ -1379,8 +1379,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Kawasaki|Teryx 2022",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Kawasaki|Teryx 2022",
           "label": "Kawasaki Teryx 2022"
         }
       ],
@@ -1403,8 +1403,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Kawasaki|Teryx 2023",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Kawasaki|Teryx 2023",
           "label": "Kawasaki Teryx 2023"
         }
       ],
@@ -1451,8 +1451,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Polaris|Ranger 1000 2019",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Polaris|Ranger 1000 2019",
           "label": "Polaris Ranger 1000 2019"
         }
       ],
@@ -1475,8 +1475,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Polaris|Ranger 1000 2020",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Polaris|Ranger 1000 2020",
           "label": "Polaris Ranger 1000 2020"
         }
       ],
@@ -1499,8 +1499,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Polaris|Ranger 1000 2021",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Polaris|Ranger 1000 2021",
           "label": "Polaris Ranger 1000 2021"
         },
         {
@@ -1528,8 +1528,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Polaris|Ranger 1000 2022",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Polaris|Ranger 1000 2022",
           "label": "Polaris Ranger 1000 2022"
         }
       ],
@@ -1552,8 +1552,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Polaris|Ranger 1000 2023",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Polaris|Ranger 1000 2023",
           "label": "Polaris Ranger 1000 2023"
         }
       ],
@@ -1576,8 +1576,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Polaris|Sportsman 450 2019",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Polaris|Sportsman 450 2019",
           "label": "Polaris Sportsman 450 2019"
         },
         {
@@ -1611,8 +1611,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Polaris|Sportsman 450 2020",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Polaris|Sportsman 450 2020",
           "label": "Polaris Sportsman 450 2020"
         }
       ],
@@ -1641,8 +1641,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Polaris|Sportsman 450 2021",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Polaris|Sportsman 450 2021",
           "label": "Polaris Sportsman 450 2021"
         }
       ],
@@ -1671,8 +1671,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Polaris|Sportsman 450 2022",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Polaris|Sportsman 450 2022",
           "label": "Polaris Sportsman 450 2022"
         }
       ],
@@ -1701,8 +1701,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Polaris|Sportsman 450 2023",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Polaris|Sportsman 450 2023",
           "label": "Polaris Sportsman 450 2023"
         }
       ],
@@ -1731,8 +1731,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Polaris|Sportsman 570 2019",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Polaris|Sportsman 570 2019",
           "label": "Polaris Sportsman 570 2019"
         }
       ],
@@ -1761,8 +1761,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Polaris|Sportsman 570 2020",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Polaris|Sportsman 570 2020",
           "label": "Polaris Sportsman 570 2020"
         },
         {
@@ -1796,8 +1796,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Polaris|Sportsman 570 2021",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Polaris|Sportsman 570 2021",
           "label": "Polaris Sportsman 570 2021"
         }
       ],
@@ -1826,8 +1826,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Polaris|Sportsman 570 2022",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Polaris|Sportsman 570 2022",
           "label": "Polaris Sportsman 570 2022"
         }
       ],
@@ -1856,8 +1856,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Polaris|Sportsman 570 2023",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Polaris|Sportsman 570 2023",
           "label": "Polaris Sportsman 570 2023"
         }
       ],
@@ -1916,8 +1916,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Yamaha|Grizzly 700 2019",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Yamaha|Grizzly 700 2019",
           "label": "Yamaha Grizzly 700 2019"
         }
       ],
@@ -1946,8 +1946,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Yamaha|Grizzly 700 2020",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Yamaha|Grizzly 700 2020",
           "label": "Yamaha Grizzly 700 2020"
         },
         {
@@ -1981,8 +1981,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Yamaha|Grizzly 700 2021",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Yamaha|Grizzly 700 2021",
           "label": "Yamaha Grizzly 700 2021"
         }
       ],
@@ -2011,8 +2011,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Yamaha|Grizzly 700 2022",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Yamaha|Grizzly 700 2022",
           "label": "Yamaha Grizzly 700 2022"
         }
       ],
@@ -2041,8 +2041,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Yamaha|Grizzly 700 2023",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Yamaha|Grizzly 700 2023",
           "label": "Yamaha Grizzly 700 2023"
         }
       ],
@@ -2071,8 +2071,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Yamaha|Kodiak 700 2019",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Yamaha|Kodiak 700 2019",
           "label": "Yamaha Kodiak 700 2019"
         }
       ],
@@ -2101,8 +2101,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Yamaha|Kodiak 700 2020",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Yamaha|Kodiak 700 2020",
           "label": "Yamaha Kodiak 700 2020"
         }
       ],
@@ -2131,8 +2131,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Yamaha|Kodiak 700 2021",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Yamaha|Kodiak 700 2021",
           "label": "Yamaha Kodiak 700 2021"
         }
       ],
@@ -2161,8 +2161,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Yamaha|Kodiak 700 2022",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Yamaha|Kodiak 700 2022",
           "label": "Yamaha Kodiak 700 2022"
         }
       ],
@@ -2191,8 +2191,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:ATV/4-Wheeler|Yamaha|Kodiak 700 2023",
+          "kind": "catalog",
+          "id": "catalog:ATV/4-Wheeler|Yamaha|Kodiak 700 2023",
           "label": "Yamaha Kodiak 700 2023"
         }
       ],
@@ -2383,8 +2383,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Audi|A4 1995",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Audi|A4 1995",
           "label": "Audi A4 1995"
         },
         {
@@ -2412,8 +2412,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Audi|A4 1996",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Audi|A4 1996",
           "label": "Audi A4 1996"
         },
         {
@@ -2441,8 +2441,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Audi|A4 1997",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Audi|A4 1997",
           "label": "Audi A4 1997"
         },
         {
@@ -2470,8 +2470,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Audi|A4 1998",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Audi|A4 1998",
           "label": "Audi A4 1998"
         },
         {
@@ -2499,8 +2499,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Audi|A4 1999",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Audi|A4 1999",
           "label": "Audi A4 1999"
         },
         {
@@ -2528,8 +2528,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Audi|A6 1995",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Audi|A6 1995",
           "label": "Audi A6 1995"
         },
         {
@@ -2557,8 +2557,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Audi|A6 1996",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Audi|A6 1996",
           "label": "Audi A6 1996"
         },
         {
@@ -2586,8 +2586,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Audi|A6 1997",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Audi|A6 1997",
           "label": "Audi A6 1997"
         },
         {
@@ -2615,8 +2615,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Audi|A6 1998",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Audi|A6 1998",
           "label": "Audi A6 1998"
         },
         {
@@ -2644,8 +2644,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Audi|A6 1999",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Audi|A6 1999",
           "label": "Audi A6 1999"
         },
         {
@@ -2673,8 +2673,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|BMW|3 Series 1992",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|BMW|3 Series 1992",
           "label": "BMW 3 Series 1992"
         },
         {
@@ -2702,8 +2702,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|BMW|3 Series 1993",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|BMW|3 Series 1993",
           "label": "BMW 3 Series 1993"
         },
         {
@@ -2731,8 +2731,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|BMW|3 Series 1994",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|BMW|3 Series 1994",
           "label": "BMW 3 Series 1994"
         },
         {
@@ -2760,8 +2760,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|BMW|3 Series 1995",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|BMW|3 Series 1995",
           "label": "BMW 3 Series 1995"
         },
         {
@@ -2789,8 +2789,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|BMW|3 Series 1996",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|BMW|3 Series 1996",
           "label": "BMW 3 Series 1996"
         },
         {
@@ -2818,8 +2818,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|BMW|5 Series 1992",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|BMW|5 Series 1992",
           "label": "BMW 5 Series 1992"
         },
         {
@@ -2847,8 +2847,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|BMW|5 Series 1993",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|BMW|5 Series 1993",
           "label": "BMW 5 Series 1993"
         },
         {
@@ -2876,8 +2876,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|BMW|5 Series 1994",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|BMW|5 Series 1994",
           "label": "BMW 5 Series 1994"
         },
         {
@@ -2905,8 +2905,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|BMW|5 Series 1995",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|BMW|5 Series 1995",
           "label": "BMW 5 Series 1995"
         },
         {
@@ -2934,8 +2934,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|BMW|5 Series 1996",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|BMW|5 Series 1996",
           "label": "BMW 5 Series 1996"
         },
         {
@@ -2963,8 +2963,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Chevrolet|Camaro 1992",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Chevrolet|Camaro 1992",
           "label": "Chevrolet Camaro 1992"
         },
         {
@@ -2992,8 +2992,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Chevrolet|Camaro 1993",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Chevrolet|Camaro 1993",
           "label": "Chevrolet Camaro 1993"
         },
         {
@@ -3021,8 +3021,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Chevrolet|Camaro 1994",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Chevrolet|Camaro 1994",
           "label": "Chevrolet Camaro 1994"
         },
         {
@@ -3050,8 +3050,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Chevrolet|Camaro 1995",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Chevrolet|Camaro 1995",
           "label": "Chevrolet Camaro 1995"
         },
         {
@@ -3079,8 +3079,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Chevrolet|Camaro 1996",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Chevrolet|Camaro 1996",
           "label": "Chevrolet Camaro 1996"
         },
         {
@@ -3108,8 +3108,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Chevrolet|Silverado 1992",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Chevrolet|Silverado 1992",
           "label": "Chevrolet Silverado 1992"
         },
         {
@@ -3137,8 +3137,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Chevrolet|Silverado 1993",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Chevrolet|Silverado 1993",
           "label": "Chevrolet Silverado 1993"
         },
         {
@@ -3166,8 +3166,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Chevrolet|Silverado 1994",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Chevrolet|Silverado 1994",
           "label": "Chevrolet Silverado 1994"
         },
         {
@@ -3195,8 +3195,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Chevrolet|Silverado 1995",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Chevrolet|Silverado 1995",
           "label": "Chevrolet Silverado 1995"
         },
         {
@@ -3224,8 +3224,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Chevrolet|Silverado 1996",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Chevrolet|Silverado 1996",
           "label": "Chevrolet Silverado 1996"
         },
         {
@@ -3253,8 +3253,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Chevrolet|Tahoe 1992",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Chevrolet|Tahoe 1992",
           "label": "Chevrolet Tahoe 1992"
         },
         {
@@ -3282,8 +3282,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Chevrolet|Tahoe 1993",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Chevrolet|Tahoe 1993",
           "label": "Chevrolet Tahoe 1993"
         },
         {
@@ -3311,8 +3311,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Chevrolet|Tahoe 1994",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Chevrolet|Tahoe 1994",
           "label": "Chevrolet Tahoe 1994"
         },
         {
@@ -3340,8 +3340,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Chevrolet|Tahoe 1995",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Chevrolet|Tahoe 1995",
           "label": "Chevrolet Tahoe 1995"
         },
         {
@@ -3369,8 +3369,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Chevrolet|Tahoe 1996",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Chevrolet|Tahoe 1996",
           "label": "Chevrolet Tahoe 1996"
         },
         {
@@ -3398,8 +3398,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Dodge|Charger 1992",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Dodge|Charger 1992",
           "label": "Dodge Charger 1992"
         },
         {
@@ -3427,8 +3427,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Dodge|Charger 1993",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Dodge|Charger 1993",
           "label": "Dodge Charger 1993"
         },
         {
@@ -3456,8 +3456,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Dodge|Charger 1994",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Dodge|Charger 1994",
           "label": "Dodge Charger 1994"
         },
         {
@@ -3485,8 +3485,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Dodge|Charger 1995",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Dodge|Charger 1995",
           "label": "Dodge Charger 1995"
         },
         {
@@ -3514,8 +3514,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Dodge|Charger 1996",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Dodge|Charger 1996",
           "label": "Dodge Charger 1996"
         },
         {
@@ -3543,8 +3543,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Dodge|Durango 1998",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Dodge|Durango 1998",
           "label": "Dodge Durango 1998"
         },
         {
@@ -3572,8 +3572,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Dodge|Durango 1999",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Dodge|Durango 1999",
           "label": "Dodge Durango 1999"
         },
         {
@@ -3601,8 +3601,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Dodge|Durango 2000",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Dodge|Durango 2000",
           "label": "Dodge Durango 2000"
         },
         {
@@ -3630,8 +3630,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Dodge|Durango 2001",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Dodge|Durango 2001",
           "label": "Dodge Durango 2001"
         },
         {
@@ -3659,8 +3659,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Dodge|Durango 2002",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Dodge|Durango 2002",
           "label": "Dodge Durango 2002"
         },
         {
@@ -3688,8 +3688,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Dodge|Ram 1500 1992",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Dodge|Ram 1500 1992",
           "label": "Dodge Ram 1500 1992"
         },
         {
@@ -3717,8 +3717,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Dodge|Ram 1500 1993",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Dodge|Ram 1500 1993",
           "label": "Dodge Ram 1500 1993"
         },
         {
@@ -3746,8 +3746,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Dodge|Ram 1500 1994",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Dodge|Ram 1500 1994",
           "label": "Dodge Ram 1500 1994"
         },
         {
@@ -3775,8 +3775,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Dodge|Ram 1500 1995",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Dodge|Ram 1500 1995",
           "label": "Dodge Ram 1500 1995"
         },
         {
@@ -3804,8 +3804,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Dodge|Ram 1500 1996",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Dodge|Ram 1500 1996",
           "label": "Dodge Ram 1500 1996"
         },
         {
@@ -3833,8 +3833,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Ford|Explorer 1992",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Ford|Explorer 1992",
           "label": "Ford Explorer 1992"
         },
         {
@@ -3862,8 +3862,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Ford|Explorer 1993",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Ford|Explorer 1993",
           "label": "Ford Explorer 1993"
         },
         {
@@ -3891,8 +3891,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Ford|Explorer 1994",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Ford|Explorer 1994",
           "label": "Ford Explorer 1994"
         },
         {
@@ -3920,8 +3920,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Ford|Explorer 1995",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Ford|Explorer 1995",
           "label": "Ford Explorer 1995"
         },
         {
@@ -3949,8 +3949,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Ford|Explorer 1996",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Ford|Explorer 1996",
           "label": "Ford Explorer 1996"
         },
         {
@@ -3978,8 +3978,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Ford|F-150 1992",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Ford|F-150 1992",
           "label": "Ford F-150 1992"
         },
         {
@@ -4007,8 +4007,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Ford|F-150 1993",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Ford|F-150 1993",
           "label": "Ford F-150 1993"
         },
         {
@@ -4036,8 +4036,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Ford|F-150 1994",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Ford|F-150 1994",
           "label": "Ford F-150 1994"
         },
         {
@@ -4065,8 +4065,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Ford|F-150 1995",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Ford|F-150 1995",
           "label": "Ford F-150 1995"
         },
         {
@@ -4094,8 +4094,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Ford|F-150 1996",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Ford|F-150 1996",
           "label": "Ford F-150 1996"
         },
         {
@@ -4123,8 +4123,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Ford|F-150 1997",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Ford|F-150 1997",
           "label": "Ford F-150 1997"
         },
         {
@@ -4152,8 +4152,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Ford|F-150 1998",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Ford|F-150 1998",
           "label": "Ford F-150 1998"
         },
         {
@@ -4181,8 +4181,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Ford|F-150 1999",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Ford|F-150 1999",
           "label": "Ford F-150 1999"
         },
         {
@@ -4210,8 +4210,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Ford|F-150 2000",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Ford|F-150 2000",
           "label": "Ford F-150 2000"
         },
         {
@@ -4239,8 +4239,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Ford|F-150 2001",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Ford|F-150 2001",
           "label": "Ford F-150 2001"
         },
         {
@@ -4268,8 +4268,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Ford|Mustang 1992",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Ford|Mustang 1992",
           "label": "Ford Mustang 1992"
         },
         {
@@ -4297,8 +4297,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Ford|Mustang 1993",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Ford|Mustang 1993",
           "label": "Ford Mustang 1993"
         },
         {
@@ -4326,8 +4326,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Ford|Mustang 1994",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Ford|Mustang 1994",
           "label": "Ford Mustang 1994"
         },
         {
@@ -4355,8 +4355,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Ford|Mustang 1995",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Ford|Mustang 1995",
           "label": "Ford Mustang 1995"
         },
         {
@@ -4384,8 +4384,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Ford|Mustang 1996",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Ford|Mustang 1996",
           "label": "Ford Mustang 1996"
         },
         {
@@ -4413,8 +4413,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|GMC|Sierra 1992",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|GMC|Sierra 1992",
           "label": "GMC Sierra 1992"
         },
         {
@@ -4442,8 +4442,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|GMC|Sierra 1993",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|GMC|Sierra 1993",
           "label": "GMC Sierra 1993"
         },
         {
@@ -4471,8 +4471,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|GMC|Sierra 1994",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|GMC|Sierra 1994",
           "label": "GMC Sierra 1994"
         },
         {
@@ -4500,8 +4500,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|GMC|Sierra 1995",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|GMC|Sierra 1995",
           "label": "GMC Sierra 1995"
         },
         {
@@ -4529,8 +4529,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|GMC|Sierra 1996",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|GMC|Sierra 1996",
           "label": "GMC Sierra 1996"
         },
         {
@@ -4558,8 +4558,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|GMC|Yukon 1992",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|GMC|Yukon 1992",
           "label": "GMC Yukon 1992"
         },
         {
@@ -4587,8 +4587,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|GMC|Yukon 1993",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|GMC|Yukon 1993",
           "label": "GMC Yukon 1993"
         },
         {
@@ -4616,8 +4616,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|GMC|Yukon 1994",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|GMC|Yukon 1994",
           "label": "GMC Yukon 1994"
         },
         {
@@ -4645,8 +4645,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|GMC|Yukon 1995",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|GMC|Yukon 1995",
           "label": "GMC Yukon 1995"
         },
         {
@@ -4674,8 +4674,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|GMC|Yukon 1996",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|GMC|Yukon 1996",
           "label": "GMC Yukon 1996"
         },
         {
@@ -4703,8 +4703,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Honda|Accord 1992",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Honda|Accord 1992",
           "label": "Honda Accord 1992"
         },
         {
@@ -4732,8 +4732,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Honda|Accord 1993",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Honda|Accord 1993",
           "label": "Honda Accord 1993"
         },
         {
@@ -4761,8 +4761,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Honda|Accord 1994",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Honda|Accord 1994",
           "label": "Honda Accord 1994"
         },
         {
@@ -4790,8 +4790,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Honda|Accord 1995",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Honda|Accord 1995",
           "label": "Honda Accord 1995"
         },
         {
@@ -4819,8 +4819,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Honda|Accord 1996",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Honda|Accord 1996",
           "label": "Honda Accord 1996"
         },
         {
@@ -4848,8 +4848,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Honda|Civic 1992",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Honda|Civic 1992",
           "label": "Honda Civic 1992"
         },
         {
@@ -4877,8 +4877,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Honda|Civic 1993",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Honda|Civic 1993",
           "label": "Honda Civic 1993"
         },
         {
@@ -4906,8 +4906,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Honda|Civic 1994",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Honda|Civic 1994",
           "label": "Honda Civic 1994"
         },
         {
@@ -4935,8 +4935,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Honda|Civic 1995",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Honda|Civic 1995",
           "label": "Honda Civic 1995"
         },
         {
@@ -4964,8 +4964,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Honda|Civic 1996",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Honda|Civic 1996",
           "label": "Honda Civic 1996"
         },
         {
@@ -4993,8 +4993,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Honda|CR-V 1992",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Honda|CR-V 1992",
           "label": "Honda CR-V 1992"
         },
         {
@@ -5022,8 +5022,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Honda|CR-V 1993",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Honda|CR-V 1993",
           "label": "Honda CR-V 1993"
         },
         {
@@ -5051,8 +5051,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Honda|CR-V 1994",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Honda|CR-V 1994",
           "label": "Honda CR-V 1994"
         },
         {
@@ -5080,8 +5080,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Honda|CR-V 1995",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Honda|CR-V 1995",
           "label": "Honda CR-V 1995"
         },
         {
@@ -5109,8 +5109,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Honda|CR-V 1996",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Honda|CR-V 1996",
           "label": "Honda CR-V 1996"
         },
         {
@@ -5138,8 +5138,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Hyundai|Elantra 1992",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Hyundai|Elantra 1992",
           "label": "Hyundai Elantra 1992"
         },
         {
@@ -5167,8 +5167,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Hyundai|Elantra 1993",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Hyundai|Elantra 1993",
           "label": "Hyundai Elantra 1993"
         },
         {
@@ -5196,8 +5196,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Hyundai|Elantra 1994",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Hyundai|Elantra 1994",
           "label": "Hyundai Elantra 1994"
         },
         {
@@ -5225,8 +5225,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Hyundai|Elantra 1995",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Hyundai|Elantra 1995",
           "label": "Hyundai Elantra 1995"
         },
         {
@@ -5254,8 +5254,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Hyundai|Elantra 1996",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Hyundai|Elantra 1996",
           "label": "Hyundai Elantra 1996"
         },
         {
@@ -5283,8 +5283,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Hyundai|Santa Fe 2001",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Hyundai|Santa Fe 2001",
           "label": "Hyundai Santa Fe 2001"
         },
         {
@@ -5312,8 +5312,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Hyundai|Santa Fe 2002",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Hyundai|Santa Fe 2002",
           "label": "Hyundai Santa Fe 2002"
         },
         {
@@ -5341,8 +5341,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Hyundai|Santa Fe 2003",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Hyundai|Santa Fe 2003",
           "label": "Hyundai Santa Fe 2003"
         },
         {
@@ -5370,8 +5370,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Hyundai|Santa Fe 2004",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Hyundai|Santa Fe 2004",
           "label": "Hyundai Santa Fe 2004"
         },
         {
@@ -5399,8 +5399,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Hyundai|Santa Fe 2005",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Hyundai|Santa Fe 2005",
           "label": "Hyundai Santa Fe 2005"
         },
         {
@@ -5428,8 +5428,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Hyundai|Sonata 1992",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Hyundai|Sonata 1992",
           "label": "Hyundai Sonata 1992"
         },
         {
@@ -5457,8 +5457,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Hyundai|Sonata 1993",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Hyundai|Sonata 1993",
           "label": "Hyundai Sonata 1993"
         },
         {
@@ -5486,8 +5486,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Hyundai|Sonata 1994",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Hyundai|Sonata 1994",
           "label": "Hyundai Sonata 1994"
         },
         {
@@ -5515,8 +5515,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Hyundai|Sonata 1995",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Hyundai|Sonata 1995",
           "label": "Hyundai Sonata 1995"
         },
         {
@@ -5544,8 +5544,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Hyundai|Sonata 1996",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Hyundai|Sonata 1996",
           "label": "Hyundai Sonata 1996"
         },
         {
@@ -5573,8 +5573,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Hyundai|Tucson 2005",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Hyundai|Tucson 2005",
           "label": "Hyundai Tucson 2005"
         },
         {
@@ -5602,8 +5602,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Hyundai|Tucson 2006",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Hyundai|Tucson 2006",
           "label": "Hyundai Tucson 2006"
         },
         {
@@ -5631,8 +5631,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Hyundai|Tucson 2007",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Hyundai|Tucson 2007",
           "label": "Hyundai Tucson 2007"
         },
         {
@@ -5660,8 +5660,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Hyundai|Tucson 2008",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Hyundai|Tucson 2008",
           "label": "Hyundai Tucson 2008"
         },
         {
@@ -5689,8 +5689,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Hyundai|Tucson 2009",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Hyundai|Tucson 2009",
           "label": "Hyundai Tucson 2009"
         },
         {
@@ -5718,8 +5718,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Jeep|Cherokee 1992",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Jeep|Cherokee 1992",
           "label": "Jeep Cherokee 1992"
         },
         {
@@ -5747,8 +5747,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Jeep|Cherokee 1993",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Jeep|Cherokee 1993",
           "label": "Jeep Cherokee 1993"
         },
         {
@@ -5776,8 +5776,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Jeep|Cherokee 1994",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Jeep|Cherokee 1994",
           "label": "Jeep Cherokee 1994"
         },
         {
@@ -5805,8 +5805,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Jeep|Cherokee 1995",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Jeep|Cherokee 1995",
           "label": "Jeep Cherokee 1995"
         },
         {
@@ -5834,8 +5834,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Jeep|Cherokee 1996",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Jeep|Cherokee 1996",
           "label": "Jeep Cherokee 1996"
         },
         {
@@ -5863,8 +5863,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Jeep|Wrangler 1992",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Jeep|Wrangler 1992",
           "label": "Jeep Wrangler 1992"
         },
         {
@@ -5892,8 +5892,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Jeep|Wrangler 1993",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Jeep|Wrangler 1993",
           "label": "Jeep Wrangler 1993"
         },
         {
@@ -5921,8 +5921,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Jeep|Wrangler 1994",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Jeep|Wrangler 1994",
           "label": "Jeep Wrangler 1994"
         },
         {
@@ -5950,8 +5950,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Jeep|Wrangler 1995",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Jeep|Wrangler 1995",
           "label": "Jeep Wrangler 1995"
         },
         {
@@ -5979,8 +5979,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Jeep|Wrangler 1996",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Jeep|Wrangler 1996",
           "label": "Jeep Wrangler 1996"
         },
         {
@@ -6008,8 +6008,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Kia|Rio 2001",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Kia|Rio 2001",
           "label": "Kia Rio 2001"
         }
       ],
@@ -6032,8 +6032,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Kia|Rio 2002",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Kia|Rio 2002",
           "label": "Kia Rio 2002"
         }
       ],
@@ -6056,8 +6056,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Kia|Rio 2003",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Kia|Rio 2003",
           "label": "Kia Rio 2003"
         }
       ],
@@ -6080,8 +6080,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Kia|Rio 2004",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Kia|Rio 2004",
           "label": "Kia Rio 2004"
         }
       ],
@@ -6104,8 +6104,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Kia|Rio 2005",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Kia|Rio 2005",
           "label": "Kia Rio 2005"
         }
       ],
@@ -6128,8 +6128,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Kia|Sorento 2003",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Kia|Sorento 2003",
           "label": "Kia Sorento 2003"
         },
         {
@@ -6157,8 +6157,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Kia|Sorento 2004",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Kia|Sorento 2004",
           "label": "Kia Sorento 2004"
         },
         {
@@ -6186,8 +6186,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Kia|Sorento 2005",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Kia|Sorento 2005",
           "label": "Kia Sorento 2005"
         },
         {
@@ -6215,8 +6215,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Kia|Sorento 2006",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Kia|Sorento 2006",
           "label": "Kia Sorento 2006"
         },
         {
@@ -6244,8 +6244,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Kia|Sorento 2007",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Kia|Sorento 2007",
           "label": "Kia Sorento 2007"
         },
         {
@@ -6273,8 +6273,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Kia|Spectra 2000",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Kia|Spectra 2000",
           "label": "Kia Spectra 2000"
         }
       ],
@@ -6297,8 +6297,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Kia|Spectra 2001",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Kia|Spectra 2001",
           "label": "Kia Spectra 2001"
         }
       ],
@@ -6321,8 +6321,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Kia|Spectra 2002",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Kia|Spectra 2002",
           "label": "Kia Spectra 2002"
         }
       ],
@@ -6345,8 +6345,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Kia|Spectra 2003",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Kia|Spectra 2003",
           "label": "Kia Spectra 2003"
         }
       ],
@@ -6369,8 +6369,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Kia|Spectra 2004",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Kia|Spectra 2004",
           "label": "Kia Spectra 2004"
         }
       ],
@@ -6393,8 +6393,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Kia|Sportage 1995",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Kia|Sportage 1995",
           "label": "Kia Sportage 1995"
         },
         {
@@ -6422,8 +6422,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Kia|Sportage 1996",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Kia|Sportage 1996",
           "label": "Kia Sportage 1996"
         },
         {
@@ -6451,8 +6451,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Kia|Sportage 1997",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Kia|Sportage 1997",
           "label": "Kia Sportage 1997"
         },
         {
@@ -6480,8 +6480,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Kia|Sportage 1998",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Kia|Sportage 1998",
           "label": "Kia Sportage 1998"
         },
         {
@@ -6509,8 +6509,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Kia|Sportage 1999",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Kia|Sportage 1999",
           "label": "Kia Sportage 1999"
         },
         {
@@ -6538,8 +6538,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Mazda|CX-5 2013",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Mazda|CX-5 2013",
           "label": "Mazda CX-5 2013"
         },
         {
@@ -6567,8 +6567,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Mazda|CX-5 2014",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Mazda|CX-5 2014",
           "label": "Mazda CX-5 2014"
         },
         {
@@ -6596,8 +6596,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Mazda|CX-5 2015",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Mazda|CX-5 2015",
           "label": "Mazda CX-5 2015"
         },
         {
@@ -6625,8 +6625,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Mazda|CX-5 2016",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Mazda|CX-5 2016",
           "label": "Mazda CX-5 2016"
         },
         {
@@ -6654,8 +6654,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Mazda|CX-5 2017",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Mazda|CX-5 2017",
           "label": "Mazda CX-5 2017"
         },
         {
@@ -6683,8 +6683,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Mazda|CX-9 2007",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Mazda|CX-9 2007",
           "label": "Mazda CX-9 2007"
         },
         {
@@ -6712,8 +6712,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Mazda|CX-9 2008",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Mazda|CX-9 2008",
           "label": "Mazda CX-9 2008"
         },
         {
@@ -6741,8 +6741,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Mazda|CX-9 2009",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Mazda|CX-9 2009",
           "label": "Mazda CX-9 2009"
         },
         {
@@ -6770,8 +6770,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Mazda|CX-9 2010",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Mazda|CX-9 2010",
           "label": "Mazda CX-9 2010"
         },
         {
@@ -6799,8 +6799,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Mazda|CX-9 2011",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Mazda|CX-9 2011",
           "label": "Mazda CX-9 2011"
         },
         {
@@ -6828,8 +6828,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Mazda|Mazda3 2004",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Mazda|Mazda3 2004",
           "label": "Mazda Mazda3 2004"
         },
         {
@@ -6857,8 +6857,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Mazda|Mazda3 2005",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Mazda|Mazda3 2005",
           "label": "Mazda Mazda3 2005"
         },
         {
@@ -6886,8 +6886,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Mazda|Mazda3 2006",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Mazda|Mazda3 2006",
           "label": "Mazda Mazda3 2006"
         },
         {
@@ -6915,8 +6915,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Mazda|Mazda3 2007",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Mazda|Mazda3 2007",
           "label": "Mazda Mazda3 2007"
         },
         {
@@ -6944,8 +6944,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Mazda|Mazda3 2008",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Mazda|Mazda3 2008",
           "label": "Mazda Mazda3 2008"
         },
         {
@@ -6973,8 +6973,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Mazda|Mazda6 2003",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Mazda|Mazda6 2003",
           "label": "Mazda Mazda6 2003"
         },
         {
@@ -7002,8 +7002,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Mazda|Mazda6 2004",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Mazda|Mazda6 2004",
           "label": "Mazda Mazda6 2004"
         },
         {
@@ -7031,8 +7031,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Mazda|Mazda6 2005",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Mazda|Mazda6 2005",
           "label": "Mazda Mazda6 2005"
         },
         {
@@ -7060,8 +7060,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Mazda|Mazda6 2006",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Mazda|Mazda6 2006",
           "label": "Mazda Mazda6 2006"
         },
         {
@@ -7089,8 +7089,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Mazda|Mazda6 2007",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Mazda|Mazda6 2007",
           "label": "Mazda Mazda6 2007"
         },
         {
@@ -7118,8 +7118,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Mercedes-Benz|C-Class 1992",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Mercedes-Benz|C-Class 1992",
           "label": "Mercedes-Benz C-Class 1992"
         },
         {
@@ -7147,8 +7147,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Mercedes-Benz|C-Class 1993",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Mercedes-Benz|C-Class 1993",
           "label": "Mercedes-Benz C-Class 1993"
         },
         {
@@ -7176,8 +7176,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Mercedes-Benz|C-Class 1994",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Mercedes-Benz|C-Class 1994",
           "label": "Mercedes-Benz C-Class 1994"
         },
         {
@@ -7205,8 +7205,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Mercedes-Benz|C-Class 1995",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Mercedes-Benz|C-Class 1995",
           "label": "Mercedes-Benz C-Class 1995"
         },
         {
@@ -7234,8 +7234,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Mercedes-Benz|C-Class 1996",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Mercedes-Benz|C-Class 1996",
           "label": "Mercedes-Benz C-Class 1996"
         },
         {
@@ -7263,8 +7263,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Mercedes-Benz|E-Class 1992",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Mercedes-Benz|E-Class 1992",
           "label": "Mercedes-Benz E-Class 1992"
         },
         {
@@ -7292,8 +7292,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Mercedes-Benz|E-Class 1993",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Mercedes-Benz|E-Class 1993",
           "label": "Mercedes-Benz E-Class 1993"
         },
         {
@@ -7321,8 +7321,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Mercedes-Benz|E-Class 1994",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Mercedes-Benz|E-Class 1994",
           "label": "Mercedes-Benz E-Class 1994"
         },
         {
@@ -7350,8 +7350,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Mercedes-Benz|E-Class 1995",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Mercedes-Benz|E-Class 1995",
           "label": "Mercedes-Benz E-Class 1995"
         },
         {
@@ -7379,8 +7379,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Mercedes-Benz|E-Class 1996",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Mercedes-Benz|E-Class 1996",
           "label": "Mercedes-Benz E-Class 1996"
         },
         {
@@ -7408,8 +7408,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Nissan|Altima 1992",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Nissan|Altima 1992",
           "label": "Nissan Altima 1992"
         },
         {
@@ -7437,8 +7437,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Nissan|Altima 1993",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Nissan|Altima 1993",
           "label": "Nissan Altima 1993"
         },
         {
@@ -7466,8 +7466,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Nissan|Altima 1994",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Nissan|Altima 1994",
           "label": "Nissan Altima 1994"
         },
         {
@@ -7495,8 +7495,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Nissan|Altima 1995",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Nissan|Altima 1995",
           "label": "Nissan Altima 1995"
         },
         {
@@ -7524,8 +7524,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Nissan|Altima 1996",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Nissan|Altima 1996",
           "label": "Nissan Altima 1996"
         },
         {
@@ -7553,8 +7553,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Nissan|Frontier 1992",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Nissan|Frontier 1992",
           "label": "Nissan Frontier 1992"
         },
         {
@@ -7582,8 +7582,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Nissan|Frontier 1993",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Nissan|Frontier 1993",
           "label": "Nissan Frontier 1993"
         },
         {
@@ -7611,8 +7611,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Nissan|Frontier 1994",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Nissan|Frontier 1994",
           "label": "Nissan Frontier 1994"
         },
         {
@@ -7640,8 +7640,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Nissan|Frontier 1995",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Nissan|Frontier 1995",
           "label": "Nissan Frontier 1995"
         },
         {
@@ -7669,8 +7669,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Nissan|Frontier 1996",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Nissan|Frontier 1996",
           "label": "Nissan Frontier 1996"
         },
         {
@@ -7698,8 +7698,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Nissan|Maxima 1992",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Nissan|Maxima 1992",
           "label": "Nissan Maxima 1992"
         },
         {
@@ -7727,8 +7727,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Nissan|Maxima 1993",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Nissan|Maxima 1993",
           "label": "Nissan Maxima 1993"
         },
         {
@@ -7756,8 +7756,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Nissan|Maxima 1994",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Nissan|Maxima 1994",
           "label": "Nissan Maxima 1994"
         },
         {
@@ -7785,8 +7785,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Nissan|Maxima 1995",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Nissan|Maxima 1995",
           "label": "Nissan Maxima 1995"
         },
         {
@@ -7814,8 +7814,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Nissan|Maxima 1996",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Nissan|Maxima 1996",
           "label": "Nissan Maxima 1996"
         },
         {
@@ -7843,8 +7843,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Subaru|Forester 1998",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Subaru|Forester 1998",
           "label": "Subaru Forester 1998"
         },
         {
@@ -7872,8 +7872,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Subaru|Forester 1999",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Subaru|Forester 1999",
           "label": "Subaru Forester 1999"
         },
         {
@@ -7901,8 +7901,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Subaru|Forester 2000",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Subaru|Forester 2000",
           "label": "Subaru Forester 2000"
         },
         {
@@ -7930,8 +7930,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Subaru|Forester 2001",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Subaru|Forester 2001",
           "label": "Subaru Forester 2001"
         },
         {
@@ -7959,8 +7959,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Subaru|Forester 2002",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Subaru|Forester 2002",
           "label": "Subaru Forester 2002"
         },
         {
@@ -7988,8 +7988,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Subaru|Impreza 1992",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Subaru|Impreza 1992",
           "label": "Subaru Impreza 1992"
         },
         {
@@ -8017,8 +8017,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Subaru|Impreza 1993",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Subaru|Impreza 1993",
           "label": "Subaru Impreza 1993"
         },
         {
@@ -8046,8 +8046,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Subaru|Impreza 1994",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Subaru|Impreza 1994",
           "label": "Subaru Impreza 1994"
         },
         {
@@ -8075,8 +8075,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Subaru|Impreza 1995",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Subaru|Impreza 1995",
           "label": "Subaru Impreza 1995"
         },
         {
@@ -8104,8 +8104,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Subaru|Impreza 1996",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Subaru|Impreza 1996",
           "label": "Subaru Impreza 1996"
         },
         {
@@ -8133,8 +8133,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Subaru|Legacy 1992",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Subaru|Legacy 1992",
           "label": "Subaru Legacy 1992"
         },
         {
@@ -8162,8 +8162,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Subaru|Legacy 1993",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Subaru|Legacy 1993",
           "label": "Subaru Legacy 1993"
         },
         {
@@ -8191,8 +8191,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Subaru|Legacy 1994",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Subaru|Legacy 1994",
           "label": "Subaru Legacy 1994"
         },
         {
@@ -8220,8 +8220,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Subaru|Legacy 1995",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Subaru|Legacy 1995",
           "label": "Subaru Legacy 1995"
         },
         {
@@ -8249,8 +8249,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Subaru|Legacy 1996",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Subaru|Legacy 1996",
           "label": "Subaru Legacy 1996"
         },
         {
@@ -8278,8 +8278,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Subaru|Outback 1995",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Subaru|Outback 1995",
           "label": "Subaru Outback 1995"
         },
         {
@@ -8307,8 +8307,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Subaru|Outback 1996",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Subaru|Outback 1996",
           "label": "Subaru Outback 1996"
         },
         {
@@ -8336,8 +8336,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Subaru|Outback 1997",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Subaru|Outback 1997",
           "label": "Subaru Outback 1997"
         },
         {
@@ -8365,8 +8365,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Subaru|Outback 1998",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Subaru|Outback 1998",
           "label": "Subaru Outback 1998"
         },
         {
@@ -8394,8 +8394,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Subaru|Outback 1999",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Subaru|Outback 1999",
           "label": "Subaru Outback 1999"
         },
         {
@@ -8423,8 +8423,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Subaru|Outback 2000",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Subaru|Outback 2000",
           "label": "Subaru Outback 2000"
         },
         {
@@ -8452,8 +8452,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Subaru|Outback 2001",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Subaru|Outback 2001",
           "label": "Subaru Outback 2001"
         },
         {
@@ -8481,8 +8481,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Toyota|Camry 1992",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Toyota|Camry 1992",
           "label": "Toyota Camry 1992"
         },
         {
@@ -8510,8 +8510,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Toyota|Camry 1993",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Toyota|Camry 1993",
           "label": "Toyota Camry 1993"
         },
         {
@@ -8539,8 +8539,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Toyota|Camry 1994",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Toyota|Camry 1994",
           "label": "Toyota Camry 1994"
         },
         {
@@ -8568,8 +8568,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Toyota|Camry 1995",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Toyota|Camry 1995",
           "label": "Toyota Camry 1995"
         },
         {
@@ -8597,8 +8597,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Toyota|Camry 1996",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Toyota|Camry 1996",
           "label": "Toyota Camry 1996"
         },
         {
@@ -8626,8 +8626,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Toyota|Corolla 1992",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Toyota|Corolla 1992",
           "label": "Toyota Corolla 1992"
         },
         {
@@ -8655,8 +8655,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Toyota|Corolla 1993",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Toyota|Corolla 1993",
           "label": "Toyota Corolla 1993"
         },
         {
@@ -8684,8 +8684,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Toyota|Corolla 1994",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Toyota|Corolla 1994",
           "label": "Toyota Corolla 1994"
         },
         {
@@ -8713,8 +8713,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Toyota|Corolla 1995",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Toyota|Corolla 1995",
           "label": "Toyota Corolla 1995"
         },
         {
@@ -8742,8 +8742,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Toyota|Corolla 1996",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Toyota|Corolla 1996",
           "label": "Toyota Corolla 1996"
         },
         {
@@ -8771,8 +8771,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Toyota|RAV4 1992",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Toyota|RAV4 1992",
           "label": "Toyota RAV4 1992"
         },
         {
@@ -8800,8 +8800,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Toyota|RAV4 1993",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Toyota|RAV4 1993",
           "label": "Toyota RAV4 1993"
         },
         {
@@ -8829,8 +8829,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Toyota|RAV4 1994",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Toyota|RAV4 1994",
           "label": "Toyota RAV4 1994"
         },
         {
@@ -8858,8 +8858,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Toyota|RAV4 1995",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Toyota|RAV4 1995",
           "label": "Toyota RAV4 1995"
         },
         {
@@ -8887,8 +8887,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Toyota|RAV4 1996",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Toyota|RAV4 1996",
           "label": "Toyota RAV4 1996"
         },
         {
@@ -8916,8 +8916,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Volkswagen|Golf 1992",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Volkswagen|Golf 1992",
           "label": "Volkswagen Golf 1992"
         },
         {
@@ -8945,8 +8945,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Volkswagen|Golf 1993",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Volkswagen|Golf 1993",
           "label": "Volkswagen Golf 1993"
         },
         {
@@ -8974,8 +8974,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Volkswagen|Golf 1994",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Volkswagen|Golf 1994",
           "label": "Volkswagen Golf 1994"
         },
         {
@@ -9003,8 +9003,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Volkswagen|Golf 1995",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Volkswagen|Golf 1995",
           "label": "Volkswagen Golf 1995"
         },
         {
@@ -9032,8 +9032,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Volkswagen|Golf 1996",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Volkswagen|Golf 1996",
           "label": "Volkswagen Golf 1996"
         },
         {
@@ -9061,8 +9061,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Volkswagen|Passat 1992",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Volkswagen|Passat 1992",
           "label": "Volkswagen Passat 1992"
         },
         {
@@ -9090,8 +9090,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Volkswagen|Passat 1993",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Volkswagen|Passat 1993",
           "label": "Volkswagen Passat 1993"
         },
         {
@@ -9119,8 +9119,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Volkswagen|Passat 1994",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Volkswagen|Passat 1994",
           "label": "Volkswagen Passat 1994"
         },
         {
@@ -9148,8 +9148,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Volkswagen|Passat 1995",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Volkswagen|Passat 1995",
           "label": "Volkswagen Passat 1995"
         },
         {
@@ -9177,8 +9177,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Car/Truck|Volkswagen|Passat 1996",
+          "kind": "catalog",
+          "id": "catalog:Car/Truck|Volkswagen|Passat 1996",
           "label": "Volkswagen Passat 1996"
         },
         {
@@ -9326,8 +9326,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Honda|CRF250R 2019",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Honda|CRF250R 2019",
           "label": "Honda CRF250R 2019"
         }
       ],
@@ -9350,8 +9350,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Honda|CRF250R 2020",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Honda|CRF250R 2020",
           "label": "Honda CRF250R 2020"
         }
       ],
@@ -9374,8 +9374,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Honda|CRF250R 2021",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Honda|CRF250R 2021",
           "label": "Honda CRF250R 2021"
         }
       ],
@@ -9398,8 +9398,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Honda|CRF250R 2022",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Honda|CRF250R 2022",
           "label": "Honda CRF250R 2022"
         }
       ],
@@ -9422,8 +9422,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Honda|CRF250R 2023",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Honda|CRF250R 2023",
           "label": "Honda CRF250R 2023"
         }
       ],
@@ -9446,8 +9446,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Honda|CRF450R 2019",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Honda|CRF450R 2019",
           "label": "Honda CRF450R 2019"
         },
         {
@@ -9475,8 +9475,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Honda|CRF450R 2020",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Honda|CRF450R 2020",
           "label": "Honda CRF450R 2020"
         }
       ],
@@ -9499,8 +9499,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Honda|CRF450R 2021",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Honda|CRF450R 2021",
           "label": "Honda CRF450R 2021"
         }
       ],
@@ -9523,8 +9523,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Honda|CRF450R 2022",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Honda|CRF450R 2022",
           "label": "Honda CRF450R 2022"
         }
       ],
@@ -9547,8 +9547,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Honda|CRF450R 2023",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Honda|CRF450R 2023",
           "label": "Honda CRF450R 2023"
         }
       ],
@@ -9793,8 +9793,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Honda|XR650L 2018",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Honda|XR650L 2018",
           "label": "Honda XR650L 2018"
         }
       ],
@@ -9823,8 +9823,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Honda|XR650L 2019",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Honda|XR650L 2019",
           "label": "Honda XR650L 2019"
         }
       ],
@@ -9853,8 +9853,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Honda|XR650L 2020",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Honda|XR650L 2020",
           "label": "Honda XR650L 2020"
         }
       ],
@@ -9883,8 +9883,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Honda|XR650L 2021",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Honda|XR650L 2021",
           "label": "Honda XR650L 2021"
         }
       ],
@@ -9913,8 +9913,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Honda|XR650L 2022",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Honda|XR650L 2022",
           "label": "Honda XR650L 2022"
         }
       ],
@@ -10051,8 +10051,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Kawasaki|KLX300 2020",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Kawasaki|KLX300 2020",
           "label": "Kawasaki KLX300 2020"
         }
       ],
@@ -10075,8 +10075,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Kawasaki|KLX300 2021",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Kawasaki|KLX300 2021",
           "label": "Kawasaki KLX300 2021"
         }
       ],
@@ -10099,8 +10099,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Kawasaki|KLX300 2022",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Kawasaki|KLX300 2022",
           "label": "Kawasaki KLX300 2022"
         }
       ],
@@ -10123,8 +10123,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Kawasaki|KLX300 2023",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Kawasaki|KLX300 2023",
           "label": "Kawasaki KLX300 2023"
         }
       ],
@@ -10195,8 +10195,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Kawasaki|KX250 2019",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Kawasaki|KX250 2019",
           "label": "Kawasaki KX250 2019"
         }
       ],
@@ -10219,8 +10219,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Kawasaki|KX250 2020",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Kawasaki|KX250 2020",
           "label": "Kawasaki KX250 2020"
         },
         {
@@ -10248,8 +10248,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Kawasaki|KX250 2021",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Kawasaki|KX250 2021",
           "label": "Kawasaki KX250 2021"
         }
       ],
@@ -10272,8 +10272,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Kawasaki|KX250 2022",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Kawasaki|KX250 2022",
           "label": "Kawasaki KX250 2022"
         }
       ],
@@ -10296,8 +10296,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Kawasaki|KX250 2023",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Kawasaki|KX250 2023",
           "label": "Kawasaki KX250 2023"
         }
       ],
@@ -10320,8 +10320,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Kawasaki|KX450 2019",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Kawasaki|KX450 2019",
           "label": "Kawasaki KX450 2019"
         },
         {
@@ -10349,8 +10349,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Kawasaki|KX450 2020",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Kawasaki|KX450 2020",
           "label": "Kawasaki KX450 2020"
         }
       ],
@@ -10373,8 +10373,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Kawasaki|KX450 2021",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Kawasaki|KX450 2021",
           "label": "Kawasaki KX450 2021"
         }
       ],
@@ -10397,8 +10397,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Kawasaki|KX450 2022",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Kawasaki|KX450 2022",
           "label": "Kawasaki KX450 2022"
         }
       ],
@@ -10421,8 +10421,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Kawasaki|KX450 2023",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Kawasaki|KX450 2023",
           "label": "Kawasaki KX450 2023"
         }
       ],
@@ -10445,8 +10445,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|KTM|250 SX-F 2019",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|KTM|250 SX-F 2019",
           "label": "KTM 250 SX-F 2019"
         }
       ],
@@ -10469,8 +10469,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|KTM|250 SX-F 2020",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|KTM|250 SX-F 2020",
           "label": "KTM 250 SX-F 2020"
         }
       ],
@@ -10493,8 +10493,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|KTM|250 SX-F 2021",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|KTM|250 SX-F 2021",
           "label": "KTM 250 SX-F 2021"
         }
       ],
@@ -10517,8 +10517,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|KTM|250 SX-F 2022",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|KTM|250 SX-F 2022",
           "label": "KTM 250 SX-F 2022"
         }
       ],
@@ -10541,8 +10541,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|KTM|250 SX-F 2023",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|KTM|250 SX-F 2023",
           "label": "KTM 250 SX-F 2023"
         }
       ],
@@ -10565,8 +10565,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|KTM|450 SX-F 2019",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|KTM|450 SX-F 2019",
           "label": "KTM 450 SX-F 2019"
         }
       ],
@@ -10589,8 +10589,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|KTM|450 SX-F 2020",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|KTM|450 SX-F 2020",
           "label": "KTM 450 SX-F 2020"
         }
       ],
@@ -10613,8 +10613,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|KTM|450 SX-F 2021",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|KTM|450 SX-F 2021",
           "label": "KTM 450 SX-F 2021"
         }
       ],
@@ -10637,8 +10637,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|KTM|450 SX-F 2022",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|KTM|450 SX-F 2022",
           "label": "KTM 450 SX-F 2022"
         }
       ],
@@ -10661,8 +10661,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|KTM|450 SX-F 2023",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|KTM|450 SX-F 2023",
           "label": "KTM 450 SX-F 2023"
         }
       ],
@@ -10889,8 +10889,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Suzuki|RM-Z250 2019",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Suzuki|RM-Z250 2019",
           "label": "Suzuki RM-Z250 2019"
         },
         {
@@ -10918,8 +10918,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Suzuki|RM-Z250 2020",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Suzuki|RM-Z250 2020",
           "label": "Suzuki RM-Z250 2020"
         }
       ],
@@ -10942,8 +10942,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Suzuki|RM-Z250 2021",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Suzuki|RM-Z250 2021",
           "label": "Suzuki RM-Z250 2021"
         }
       ],
@@ -10966,8 +10966,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Suzuki|RM-Z250 2022",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Suzuki|RM-Z250 2022",
           "label": "Suzuki RM-Z250 2022"
         }
       ],
@@ -10990,8 +10990,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Suzuki|RM-Z250 2023",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Suzuki|RM-Z250 2023",
           "label": "Suzuki RM-Z250 2023"
         }
       ],
@@ -11038,8 +11038,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Suzuki|RM-Z450 2019",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Suzuki|RM-Z450 2019",
           "label": "Suzuki RM-Z450 2019"
         }
       ],
@@ -11062,8 +11062,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Suzuki|RM-Z450 2020",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Suzuki|RM-Z450 2020",
           "label": "Suzuki RM-Z450 2020"
         }
       ],
@@ -11086,8 +11086,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Suzuki|RM-Z450 2021",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Suzuki|RM-Z450 2021",
           "label": "Suzuki RM-Z450 2021"
         }
       ],
@@ -11110,8 +11110,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Suzuki|RM-Z450 2022",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Suzuki|RM-Z450 2022",
           "label": "Suzuki RM-Z450 2022"
         }
       ],
@@ -11134,8 +11134,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Suzuki|RM-Z450 2023",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Suzuki|RM-Z450 2023",
           "label": "Suzuki RM-Z450 2023"
         }
       ],
@@ -11434,8 +11434,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Yamaha|WR250F 2019",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Yamaha|WR250F 2019",
           "label": "Yamaha WR250F 2019"
         }
       ],
@@ -11458,8 +11458,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Yamaha|WR250F 2020",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Yamaha|WR250F 2020",
           "label": "Yamaha WR250F 2020"
         }
       ],
@@ -11482,8 +11482,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Yamaha|WR250F 2021",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Yamaha|WR250F 2021",
           "label": "Yamaha WR250F 2021"
         }
       ],
@@ -11506,8 +11506,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Yamaha|WR250F 2022",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Yamaha|WR250F 2022",
           "label": "Yamaha WR250F 2022"
         }
       ],
@@ -11530,8 +11530,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Yamaha|WR250F 2023",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Yamaha|WR250F 2023",
           "label": "Yamaha WR250F 2023"
         }
       ],
@@ -11766,8 +11766,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Yamaha|YZ250F 2019",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Yamaha|YZ250F 2019",
           "label": "Yamaha YZ250F 2019"
         }
       ],
@@ -11790,8 +11790,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Yamaha|YZ250F 2020",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Yamaha|YZ250F 2020",
           "label": "Yamaha YZ250F 2020"
         },
         {
@@ -11819,8 +11819,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Yamaha|YZ250F 2021",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Yamaha|YZ250F 2021",
           "label": "Yamaha YZ250F 2021"
         }
       ],
@@ -11843,8 +11843,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Yamaha|YZ250F 2022",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Yamaha|YZ250F 2022",
           "label": "Yamaha YZ250F 2022"
         }
       ],
@@ -11867,8 +11867,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Yamaha|YZ250F 2023",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Yamaha|YZ250F 2023",
           "label": "Yamaha YZ250F 2023"
         }
       ],
@@ -11891,8 +11891,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Yamaha|YZ450F 2019",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Yamaha|YZ450F 2019",
           "label": "Yamaha YZ450F 2019"
         },
         {
@@ -11920,8 +11920,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Yamaha|YZ450F 2020",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Yamaha|YZ450F 2020",
           "label": "Yamaha YZ450F 2020"
         }
       ],
@@ -11944,8 +11944,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Yamaha|YZ450F 2021",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Yamaha|YZ450F 2021",
           "label": "Yamaha YZ450F 2021"
         }
       ],
@@ -11968,8 +11968,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Yamaha|YZ450F 2022",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Yamaha|YZ450F 2022",
           "label": "Yamaha YZ450F 2022"
         }
       ],
@@ -11992,8 +11992,8 @@
       "has_cdi_pinout": false,
       "sources": [
         {
-          "kind": "ravin",
-          "id": "ravin:Dirt Bike/Moto|Yamaha|YZ450F 2023",
+          "kind": "catalog",
+          "id": "catalog:Dirt Bike/Moto|Yamaha|YZ450F 2023",
           "label": "Yamaha YZ450F 2023"
         }
       ],

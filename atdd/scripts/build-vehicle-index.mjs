@@ -2,7 +2,7 @@
 /**
  * Build a shared vehicle index from:
  *   - extracted CDI pinoutDB profiles
- *   - Ravin Lookup YMM strings
+ *   - vehicle catalog YMM strings (from the repo's lookup data folder)
  *   - Vehicle Genius YMM strings
  *
  * Exact type+make+model+year matches share one row with sources[].
@@ -246,7 +246,7 @@ function compatibleTypes(a, b) {
   if (a === b) return true;
   const powersports = new Set(["dirt_bike", "motorcycle", "atv", "atc", "snowmobile"]);
   if (powersports.has(a) && powersports.has(b)) {
-    // Only treat dirt_bike <-> motorcycle as compatible (Ravin lumps them).
+    // Only treat dirt_bike <-> motorcycle as compatible (the vehicle catalog lumps them).
     return (a === "dirt_bike" && b === "motorcycle") || (a === "motorcycle" && b === "dirt_bike");
   }
   return false;
@@ -279,7 +279,16 @@ function similarModels(a, b) {
 }
 
 const pinout = loadJson(path.join(outDir, "cdi-pinout-db.json"));
-const ravin = (await import(path.join(repoRoot, "ravin-lookup/vehicles-data.js"))).vehicles;
+function findCatalogVehiclesModule() {
+  const matches = fs.readdirSync(repoRoot).filter((name) => {
+    return fs.existsSync(path.join(repoRoot, name, "vehicles-data.js"));
+  });
+  if (matches.length !== 1) {
+    throw new Error("Expected exactly one repo-root folder containing vehicles-data.js, found: " + matches.join(", "));
+  }
+  return path.join(repoRoot, matches[0], "vehicles-data.js");
+}
+const catalogVehicles = (await import(findCatalogVehiclesModule())).vehicles;
 const vgVehicles = loadWindowScript(path.join(repoRoot, "vehicle-genius/vehicles.js"), "VG_VEHICLES");
 
 const rows = [];
@@ -328,7 +337,7 @@ function addYmm(db, kind) {
   }
 }
 
-addYmm(ravin, "ravin");
+addYmm(catalogVehicles, "catalog");
 addYmm(vgVehicles, "vehicle_genius");
 
 const groups = new Map();
@@ -563,7 +572,7 @@ const counts = {
   by_type: countBy(entries, "type"),
   by_workflow: countBy(entries, "workflow"),
   cdi_profiles_represented: entries.filter((e) => e.has_cdi_pinout).length,
-  ravin_sources: rows.filter((r) => r.source.kind === "ravin").length,
+  catalog_sources: rows.filter((r) => r.source.kind === "catalog").length,
   vehicle_genius_sources: rows.filter((r) => r.source.kind === "vehicle_genius").length,
   cdi_sources: rows.filter((r) => r.source.kind === "cdi").length,
 };
@@ -591,7 +600,7 @@ const jsonText = JSON.stringify(payload, null, 2) + "\n";
 fs.writeFileSync(path.join(outDir, "vehicle-index.json"), jsonText);
 fs.writeFileSync(
   path.join(outDir, "vehicle-index.js"),
-  wrapJs("VEHICLE_INDEX_DATA", payload, "Shared ATDD + CDI + Ravin + Vehicle Genius vehicle index. Exact matches share sources[]. Near-matches are flagged, not merged.")
+  wrapJs("VEHICLE_INDEX_DATA", payload, "Shared ATDD + CDI + vehicle catalog + Vehicle Genius vehicle index. Exact matches share sources[]. Near-matches are flagged, not merged.")
 );
 
 console.log(JSON.stringify({ ok: true, counts, files: {
