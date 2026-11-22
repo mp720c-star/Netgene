@@ -181,9 +181,11 @@ function fakeDom() {
 {
   const html = fs.readFileSync(path.join(classic, "index.html"), "utf8");
   assert.match(html, /id="btnNewScanTop"/);
-  assert.match(html, /id="btnNewScanVehicle"/);
-  assert.match(html, /id="btnNewScanResults"/);
+  assert.doesNotMatch(html, /id="btnNewScanVehicle"/);
+  assert.doesNotMatch(html, /id="btnNewScanResults"/);
   assert.match(html, /New scan \/ New vehicle/);
+  assert.match(html, /id="btnClearCodes"/);
+  assert.doesNotMatch(html, /id="btnClearCase"/);
   assert.match(html, /id="newScanDialog"/);
   assert.match(html, /id="chkDeleteSavedHistory"/);
   assert.match(html, /src="\.\/sessionReset\.js"/);
