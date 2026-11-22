@@ -297,6 +297,7 @@
   function showBluetoothPanel() {
     const card = byId("bluetoothCard");
     if (!card) return;
+    if (typeof window.showAtddTab === "function") window.showAtddTab("scan", { scroll: false });
     card.hidden = false;
     card.scrollIntoView({ behavior: "smooth", block: "start" });
   }
