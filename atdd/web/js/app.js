@@ -5,10 +5,6 @@ import { PROTOCOL_V3_META } from './obd-protocol-v3-frame-aware.js';
 import { ATDD_BUILD } from './build-info.js';
 import { loadSavedVehicles } from './vehicles.js';
 
-const EXPECTED_CDI_SHA256 =
-  '7df7c0858b3d7bf6e323cc30d73fd4ba2a9971b1a548c50ce68371d0c6ed39ee';
-const EXPECTED_PROFILE_COUNT_CLAIMED = 71;
-
 const state = {
   mode: 'home',
   models: [],
@@ -36,20 +32,18 @@ async function sha256Hex(buffer) {
 }
 
 async function loadInventory() {
-  const res = await fetch('./data/cdi-models.json', { cache: 'no-store' });
-  const buf = await res.arrayBuffer();
-  const sha = await sha256Hex(buf);
-  const data = JSON.parse(new TextDecoder().decode(buf));
-  const models = Array.isArray(data.models) ? data.models : [];
-  state.models = models;
-  state.integrityOk = sha === EXPECTED_CDI_SHA256;
+  // Sample/demo CDI models are kept in source trees for tests only. They are not loaded or shown here.
+  state.models = [];
+  state.integrityOk = true;
   state.inventory = {
-    sha256: sha,
-    bytes: buf.byteLength,
-    profiles_found: models.length,
-    profiles_expected_claimed: EXPECTED_PROFILE_COUNT_CLAIMED,
-    profiles_missing: Math.max(0, EXPECTED_PROFILE_COUNT_CLAIMED - models.length),
-    integrity_match: state.integrityOk,
+    sha256: '',
+    bytes: 0,
+    profiles_found: 0,
+    profiles_expected_claimed: 0,
+    profiles_missing: 0,
+    integrity_match: true,
+    sample_models_shipped: false,
+    note: 'Sample and demo CDI models are not shipped or shown in ATDD. Use the main ATDD vehicle search for cited pinouts, which stay labeled verified, unverified, or reference.',
     atdd_obd2_database_present: false
   };
   return state.inventory;
@@ -86,10 +80,9 @@ function renderStatus() {
   const inv = state.inventory;
   el('statusBody').innerHTML = `
     <dl class="status-grid">
-      <dt>CDI database SHA-256</dt><dd><code>${escapeHtml(inv.sha256)}</code></dd>
-      <dt>Integrity vs frozen import</dt><dd>${inv.integrity_match ? 'MATCH' : 'MISMATCH'}</dd>
-      <dt>CDI profiles found</dt><dd>${inv.profiles_found} / ${inv.profiles_expected_claimed} claimed</dd>
-      <dt>CDI profiles missing</dt><dd>${inv.profiles_missing}</dd>
+      <dt>Sample/demo CDI models</dt><dd>NOT SHIPPED in this app</dd>
+      <dt>Cited pinouts</dt><dd>Use the main ATDD vehicle search (verified / unverified / reference labels)</dd>
+      <dt>Note</dt><dd>${escapeHtml(inv.note || '')}</dd>
       <dt>ATDD 1.2.0 OBD2 database</dt><dd>NOT FOUND in this environment</dd>
       <dt>Original cdi-genius/ tree</dt><dd>PRESERVED (not deleted)</dd>
       <dt>Unified branch</dt><dd><code>${escapeHtml(ATDD_BUILD.branch)}</code></dd>
@@ -122,7 +115,7 @@ function renderVehicles(targetId) {
 function renderObd2Gate(options = {}) {
   renderVehicles('vehiclesObd');
   el('obd2Body').innerHTML = `
-    <p><strong>Connect Scanner</strong> talks to your real FIXD when Bluetooth is available. It will not silently switch to Demo if pairing fails.</p>
+    <p><strong>Connect Scanner</strong> talks to your real FIXD when Bluetooth is available. A failed connect does not invent codes.</p>
     <p><strong>FIXD protocol claim:</strong> <code>UNVERIFIED</code> until a live Mode 03 (or vendor) round-trip is recorded on a physical truck. Parser v3 (<code>${PROTOCOL_V3_META.version}</code>) runs after connect.</p>
     <div id="scannerMount"></div>
   `;
@@ -144,6 +137,13 @@ function renderCdi() {
   }
 
   if (state.phase === 'model_select') {
+    if (!state.models.length) {
+      root.innerHTML = `
+        <p class="note">Sample and demo CDI models are not shipped or shown here.</p>
+        <p>Cited ignition pinouts live in the main ATDD vehicle search. Unverified and reference profiles stay labeled. This screen will not invent a pinout, reading, or diagnosis from sample data.</p>
+      `;
+      return;
+    }
     const options = state.models
       .map(
         (m) =>
@@ -151,7 +151,7 @@ function renderCdi() {
       )
       .join('');
     root.innerHTML = `
-      <p class="note">Imported CDI profiles: <strong>${state.models.length}</strong> verified (claimed complete set: 71). Missing: <strong>${state.inventory.profiles_missing}</strong>.</p>
+      <p class="note">Imported CDI profiles: <strong>${state.models.length}</strong>.</p>
       <label>CDI model
         <select id="cdiModelSelect">
           <option value="">— Select model —</option>

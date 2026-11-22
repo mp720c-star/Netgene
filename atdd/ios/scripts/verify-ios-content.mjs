@@ -36,26 +36,33 @@ runInNewContext(data.toString("utf8"), context);
 assert.equal(context.window.DTC_DB_DATA.length, 4783);
 assert.match(context.window.DTC_DB_DATA.find((row) => row.code === "P0300").description, /misfire/i);
 
-const models = JSON.parse(fs.readFileSync(path.join(root, "tools/data/cdi-models.json"), "utf8"));
-assert.equal(models.models.length, 3);
-assert.equal(createHash("sha256").update(fs.readFileSync(path.join(root, "tools/data/cdi-models.json"))).digest("hex"), "7df7c0858b3d7bf6e323cc30d73fd4ba2a9971b1a548c50ce68371d0c6ed39ee");
+// The previous 3-model check required tools/data/cdi-models.json (SHA-256
+// 7df7c0858b3d7bf6e323cc30d73fd4ba2a9971b1a548c50ce68371d0c6ed39ee) to be
+// packaged. Those three sample/demo CDI models are no longer shipped or shown
+// in ATDD. The original files remain in cdi-genius/ and atdd/source-import/.
+assert.equal(fs.existsSync(path.join(root, "tools/data/cdi-models.json")), false);
+assert.doesNotMatch(entry, /id="btnBtDemo"/);
+assert.doesNotMatch(entry, /Demo only/);
 
 const pinoutCtx = { window: {} };
 runInNewContext(fs.readFileSync(path.join(root, "data/cdi-pinout-db.js"), "utf8"), pinoutCtx);
 const pinout = pinoutCtx.window.CDI_PINOUT_DB;
-assert.equal(pinout.profile_count, 71);
-assert.equal(Object.keys(pinout.profiles).length, 71);
-assert.equal(pinout.slot_count, 448);
+assert.equal(pinout.profile_count, 69);
+assert.equal(Object.keys(pinout.profiles).length, 69);
+assert.equal(pinout.slot_count, 436);
 assert.equal(pinout.source_app_js_sha256, "b01eee6cd36be89a57eec5888a0aead379379c2e21a636efff8c249838da5a2c");
-assert.equal(JSON.stringify(pinout.provenance_counts), JSON.stringify({ reference: 4, unverified: 9, verified: 58 }));
+assert.equal(JSON.stringify(pinout.provenance_counts), JSON.stringify({ reference: 2, unverified: 9, verified: 58 }));
+assert.equal(pinout.profiles.SIM_DC_01, undefined);
+assert.equal(pinout.profiles.GENERIC_DC.provenance, "reference");
 assert.equal(pinout.profiles.SKI_DOO_REV_DC.provenance, "unverified");
 assert.equal(pinout.profiles.HONDA_XR650L_DC.provenance, "verified");
 
 const indexCtx = { window: {} };
 runInNewContext(fs.readFileSync(path.join(root, "data/vehicle-index.js"), "utf8"), indexCtx);
 const index = indexCtx.window.VEHICLE_INDEX_DATA;
-assert.equal(index.counts.entries, 440);
-assert.equal(index.counts.cdi_profiles_represented, 71);
+assert.equal(index.counts.entries, 438);
+assert.equal(index.counts.cdi_profiles_represented, 69);
+assert.equal(index.counts.by_type.simulated, undefined);
 assert.equal(index.counts.near_match_pairs, 22);
 assert.equal(index.counts.by_type.car_truck, 237);
 assert.equal(index.counts.by_type.snowmobile, 4);
@@ -63,7 +70,8 @@ assert.doesNotMatch(JSON.stringify(index), /P0300/);
 
 const manifest = JSON.parse(fs.readFileSync(path.join(root, "data/cdi-pinout-db.manifest.json"), "utf8"));
 assert.equal(manifest.source_app_js_sha256, "b01eee6cd36be89a57eec5888a0aead379379c2e21a636efff8c249838da5a2c");
-assert.equal(manifest.profile_count, 71);
+assert.equal(manifest.profile_count, 69);
+assert.ok(Array.isArray(manifest.excluded_from_ship));
 
 console.log("Original ATDD launch page, 4783 offline entries, repair jobs, diagnostic engine and native scanner verified.");
 console.log("Packaged DTC database SHA-256 " + createHash("sha256").update(data).digest("hex"));

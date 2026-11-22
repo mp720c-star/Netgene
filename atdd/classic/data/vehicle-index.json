@@ -1,8 +1,8 @@
 {
   "source_pinout_sha256": "b01eee6cd36be89a57eec5888a0aead379379c2e21a636efff8c249838da5a2c",
   "counts": {
-    "source_rows": 679,
-    "entries": 440,
+    "source_rows": 677,
+    "entries": 438,
     "exact_merges": 239,
     "near_match_pairs": 22,
     "entries_with_near_matches": 69,
@@ -13,18 +13,17 @@
       "dirt_bike": 110,
       "generic_reference": 2,
       "motorcycle": 2,
-      "simulated": 2,
       "snowmobile": 4
     },
     "by_workflow": {
-      "cdi_pinout": 71,
+      "cdi_pinout": 69,
       "index_only": 132,
       "generic_automotive": 237
     },
-    "cdi_profiles_represented": 71,
+    "cdi_profiles_represented": 69,
     "catalog_sources": 361,
     "vehicle_genius_sources": 247,
-    "cdi_sources": 71
+    "cdi_sources": 69
   },
   "entries": [
     {
@@ -12091,54 +12090,6 @@
           "kind": "cdi",
           "id": "cdi:profile:SUZUKI_GSXR750",
           "label": "BIKE: Suzuki GSX-R 750 (DC)"
-        }
-      ],
-      "near_matches": []
-    },
-    {
-      "id": "veh:dbbb94014bb9171f",
-      "type": "simulated",
-      "make": "",
-      "model": "AC 4-Pin (Basic Off-Road)",
-      "year": null,
-      "year_start": null,
-      "year_end": null,
-      "year_text": "",
-      "display_name": "SIMULATED: AC 4-Pin (Basic Off-Road)",
-      "cdi_system": "AC",
-      "provenance": "reference",
-      "category": "Simulated Generic Profiles",
-      "workflow": "cdi_pinout",
-      "has_cdi_pinout": true,
-      "sources": [
-        {
-          "kind": "cdi",
-          "id": "cdi:profile:SIM_AC_01",
-          "label": "SIMULATED: AC 4-Pin (Basic Off-Road)"
-        }
-      ],
-      "near_matches": []
-    },
-    {
-      "id": "veh:3261569c68d6d66f",
-      "type": "simulated",
-      "make": "",
-      "model": "DC 6-Pin (High Rev Limit)",
-      "year": null,
-      "year_start": null,
-      "year_end": null,
-      "year_text": "",
-      "display_name": "SIMULATED: DC 6-Pin (High Rev Limit)",
-      "cdi_system": "DC",
-      "provenance": "reference",
-      "category": "Simulated Generic Profiles",
-      "workflow": "cdi_pinout",
-      "has_cdi_pinout": true,
-      "sources": [
-        {
-          "kind": "cdi",
-          "id": "cdi:profile:SIM_DC_01",
-          "label": "SIMULATED: DC 6-Pin (High Rev Limit)"
         }
       ],
       "near_matches": []

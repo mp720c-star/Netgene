@@ -174,20 +174,37 @@ function showEl(id){
 function renderLookupCards(items){
   if(!items.length){ html('codeResults','<div class="code-card">No matching codes.</div>'); showEl('codeResults'); return; }
   html('codeResults', items.map(item => {
-    const diy = (item.detailed && item.detailed.diySteps && item.detailed.diySteps.length)
-      ? `<div class="diy mt-10"><strong>DIY repair steps</strong><ol class="checks">${item.detailed.diySteps.map(step => `<li>${esc(step)}</li>`).join('')}</ol></div>`
+    const detailed = item.detailed || {};
+    if(item.inDatabase === false || detailed.unknown){
+      return `
+        <div class="code-card">
+          <div><span class="badge">${esc(item.code)}</span><span class="badge generic">Unknown</span></div>
+          <div><strong>${esc(item.description || 'Unknown code – not in database')}</strong></div>
+          <div class="small mt-8">This identifier is not in the bundled database. No cause, reading, or fix was invented for it.</div>
+        </div>
+      `;
+    }
+    const genericLabel = detailed.generic
+      ? `<div class="small mt-8"><span class="badge generic">General guidance</span> ${esc(detailed.guidanceLabel || 'General guidance – not a diagnosis for this exact vehicle')}</div>`
       : '';
-    const guidance = item.detailed ? `
-      <div class="small mt-8"><strong>${esc(item.detailed.title || 'Guidance')}</strong></div>
-      <div class="small mt-8"><strong>What to check first:</strong> ${esc((item.detailed.firstChecks || []).join(' | '))}</div>
-      <div class="small mt-6"><strong>Parts people actually replace:</strong> ${esc((item.detailed.likelyParts || []).join(' | '))}</div>
-      ${diy}
-    ` : diy;
+    const diy = (detailed.diySteps && detailed.diySteps.length)
+      ? `<div class="diy mt-10"><strong>${detailed.generic ? 'General repair steps' : 'DIY repair steps'}</strong><ol class="checks">${detailed.diySteps.map(step => `<li>${esc(step)}</li>`).join('')}</ol></div>`
+      : '';
+    const checks = (detailed.firstChecks || []).length
+      ? `<div class="small mt-8"><strong>${detailed.generic ? 'General checks:' : 'What to check first:'}</strong> ${esc(detailed.firstChecks.join(' | '))}</div>`
+      : '';
+    const parts = (detailed.likelyParts || []).length
+      ? `<div class="small mt-6"><strong>${detailed.generic ? 'Common parts in this system (general guidance):' : 'Parts listed for this code:'}</strong> ${esc(detailed.likelyParts.join(' | '))}</div>`
+      : '';
     return `
       <div class="code-card">
         <div><span class="badge">${esc(item.code)}</span><span class="badge">${esc(item.family)}</span><span class="badge">${esc(item.subsystem)}</span></div>
         <div><strong>${esc(item.description)}</strong></div>
-        ${guidance}
+        ${genericLabel}
+        <div class="small mt-8"><strong>${esc(detailed.title || 'Guidance')}</strong></div>
+        ${checks}
+        ${parts}
+        ${diy}
       </div>
     `;
   }).join(''));
@@ -206,7 +223,11 @@ function quickLookup(){
   const results = DiagEngine.lookupCodes(state.dtcDb, codes);
   renderLookupCards(results || []);
   if(results && results.length){
-    showStatus('Found ' + results.length + ' code' + (results.length === 1 ? '' : 's') + '. Scroll for DIY steps.', 'ok');
+    const known = results.filter((row) => row.inDatabase !== false && !(row.detailed && row.detailed.unknown)).length;
+    const unknown = results.length - known;
+    if(known && !unknown) showStatus('Found ' + known + ' code' + (known === 1 ? '' : 's') + ' in the database.', 'ok');
+    else if(!known && unknown) showStatus('Unknown code – not in database. No diagnosis was invented.', 'warn');
+    else showStatus(known + ' in the database, ' + unknown + ' unknown. Unknown identifiers have no invented diagnosis.', 'warn');
   }else{
     showStatus('No match for those codes in the offline library.', 'warn');
   }
@@ -410,24 +431,18 @@ async function analyzeAudioBuffer(buffer){
     }
     const rms = Math.sqrt(sum / channel.length);
     const zeroCrossRate = zc / (channel.length / sampleRate);
-    let cue = 'undetermined';
-    if(rms < 0.01) cue = 'very quiet / weak signal';
-    else if(zeroCrossRate > 6500) cue = 'possible squeal / high-frequency noise';
-    else if(zeroCrossRate < 1100 && rms > 0.03) cue = 'possible knock / thump';
-    else if(zeroCrossRate >= 1100 && zeroCrossRate <= 2600) cue = 'possible tick / rhythmic mechanical noise';
-    else cue = 'broad mechanical noise';
     const summary = {
       durationSec: Number(audioBuffer.duration.toFixed(2)),
       rms: Number(rms.toFixed(4)),
       zeroCrossRate: Number(zeroCrossRate.toFixed(1)),
-      cue
+      cue: 'undetermined — raw level and crossing rate only, not a diagnosis'
     };
     state.audioSummary = summary;
-    text('audioSummary', `Audio summary: ${summary.durationSec}s | RMS ${summary.rms} | ZCR ${summary.zeroCrossRate} | cue: ${summary.cue}`);
+    text('audioSummary', `Audio measurements (not a diagnosis): ${summary.durationSec}s | RMS ${summary.rms} | ZCR ${summary.zeroCrossRate}. ${summary.cue}`);
     maybeAutoDiagnose('microphone');
   }catch(err){
     text('audioSummary', 'Audio loaded, but browser decoding failed for deeper analysis.');
-    state.audioSummary = { cue:'audio loaded but deeper decode unavailable' };
+    state.audioSummary = { cue:'' };
     maybeAutoDiagnose('microphone');
   }
 }
@@ -453,13 +468,15 @@ function imageMetricsFromCanvas(canvas){
     if(r > 180 && g > 90 && b < 120) hot++;
   }
   const ratio = x => Number((x / total).toFixed(4));
-  let smokeHint = 'no strong smoke color cue';
-  if(ratio(white) > 0.18) smokeHint = 'possible white smoke / steam cue';
-  if(ratio(blue) > 0.16) smokeHint = 'possible blue smoke / oil-burning cue';
-  if(ratio(dark) > 0.34) smokeHint = 'possible black smoke / dark exhaust cue';
-  const summary = { whiteRatio: ratio(white), blueRatio: ratio(blue), darkRatio: ratio(dark), hotRatio: ratio(hot), smokeHint };
+  const summary = {
+    whiteRatio: ratio(white),
+    blueRatio: ratio(blue),
+    darkRatio: ratio(dark),
+    hotRatio: ratio(hot),
+    smokeHint: ''
+  };
   state.imageSummary = summary;
-  text('imageSummary', `Image summary: white ${summary.whiteRatio} | blue ${summary.blueRatio} | dark ${summary.darkRatio} | cue: ${summary.smokeHint}`);
+  text('imageSummary', `Image measurements (not a smoke diagnosis): white ${summary.whiteRatio} | blue ${summary.blueRatio} | dark ${summary.darkRatio} | warm ${summary.hotRatio}. No color classification was turned into a finding.`);
   maybeAutoDiagnose('camera');
   return summary;
 }
@@ -558,20 +575,15 @@ function markSymptom(name, on){
 
 function startRebuildDiagnosis(){
   if(!byId('flagRodKnock').checked && !byId('flagLowCompression').checked && !byId('flagBurnsOil').checked && !byId('flagMetalInOil').checked && !byId('flagNeedRebuild').checked){
-    byId('flagNeedRebuild').checked = true;
+    showStatus('No data – not enough information. Select a rebuild clue you actually observed first.', 'warn');
+    return;
   }
   markSymptom('Rod knock', byId('flagRodKnock').checked);
   markSymptom('Low compression', byId('flagLowCompression').checked);
   markSymptom('Burns oil', byId('flagBurnsOil').checked);
-  markSymptom('Needs engine rebuild', byId('flagNeedRebuild').checked || byId('flagMetalInOil').checked);
+  markSymptom('Needs engine rebuild', byId('flagNeedRebuild').checked);
   if(byId('flagMetalInOil').checked){
-    if(byId('fluidType')) byId('fluidType').value = 'Engine oil';
-    if(byId('fluidColor')) byId('fluidColor').value = 'Metallic glitter';
-    fluidData();
-  }
-  const notes = byId('notes');
-  if(notes && byId('flagMetalInOil').checked && !/metal in oil/i.test(notes.value)){
-    notes.value = (notes.value ? notes.value + ' ' : '') + 'metal in oil';
+    markSymptom('Needs engine rebuild', byId('flagNeedRebuild').checked || true);
   }
   runDiagnosis();
 }
@@ -604,28 +616,29 @@ function renderAnalysis(analysis){
   const vehicleLine = [v.year, v.make, v.model, v.engine, v.nickname].filter(Boolean).join(' ') || '';
   const outcome = analysis.outcome || (typeof DiagEngine !== 'undefined' && DiagEngine.resolveOutcome ? DiagEngine.resolveOutcome(analysis) : null);
   const evidence = [];
-  if(state.audioSummary && state.audioSummary.cue) evidence.push('Mic: ' + state.audioSummary.cue);
-  if(state.imageSummary && state.imageSummary.smokeHint) evidence.push('Camera: ' + state.imageSummary.smokeHint);
+  if(state.audioSummary && state.audioSummary.durationSec != null) evidence.push('Mic measurements: ' + state.audioSummary.durationSec + 's, RMS ' + state.audioSummary.rms + ', ZCR ' + state.audioSummary.zeroCrossRate + ' (not a diagnosis)');
+  if(state.imageSummary && (state.imageSummary.whiteRatio != null)) evidence.push('Camera measurements: white ' + state.imageSummary.whiteRatio + ', blue ' + state.imageSummary.blueRatio + ', dark ' + state.imageSummary.darkRatio + ' (not a diagnosis)');
   (analysis.codeCards || []).slice(0, 3).forEach((card) => evidence.push('Code: ' + card.code + ' — ' + card.description));
   (analysis.rankedHypotheses || []).slice(0, 2).forEach((h) => {
     if(h.reasons && h.reasons[0]) evidence.push(h.reasons[0]);
   });
   const list = (items) => (items || []).map(x => `<li>${esc(x)}</li>`).join('') || '<li>None listed for this finding.</li>';
 
-  if(!outcome || outcome.kind === 'needs_more_evidence'){
+  if(!outcome || outcome.kind === 'needs_more_evidence' || outcome.kind === 'unknown_code'){
+    const unknown = outcome && outcome.kind === 'unknown_code';
     html('results', `
       <div class="outcome-banner">
-        <div class="kind">Need more evidence</div>
-        <h3>${esc((outcome && outcome.title) || 'Need more evidence')}</h3>
-        <div class="small">${esc((outcome && outcome.reason) || (analysis.summary && analysis.summary.shortReason) || '')}</div>
+        <div class="kind">${unknown ? 'Unknown code' : 'No data'}</div>
+        <h3>${esc((outcome && outcome.title) || 'No data – not enough information')}</h3>
+        <div class="small">${esc((outcome && outcome.reason) || (analysis.summary && analysis.summary.shortReason) || 'No data – not enough information')}</div>
         ${vehicleLine ? `<div class="small mt-6">${esc(vehicleLine)}</div>` : ''}
       ${catalogWorkflowNotice(analysis)}
       </div>
-      <div class="result-block"><h3>What to capture next</h3><ol class="checks diy-list">${list((outcome && outcome.instructions) || [])}</ol></div>
+      <div class="result-block"><h3>${unknown ? 'Unknown code – not in database' : 'What to capture next'}</h3><ol class="checks diy-list">${list((outcome && outcome.instructions) || [])}</ol></div>
       ${evidence.length ? `<div class="result-block"><h3>Evidence so far</h3><ul class="evidence-list">${evidence.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div>` : ''}
     `);
     showEl('resultsCard');
-    showStatus('Not enough to pick a repair plan yet — add mic, camera, or a code.', 'warn');
+    showStatus(unknown ? 'Unknown code – not in database. No diagnosis was invented.' : 'No data – not enough information.', 'warn');
     return;
   }
 
@@ -661,7 +674,8 @@ function renderAnalysis(analysis){
     <div class="outcome-banner">
       <div class="kind">${esc(outcome.kind)}</div>
       <h3>${esc(outcome.title)}</h3>
-      <div><span class="badge">${esc(outcome.confidence)}%</span> <span class="small">${esc(outcome.reason || '')}</span></div>
+      <div>${outcome.confidence ? `<span class="badge">${esc(outcome.confidence)} (score from matched evidence)</span> ` : ''}<span class="small">${esc(outcome.reason || '')}</span></div>
+      ${(outcome.likelyParts && outcome.kind !== 'code') || (analysis.rankedHypotheses && analysis.rankedHypotheses[0] && analysis.rankedHypotheses[0].generic) ? `<div class="small mt-6"><span class="badge generic">General guidance</span> General guidance – not a diagnosis for this exact vehicle.</div>` : ''}
       ${vehicleLine ? `<div class="small mt-6">${esc(vehicleLine)}</div>` : ''}
       ${catalogWorkflowNotice(analysis)}
     </div>

@@ -17,9 +17,9 @@ import vm from "node:vm";
 
 const EXPECTED_SOURCE_SHA256 =
   "b01eee6cd36be89a57eec5888a0aead379379c2e21a636efff8c249838da5a2c";
-const EXPECTED_PROFILE_COUNT = 71;
-const EXPECTED_SLOT_COUNT = 448;
-const EXPECTED_PROVENANCE = { verified: 58, unverified: 9, reference: 4 };
+const SOURCE_PROFILE_COUNT = 71;
+const SOURCE_SLOT_COUNT = 448;
+const SOURCE_PROVENANCE = { verified: 58, unverified: 9, reference: 4 };
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const outDir = path.join(root, "classic/data");
@@ -85,6 +85,18 @@ function provenanceCounts(profiles) {
   return counts;
 }
 
+function isSimulatedProfile(key, profile) {
+  const category = (profile && profile.category) || "";
+  const name = (profile && profile.name) || "";
+  return (
+    key === "SIM_DC_01" ||
+    key === "SIM_AC_01" ||
+    category === "Simulated Generic Profiles" ||
+    /^SIMULATED:/i.test(name) ||
+    /^SIM_/.test(key)
+  );
+}
+
 function canonicalJson(value) {
   return JSON.stringify(value, null, 2) + "\n";
 }
@@ -120,8 +132,8 @@ if (sourceSha !== EXPECTED_SOURCE_SHA256) {
 
 const raw = extractPinoutObject(sourceBuf.toString("utf8"));
 const keys = Object.keys(raw);
-if (keys.length !== EXPECTED_PROFILE_COUNT) {
-  throw new Error("Expected " + EXPECTED_PROFILE_COUNT + " profiles, found " + keys.length);
+if (keys.length !== SOURCE_PROFILE_COUNT) {
+  throw new Error("Expected " + SOURCE_PROFILE_COUNT + " source profiles, found " + keys.length);
 }
 
 const profiles = {};
@@ -133,24 +145,35 @@ for (const key of keys) {
 }
 
 const slots = slotCount(profiles);
-if (slots !== EXPECTED_SLOT_COUNT) {
-  throw new Error("Expected " + EXPECTED_SLOT_COUNT + " slots, found " + slots);
+if (slots !== SOURCE_SLOT_COUNT) {
+  throw new Error("Expected " + SOURCE_SLOT_COUNT + " source slots, found " + slots);
 }
 const provenance = provenanceCounts(profiles);
-for (const label of Object.keys(EXPECTED_PROVENANCE)) {
-  if (provenance[label] !== EXPECTED_PROVENANCE[label]) {
+for (const label of Object.keys(SOURCE_PROVENANCE)) {
+  if (provenance[label] !== SOURCE_PROVENANCE[label]) {
     throw new Error(
-      "Provenance " + label + " count " + provenance[label] + " != " + EXPECTED_PROVENANCE[label]
+      "Source provenance " + label + " count " + provenance[label] + " != " + SOURCE_PROVENANCE[label]
     );
   }
 }
 
+const excluded = [];
+for (const key of Object.keys(profiles)) {
+  if (isSimulatedProfile(key, profiles[key])) {
+    excluded.push({ key, name: profiles[key].name, category: profiles[key].category, source: profiles[key].source || "" });
+    delete profiles[key];
+  }
+}
+const shippedKeys = Object.keys(profiles);
+const shippedSlots = slotCount(profiles);
+const shippedProvenance = provenanceCounts(profiles);
+
 const payload = {
   source: "CDI_Genius_Runtime_Source.zip:web/app.js",
   source_app_js_sha256: sourceSha,
-  profile_count: keys.length,
-  slot_count: slots,
-  provenance_counts: provenance,
+  profile_count: shippedKeys.length,
+  slot_count: shippedSlots,
+  provenance_counts: shippedProvenance,
   profiles,
 };
 
@@ -158,7 +181,7 @@ const jsonText = canonicalJson(payload);
 const jsText = wrapJs(
   "CDI_PINOUT_DB",
   payload,
-  "CDI Genius pinoutDB extracted verbatim from runtime web/app.js. Labels preserved. No values invented."
+  "CDI Genius pinoutDB extracted from runtime web/app.js. Simulated generic profiles are not shipped. Labels preserved. No values invented."
 );
 
 fs.mkdirSync(outDir, { recursive: true });
@@ -171,17 +194,21 @@ const manifest = {
   source: payload.source,
   source_app_js_sha256: sourceSha,
   expected_source_app_js_sha256: EXPECTED_SOURCE_SHA256,
-  profile_count: keys.length,
-  slot_count: slots,
-  provenance_counts: provenance,
-  profile_keys: keys,
+  source_profile_count: keys.length,
+  source_slot_count: slots,
+  source_provenance_counts: provenance,
+  profile_count: shippedKeys.length,
+  slot_count: shippedSlots,
+  provenance_counts: shippedProvenance,
+  profile_keys: shippedKeys,
+  excluded_from_ship: excluded,
   content_sha256: sha256Text(jsonText),
   files: {
     "cdi-pinout-db.json": sha256Bytes(fs.readFileSync(jsonPath)),
     "cdi-pinout-db.js": sha256Bytes(fs.readFileSync(jsPath)),
   },
   note:
-    "Extracted verbatim from pinoutDB in the hashed runtime app.js. provenance and category labels are unchanged. source_key is the original pinoutDB key. No pin colors, voltages, or ohm values were invented.",
+    "Extracted from pinoutDB in the hashed runtime app.js. Simulated generic profiles (SIM_DC_01, SIM_AC_01) are present in the source extract but are not shipped in ATDD. GENERIC_DC and GENERIC_AC remain as labeled reference core profiles. Unverified and reference citations stay labeled. provenance and category labels are otherwise unchanged. source_key is the original pinoutDB key. No pin colors, voltages, or ohm values were invented. The three sample CDI demo models in cdi-genius are not packaged or shown in ATDD.",
 };
 const manifestPath = path.join(outDir, "cdi-pinout-db.manifest.json");
 fs.writeFileSync(manifestPath, canonicalJson(manifest));
@@ -195,9 +222,10 @@ console.log(
       ok: true,
       sourcePath,
       source_app_js_sha256: sourceSha,
-      profile_count: keys.length,
-      slot_count: slots,
-      provenance_counts: provenance,
+      profile_count: shippedKeys.length,
+      slot_count: shippedSlots,
+      provenance_counts: shippedProvenance,
+      excluded_from_ship: excluded.map((row) => row.key),
       content_sha256: manifest.content_sha256,
       files: {
         "cdi-pinout-db.json": manifest.files["cdi-pinout-db.json"],

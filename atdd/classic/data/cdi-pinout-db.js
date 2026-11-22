@@ -1,12 +1,12 @@
-/* CDI Genius pinoutDB extracted verbatim from runtime web/app.js. Labels preserved. No values invented. */
+/* CDI Genius pinoutDB extracted from runtime web/app.js. Simulated generic profiles are not shipped. Labels preserved. No values invented. */
 (function (root) {
   root.CDI_PINOUT_DB = {
   "source": "CDI_Genius_Runtime_Source.zip:web/app.js",
   "source_app_js_sha256": "b01eee6cd36be89a57eec5888a0aead379379c2e21a636efff8c249838da5a2c",
-  "profile_count": 71,
-  "slot_count": 448,
+  "profile_count": 69,
+  "slot_count": 436,
   "provenance_counts": {
-    "reference": 4,
+    "reference": 2,
     "unverified": 9,
     "verified": 58
   },
@@ -175,176 +175,6 @@
           "role": "Not Connected",
           "funcKey": "UNUSED",
           "desc": "Unused pin slot (Pin 6 is often empty on 5-pin units).",
-          "volt": "--",
-          "colors": [
-            "N/C"
-          ]
-        }
-      ]
-    },
-    "SIM_DC_01": {
-      "source_key": "SIM_DC_01",
-      "name": "SIMULATED: DC 6-Pin (High Rev Limit)",
-      "system": "DC",
-      "colorClass": "active-dc",
-      "gridClass": "connector-grid",
-      "source": "Simulated DC Unit 01",
-      "category": "Simulated Generic Profiles",
-      "provenance": "reference",
-      "pins": 6,
-      "slots": [
-        {
-          "pin": 1,
-          "label": "12V",
-          "active": true,
-          "role": "Battery Power (Switched)",
-          "funcKey": "POWER",
-          "desc": "High performance unit requires stable 12V DC input.",
-          "volt": "12V DC",
-          "colors": [
-            "Red"
-          ]
-        },
-        {
-          "pin": 2,
-          "label": "GND",
-          "active": true,
-          "role": "System Ground",
-          "funcKey": "GND",
-          "desc": "Chassis ground.",
-          "volt": "0V",
-          "colors": [
-            "Black"
-          ]
-        },
-        {
-          "pin": 3,
-          "label": "PULSE",
-          "active": true,
-          "role": "Timing Signal (+)",
-          "funcKey": "PULSE",
-          "desc": "Input signal from pulser coil.",
-          "volt": "Low AC",
-          "colors": [
-            "Blue"
-          ]
-        },
-        {
-          "pin": 4,
-          "label": "COIL",
-          "active": true,
-          "role": "Output to Spark Coil",
-          "funcKey": "COIL",
-          "desc": "Ignition coil trigger.",
-          "volt": "400V peak",
-          "colors": [
-            "Yellow/Red"
-          ]
-        },
-        {
-          "pin": 5,
-          "label": "KILL",
-          "active": true,
-          "role": "Ignition Interrupt",
-          "funcKey": "KILL",
-          "desc": "Ground-to-kill wire.",
-          "volt": "N/A",
-          "colors": [
-            "Brown/Wht"
-          ]
-        },
-        {
-          "pin": 6,
-          "label": "TACH",
-          "active": true,
-          "role": "Tachometer Output",
-          "funcKey": "TACH",
-          "desc": "Tach signal output.",
-          "volt": "Pulse",
-          "colors": [
-            "Orange"
-          ]
-        }
-      ]
-    },
-    "SIM_AC_01": {
-      "source_key": "SIM_AC_01",
-      "name": "SIMULATED: AC 4-Pin (Basic Off-Road)",
-      "system": "AC",
-      "colorClass": "active-ac",
-      "gridClass": "connector-grid-small",
-      "source": "Simulated AC Unit 01",
-      "category": "Simulated Generic Profiles",
-      "provenance": "reference",
-      "pins": 4,
-      "slots": [
-        {
-          "pin": 1,
-          "label": "AC IN",
-          "active": true,
-          "role": "HV Source from Stator",
-          "funcKey": "POWER",
-          "desc": "High voltage AC power feed from stator.",
-          "volt": "100V-250V AC",
-          "colors": [
-            "Red/Blk"
-          ]
-        },
-        {
-          "pin": 2,
-          "label": "GND",
-          "active": true,
-          "role": "System Ground",
-          "funcKey": "GND",
-          "desc": "Main ground connection.",
-          "volt": "0V",
-          "colors": [
-            "Green/Wht"
-          ]
-        },
-        {
-          "pin": 3,
-          "label": "COIL",
-          "active": true,
-          "role": "Output to Spark Coil",
-          "funcKey": "COIL",
-          "desc": "Ignition coil trigger.",
-          "volt": "400V peak",
-          "colors": [
-            "Blk/Yel"
-          ]
-        },
-        {
-          "pin": 4,
-          "label": "PULSE",
-          "active": true,
-          "role": "Timing Signal (+)",
-          "funcKey": "PULSE",
-          "desc": "Input signal from pulser coil.",
-          "volt": "Low AC",
-          "colors": [
-            "Blu/Wht"
-          ]
-        },
-        {
-          "pin": 5,
-          "label": "X",
-          "active": false,
-          "role": "Not Connected",
-          "funcKey": "UNUSED",
-          "desc": "Unused/empty pin slot.",
-          "volt": "--",
-          "colors": [
-            "N/C"
-          ]
-        },
-        {
-          "pin": 6,
-          "label": "X",
-          "active": false,
-          "role": "Not Connected",
-          "funcKey": "UNUSED",
-          "desc": "Unused/empty pin slot.",
           "volt": "--",
           "colors": [
             "N/C"

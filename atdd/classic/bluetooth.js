@@ -2,7 +2,7 @@
  * ATDD classic Bluetooth · Connect FIXD
  * Non-module bridge for the v1.2.0 shell (CSP script-src 'self').
  *
- * Live connect never silently falls back to Demo.
+ * A failed live connect does not invent codes.
  * FIXD protocol claim stays UNVERIFIED until a live Mode 03 round-trip succeeds.
  */
 (function (global) {
@@ -47,11 +47,9 @@
     const scanAll = byId("btnBtScanAll");
     const read = byId("btnBtReadCodes");
     const disc = byId("btnBtDisconnect");
-    const demo = byId("btnBtDemo");
     const webOk = webBluetoothAvailable();
     if (connect) connect.disabled = busy || !webOk;
     if (scanAll) scanAll.disabled = busy || !webOk;
-    if (demo) demo.disabled = busy;
     if (read) read.disabled = busy || !writeChar;
     if (disc) disc.disabled = busy || !device;
   }
@@ -271,17 +269,13 @@
     setBusy(false);
   }
 
-  function applyCodesToScanner(codes, simulated) {
+  function applyCodesToScanner(codes) {
     const field = byId("codes");
     if (!field) return;
     const next = codes.join("\n");
     field.value = next;
     field.dispatchEvent(new Event("input", { bubbles: true }));
-    if (simulated) {
-      log("SIMULATED codes written to scanner field (not from FIXD): " + (codes.join(", ") || "(none)"));
-    } else {
-      log("Live codes written to scanner field: " + (codes.join(", ") || "(none returned)"));
-    }
+    log("Live codes written to scanner field: " + (codes.join(", ") || "(none returned)"));
     field.scrollIntoView({ behavior: "smooth", block: "center" });
     field.focus();
   }
@@ -292,19 +286,12 @@
     const reply = await sendCommand("03", 1500);
     log(reply || "(empty Mode 03 reply)");
     const codes = parseMode03Response(reply);
-    applyCodesToScanner(codes, false);
+    applyCodesToScanner(codes);
     if (!codes.length) {
       log("No DTCs parsed. Adapter replied, but FIXD application protocol is still " + FIXD_CLAIM + " until a known-good Mode 03 match is confirmed.");
     } else {
       log("Parsed " + codes.length + " code(s). You can tap Diagnose now.");
     }
-  }
-
-  async function runDemo() {
-    log("Demo only (SIMULATED). This does not pair to FIXD or your vehicle.");
-    await sleep(400);
-    applyCodesToScanner(["P0300", "P0420"], true);
-    log("SIMULATED session complete. Live Connect FIXD was not used.");
   }
 
   function showBluetoothPanel() {
@@ -341,7 +328,6 @@
     const connect = byId("btnBtConnect");
     const read = byId("btnBtReadCodes");
     const disc = byId("btnBtDisconnect");
-    const demo = byId("btnBtDemo");
 
     async function startConnect(scanAll) {
       if (busy) return;
@@ -354,7 +340,7 @@
         log(
           "FIXD/live connect failed:\n" +
             msg +
-            "\n\nDemo was NOT started. Fix Bluetooth, then tap Connect FIXD again."
+            "\n\nNo codes were invented. Fix Bluetooth, then tap Connect FIXD again."
         );
         await disconnect();
       } finally {
@@ -392,19 +378,6 @@
       disc.onclick = async () => {
         setBusy(true);
         await disconnect();
-      };
-    }
-
-    if (demo) {
-      demo.onclick = async () => {
-        if (busy) return;
-        showBluetoothPanel();
-        setBusy(true);
-        try {
-          await runDemo();
-        } finally {
-          setBusy(false);
-        }
       };
     }
 

@@ -65,7 +65,7 @@
       </section>
       <section class="card" id="bluetoothCard" hidden>
         <h2>Bluetooth · Connect FIXD</h2>
-        <p class="lead">Pair your real FIXD over Bluetooth, read codes, and drop them into the scanner field above. Demo is separate and labeled SIMULATED — it never pretends to be FIXD.</p>
+        <p class="lead">Pair your real FIXD over Bluetooth, read codes, and drop them into the scanner field above. The app does not invent demo or simulated scan results.</p>
         <p class="small" id="btSupport">Checking Bluetooth…</p>
         <div class="status-banner warn" id="btIphoneGate" hidden></div>
         <div class="row secondary-actions">
@@ -73,10 +73,9 @@
           <button class="secondary" id="btnBtScanAll">Scan any BLE device</button>
           <button class="secondary" id="btnBtReadCodes" disabled>Read codes</button>
           <button class="secondary" id="btnBtDisconnect" disabled>Disconnect</button>
-          <button class="secondary" id="btnBtDemo">Demo only (SIMULATED)</button>
         </div>
         <pre id="btLog" class="bt-log" aria-live="polite">Idle. Tap Connect, with the adapter powered in the OBD port.</pre>
-        <p class="small mt-8">FIXD protocol claim stays <code>UNVERIFIED</code> until a live Mode 03 round-trip succeeds on a physical truck. Live connect never silently falls back to Demo.</p>
+        <p class="small mt-8">FIXD protocol claim stays <code>UNVERIFIED</code> until a live Mode 03 round-trip succeeds on a physical truck. A failed connect does not invent codes.</p>
       </section>
 
       <section class="card primary-card" id="lookupCard">

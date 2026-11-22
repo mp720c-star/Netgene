@@ -26,28 +26,28 @@ const EXPECTED_SOURCE = "b01eee6cd36be89a57eec5888a0aead379379c2e21a636efff8c249
 
 assert.equal(sha256File(path.join(classic, "data/dtc-db.js")), EXPECTED_DTC);
 assert.equal(sha256File(path.join(classic, "data/common-jobs.js")), EXPECTED_JOBS);
-assert.equal(sha256File(path.join(atdd, "web/data/cdi-models.json")), EXPECTED_SAMPLE);
 assert.equal(sha256File(path.join(repoRoot, "cdi-genius/src/data/sample-models.json")), EXPECTED_SAMPLE);
 assert.equal(sha256File(path.join(atdd, "source-import/cdi-genius/src/data/sample-models.json")), EXPECTED_SAMPLE);
 
 const pinoutWin = loadWindow(path.join(classic, "data/cdi-pinout-db.js"));
 const pinout = pinoutWin.CDI_PINOUT_DB;
 assert.equal(pinout.source_app_js_sha256, EXPECTED_SOURCE);
-assert.equal(pinout.profile_count, 71);
-assert.equal(Object.keys(pinout.profiles).length, 71);
-assert.equal(pinout.slot_count, 448);
-assert.equal(JSON.stringify(pinout.provenance_counts), JSON.stringify({ reference: 4, unverified: 9, verified: 58 }));
+assert.equal(pinout.profile_count, 69);
+assert.equal(Object.keys(pinout.profiles).length, 69);
+assert.equal(pinout.slot_count, 436);
+assert.equal(JSON.stringify(pinout.provenance_counts), JSON.stringify({ reference: 2, unverified: 9, verified: 58 }));
 assert.equal(pinout.profiles.SKI_DOO_REV_DC.provenance, "unverified");
 assert.equal(pinout.profiles.SKI_DOO_REV_DC.category, "Snowmobiles / Sleds");
 assert.equal(pinout.profiles.HONDA_XR650L_DC.provenance, "verified");
 assert.equal(pinout.profiles.CHINESE_GY6_DC.provenance, "unverified");
-assert.equal(pinout.profiles.SIM_DC_01.category, "Simulated Generic Profiles");
+assert.equal(pinout.profiles.SIM_DC_01, undefined);
+assert.equal(pinout.profiles.SIM_AC_01, undefined);
 assert.equal(pinout.profiles.GENERIC_DC.provenance, "reference");
 assert.ok(pinout.profiles.HONDA_XR650L_DC.source_key === "HONDA_XR650L_DC");
 
 const manifest = JSON.parse(fs.readFileSync(path.join(classic, "data/cdi-pinout-db.manifest.json"), "utf8"));
 assert.equal(manifest.source_app_js_sha256, EXPECTED_SOURCE);
-assert.equal(manifest.profile_count, 71);
+assert.equal(manifest.profile_count, 69);
 assert.equal(manifest.files["cdi-pinout-db.json"], sha256File(path.join(classic, "data/cdi-pinout-db.json")));
 assert.equal(manifest.files["cdi-pinout-db.js"], sha256File(path.join(classic, "data/cdi-pinout-db.js")));
 
@@ -57,11 +57,11 @@ runInNewContext(fs.readFileSync(path.join(classic, "vehicleCatalog.js"), "utf8")
 const Catalog = catalogWin.window.VehicleCatalog;
 const counts = Catalog.data().counts;
 
-assert.equal(counts.source_rows, 679);
-assert.equal(counts.entries, 440);
+assert.equal(counts.source_rows, 677);
+assert.equal(counts.entries, 438);
 assert.equal(counts.exact_merges, 239);
 assert.equal(counts.near_match_pairs, 22);
-assert.equal(counts.cdi_profiles_represented, 71);
+assert.equal(counts.cdi_profiles_represented, 69);
 assert.equal(counts.catalog_sources, 361);
 const sourceKinds = new Set();
 for (const entry of Catalog.data().entries) {
@@ -76,9 +76,9 @@ assert.equal(counts.by_type.atc, 9);
 assert.equal(counts.by_type.snowmobile, 4);
 assert.equal(counts.by_type.motorcycle, 2);
 assert.equal(counts.by_type.generic_reference, 2);
-assert.equal(counts.by_type.simulated, 2);
+assert.equal(counts.by_type.simulated, undefined);
 assert.equal(counts.by_workflow.generic_automotive, 237);
-assert.equal(counts.by_workflow.cdi_pinout, 71);
+assert.equal(counts.by_workflow.cdi_pinout, 69);
 assert.equal(counts.by_workflow.index_only, 132);
 
 const trucks = Catalog.search({ type: "car_truck", make: "Ford", query: "F-150" });

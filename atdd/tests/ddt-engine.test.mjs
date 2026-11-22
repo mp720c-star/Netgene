@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 const root = dirname(fileURLToPath(import.meta.url));
 const engine = await import(pathToFileURL(join(root, '../web/js/ddtEngine.js')).href);
 const models = JSON.parse(
-  readFileSync(join(root, '../web/data/cdi-models.json'), 'utf8')
+  readFileSync(join(root, '../source-import/cdi-genius/src/data/sample-models.json'), 'utf8')
 ).models;
 
 function assert(cond, msg) {

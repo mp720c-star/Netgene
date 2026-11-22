@@ -2,18 +2,23 @@
   "source": "CDI_Genius_Runtime_Source.zip:web/app.js",
   "source_app_js_sha256": "b01eee6cd36be89a57eec5888a0aead379379c2e21a636efff8c249838da5a2c",
   "expected_source_app_js_sha256": "b01eee6cd36be89a57eec5888a0aead379379c2e21a636efff8c249838da5a2c",
-  "profile_count": 71,
-  "slot_count": 448,
-  "provenance_counts": {
+  "source_profile_count": 71,
+  "source_slot_count": 448,
+  "source_provenance_counts": {
     "reference": 4,
+    "unverified": 9,
+    "verified": 58
+  },
+  "profile_count": 69,
+  "slot_count": 436,
+  "provenance_counts": {
+    "reference": 2,
     "unverified": 9,
     "verified": 58
   },
   "profile_keys": [
     "GENERIC_DC",
     "GENERIC_AC",
-    "SIM_DC_01",
-    "SIM_AC_01",
     "CHINESE_GY6_DC",
     "YAMAHA_GRIZZLY_400",
     "HONDA_TRX300EX_AC",
@@ -82,10 +87,24 @@
     "HONDA_ATC250R_1981_AC",
     "YAMAHA_YTM200K_AC"
   ],
-  "content_sha256": "136161d0b8ad740338360c22ff6f05c66c825078a8c8c8d714147451c0c0ffb1",
+  "excluded_from_ship": [
+    {
+      "key": "SIM_DC_01",
+      "name": "SIMULATED: DC 6-Pin (High Rev Limit)",
+      "category": "Simulated Generic Profiles",
+      "source": "Simulated DC Unit 01"
+    },
+    {
+      "key": "SIM_AC_01",
+      "name": "SIMULATED: AC 4-Pin (Basic Off-Road)",
+      "category": "Simulated Generic Profiles",
+      "source": "Simulated AC Unit 01"
+    }
+  ],
+  "content_sha256": "0bd61b04bfb1d3420b838fdb52150dfd10aa15dbe80542027415b6586255c832",
   "files": {
-    "cdi-pinout-db.json": "136161d0b8ad740338360c22ff6f05c66c825078a8c8c8d714147451c0c0ffb1",
-    "cdi-pinout-db.js": "36f9e9485dec06f07a9565d9ffae5d0d076cdaa3dbbc90f64e5eb456493d9da8"
+    "cdi-pinout-db.json": "0bd61b04bfb1d3420b838fdb52150dfd10aa15dbe80542027415b6586255c832",
+    "cdi-pinout-db.js": "d5bd9e3a07d4ad6318b8e34dd0eb5916858a3ddcf13e026665b7f80d8b949af7"
   },
-  "note": "Extracted verbatim from pinoutDB in the hashed runtime app.js. provenance and category labels are unchanged. source_key is the original pinoutDB key. No pin colors, voltages, or ohm values were invented."
+  "note": "Extracted from pinoutDB in the hashed runtime app.js. Simulated generic profiles (SIM_DC_01, SIM_AC_01) are present in the source extract but are not shipped in ATDD. GENERIC_DC and GENERIC_AC remain as labeled reference core profiles. Unverified and reference citations stay labeled. provenance and category labels are otherwise unchanged. source_key is the original pinoutDB key. No pin colors, voltages, or ohm values were invented. The three sample CDI demo models in cdi-genius are not packaged or shown in ATDD."
 }

@@ -109,7 +109,8 @@ panel.querySelector("p.small.mt-8").textContent =
 connect.textContent = "Connect OBD-II Scanner";
 top.textContent = "Connect Scanner";
 el("btnBtScanAll").hidden = true;
-el("btnBtDemo").hidden = true;
+const demoBtn = el("btnBtDemo");
+if (demoBtn) demoBtn.remove();
 el("btIphoneGate").hidden = true;
 try { available = capacitorBleAvailable(); } catch { available = false; }
 el("btSupport").textContent = available
