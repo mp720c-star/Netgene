@@ -230,15 +230,19 @@ function fakeDom() {
   assert.doesNotMatch(resetFn, /["']04["']/);
   // Guard must stay unchanged: Mode 03 only, Mode 04 blocked in the read path.
   assert.match(scanner, /scanner\.send\("03"\)/);
-  assert.match(scanner, /Mode 04 clear-codes and AT writes are blocked/);
-  console.log("session-reset: iPhone scanner reset disconnects only; Mode 04 guard unchanged");
+  assert.match(scanner, /Mode 04 clear-codes stays blocked/);
+  assert.doesNotMatch(scanner, /send\(["']04["']\)/);
+  console.log("session-reset: iPhone scanner reset disconnects only; Mode 04 stays blocked");
 }
 
 {
   const guard = fs.readFileSync(path.join(classic, "../web/js/obd-command-guard.js"), "utf8");
   assert.match(guard, /normalized === "04"/);
   assert.match(guard, /Mode 04/);
-  console.log("session-reset: OBD command guard is unchanged");
+  assert.match(guard, /ALLOWED_ELM_ADAPTER_INIT/);
+  assert.match(guard, /ATMA/);
+  assert.match(guard, /ATPP/);
+  console.log("session-reset: OBD command guard still blocks Mode 04, ATMA, and ATPP");
 }
 
 console.log("session-reset.test.mjs passed");

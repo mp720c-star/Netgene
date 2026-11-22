@@ -122,6 +122,11 @@
           <pre id="btLog" class="bt-log" aria-live="polite">Idle. Tap Connect, with the adapter powered in the OBD port.</pre>
           <p class="small mt-8">FIXD protocol claim stays <code>UNVERIFIED</code> until a live Mode 03 round-trip succeeds on a physical truck. A failed connect does not invent codes.</p>
         </section>
+
+        <section class="card" id="scanReadoutCard" hidden>
+          <h2>Codes from this scan</h2>
+          <div id="scanReadout" class="scan-readout"></div>
+        </section>
       </div>
 
       <div class="tab-panel" id="tab-vehicle" data-tab="vehicle" role="tabpanel" aria-labelledby="tabBtnVehicle" hidden>
@@ -323,6 +328,7 @@
   <script src="./vehicleCatalog.js"></script>
   <script src="./diagnosticsEngine.js"></script>
   <script src="./sessionReset.js"></script>
+  <script src="./scanReadout.js"></script>
   <script src="./bluetooth.js"></script>
   <script src="./app.js"></script>
 </body>

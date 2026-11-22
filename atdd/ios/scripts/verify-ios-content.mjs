@@ -13,7 +13,7 @@ assert.match(entry, /<title>Auto\/Truck Diagnostics for Dummies<\/title>/);
 for (const label of ["Diagnose", "Listen", "Look", "Code"]) assert.ok(entry.includes(">" + label + "</button>"), label);
 assert.ok(entry.includes('id="btnBluetoothTop"'));
 assert.ok(entry.includes('src="./scanner/iphone-scanner.js"'));
-for (const file of ["app.js", "icon.png", "styles.css", "diagnosticsEngine.js", "vehicleCatalog.js", "sessionReset.js", "dtcGuidance.js", "symptomRepair.js", "data/dtc-db.js", "data/common-jobs.js", "data/cdi-pinout-db.js", "data/cdi-pinout-db.json", "data/cdi-pinout-db.manifest.json", "data/vehicle-index.js", "data/vehicle-index.json", "data/dtc-sae-generic-additions.js", "data/dtc-guidance-overlay.js", "data/dtc-guidance.manifest.json", "data/symptom-repair-db.js", "data/symptom-repair.manifest.json"]) {
+for (const file of ["app.js", "icon.png", "styles.css", "diagnosticsEngine.js", "scanReadout.js", "vehicleCatalog.js", "sessionReset.js", "dtcGuidance.js", "symptomRepair.js", "data/dtc-db.js", "data/common-jobs.js", "data/cdi-pinout-db.js", "data/cdi-pinout-db.json", "data/cdi-pinout-db.manifest.json", "data/vehicle-index.js", "data/vehicle-index.json", "data/dtc-sae-generic-additions.js", "data/dtc-guidance-overlay.js", "data/dtc-guidance.manifest.json", "data/symptom-repair-db.js", "data/symptom-repair.manifest.json"]) {
   const packed = fs.readFileSync(path.join(root, file));
   assert.ok(packed.equals(fs.readFileSync(path.join(classic, file))), "Changed original " + file);
 }
@@ -36,9 +36,15 @@ assert.match(entry, /src="\.\/symptomRepair\.js"/);
 assert.match(entry, /id="symptomRepairCard"/);
 const scanner = fs.readFileSync(path.join(root, "scanner/iphone-scanner.js"));
 assert.ok(scanner.equals(fs.readFileSync(path.join(ios, "scanner/iphone-scanner.js"))));
-assert.doesNotMatch(scanner.toString("utf8"), /\bAT(?:Z|E0|L0|S1|H0|SP0)\b/);
-assert.match(scanner.toString("utf8"), /FIXD_COMPATIBILITY/);
-assert.match(scanner.toString("utf8"), /scanner\.send\("03"\)/);
+const scannerText = scanner.toString("utf8");
+for (const allowed of ["ATZ", "ATE0", "ATL0", "ATS0", "ATH0", "ATSP0"]) {
+  assert.match(scannerText, new RegExp("\\b" + allowed + "\\b"), allowed);
+}
+assert.doesNotMatch(scannerText, /\bATMA\b|\bATPP\b|\bATS1\b|send\(["']04["']\)/);
+assert.match(scannerText, /FIXD_COMPATIBILITY/);
+assert.match(scannerText, /scanner\.send\("03"\)/);
+assert.match(entry, /id="scanReadoutCard"/);
+assert.match(entry, /id="scanReadout"/);
 
 for (const file of ["capacitor-ble-transport.js", "fixd-protocol-probe.js", "obd-command-guard.js", "obd-protocol-v3-frame-aware.js", "web-bluetooth-transport.js"]) {
   assert.ok(fs.readFileSync(path.join(root, "tools/js", file)).equals(fs.readFileSync(path.join(ios, "../web/js", file))), file);

@@ -280,17 +280,36 @@
     field.focus();
   }
 
+  function showLiveScanReadout(reply, codes, ok) {
+    const api = global.ATDDScanReadout;
+    if (!api) return;
+    api.showScanReadout({ ok: !!ok, codes: codes || [], reply });
+  }
+
   async function readCodesLive() {
     if (!writeChar) throw new Error("Connect FIXD first.");
     log("Reading Mode 03 DTCs…");
-    const reply = await sendCommand("03", 1500);
+    let reply;
+    try {
+      reply = await sendCommand("03", 1500);
+    } catch (err) {
+      showLiveScanReadout("", [], false);
+      throw err;
+    }
     log(reply || "(empty Mode 03 reply)");
     const codes = parseMode03Response(reply);
-    applyCodesToScanner(codes);
-    if (!codes.length) {
-      log("No DTCs parsed. Adapter replied, but FIXD application protocol is still " + FIXD_CLAIM + " until a known-good Mode 03 match is confirmed.");
+    const looksComplete = /43/i.test(String(reply)) && String(reply).includes(">");
+    if (codes.length) {
+      applyCodesToScanner(codes);
+      showLiveScanReadout(reply, codes, true);
+      log("Parsed " + codes.length + " code(s). Decoded meanings are listed below this card.");
+    } else if (looksComplete) {
+      applyCodesToScanner(codes);
+      showLiveScanReadout(reply, [], true);
+      log("The vehicle reported no stored fault codes.");
     } else {
-      log("Parsed " + codes.length + " code(s). You can tap Diagnose now.");
+      showLiveScanReadout(reply, [], false);
+      log("could not parse\n" + (reply || "(empty Mode 03 reply)"));
     }
   }
 

@@ -1,6 +1,8 @@
-import { capacitorBleAvailable, createCapacitorBleTransport } from "../tools/js/capacitor-ble-transport.js";
+import { capacitorBleAvailable, createCapacitorBleTransport, formatBlePayloadDiagnostic } from "../tools/js/capacitor-ble-transport.js";
 import { FIXD_COMPATIBILITY } from "../tools/js/obd-command-guard.js";
 import { storedCodes } from "./stored-codes.js";
+
+const ELM_ADAPTER_INIT = Object.freeze(["ATZ", "ATE0", "ATL0", "ATS0", "ATH0", "ATSP0"]);
 
 const el = (id) => document.getElementById(id);
 const panel = el("bluetoothCard");
@@ -12,8 +14,13 @@ const disconnect = el("btnBtDisconnect");
 const output = el("btLog");
 let active;
 let ready = false;
+let adapterReady = false;
 let busy = false;
 let available = false;
+
+function readout() {
+  return typeof window !== "undefined" ? window.ATDDScanReadout : null;
+}
 
 function buttons() {
   top.disabled = busy;
@@ -31,6 +38,7 @@ async function release(scanner) {
   if (active === scanner) {
     active = undefined;
     ready = false;
+    adapterReady = false;
   }
   if (scanner) await scanner.disconnect();
 }
@@ -50,6 +58,20 @@ async function perform(action) {
   }
 }
 
+async function prepareAdapter(scanner) {
+  log("Sending read-only ELM adapter setup (ATZ, ATE0, ATL0, ATS0, ATH0, ATSP0). These configure the dongle only; they are not vehicle writes and do not clear codes.");
+  for (const cmd of ELM_ADAPTER_INIT) {
+    const timeoutMs = cmd === "ATZ" ? 8000 : 4000;
+    try {
+      const reply = await scanner.send(cmd, { timeoutMs });
+      log(cmd + " → " + String(reply).trim());
+    } catch (error) {
+      log(cmd + " failed: " + (error?.message || error) + ". Continuing with the next setup step.");
+    }
+    if (active !== scanner) throw new Error("Scanner disconnected during adapter setup.");
+  }
+}
+
 async function choose() {
   panel.hidden = false;
   panel.scrollIntoView({ block: "start" });
@@ -60,6 +82,9 @@ async function choose() {
       // Prefer known FIXD/ELM GATT profiles, then fall back to a generic UART
       // service so off-brand ELM327-style BLE adapters can still be chosen.
       requireKnownProfile: false,
+      onRawPayload(decoded) {
+        log(formatBlePayloadDiagnostic(decoded.bytes, decoded.text));
+      },
       onDisconnect() {
         if (active !== scanner) return;
         log("Scanner disconnected.");
@@ -83,18 +108,32 @@ async function readVehicle() {
   if (!ready) return;
   await perform(async () => {
     const scanner = active;
-    // Read-only: Mode 03 stored DTCs only. No AT init, no Mode 04 clear.
+    if (!adapterReady) {
+      await prepareAdapter(scanner);
+      adapterReady = true;
+    }
+    log("Requesting stored fault codes (Mode 03 only). No Mode 04 clear is sent.");
     const reply = await scanner.send("03");
-    log("Vehicle reply for Mode 03\n" + reply.trim());
-    const codes = storedCodes(reply);
+    log("Vehicle reply for Mode 03\n" + String(reply).trim());
     if (active !== scanner) throw new Error("Scanner disconnected before the read finished.");
-    field.value = codes.join("\n");
-    field.dispatchEvent(new Event("input", { bubbles: true }));
-    if (codes.length) {
-      log("Stored codes from the vehicle: " + codes.join(", "));
-      el("btnLookup").click();
-    } else {
-      log("The vehicle reported no stored fault codes.");
+    const api = readout();
+    try {
+      const codes = storedCodes(reply);
+      field.value = codes.join("\n");
+      field.dispatchEvent(new Event("input", { bubbles: true }));
+      if (api) {
+        api.showScanReadout({ ok: true, codes, reply });
+      }
+      if (codes.length) {
+        log("Stored codes from the vehicle: " + codes.join(", ") + ". Decoded meanings are listed below this card.");
+      } else {
+        log("The vehicle reported no stored fault codes.");
+      }
+    } catch (error) {
+      if (api) {
+        api.showScanReadout({ ok: false, reply, error: error?.message || String(error) });
+      }
+      log("could not parse\n" + String(reply || "(empty reply)") + "\n" + (error?.message || String(error)));
     }
   });
 }
@@ -105,7 +144,7 @@ panel.querySelector(".lead").textContent =
   ".";
 panel.querySelector("h2").textContent = "Connect OBD-II Scanner";
 panel.querySelector("p.small.mt-8").textContent =
-  "A successful Mode 03 read shows the vehicle’s reply here and sends its codes to the offline lookup. Mode 04 clear-codes and AT writes are blocked. No simulated scanner data is used.";
+  "A successful Mode 03 read lists decoded codes below this card. Mode 04 clear-codes stays blocked. Adapter setup is limited to ATZ/ATE0/ATL0/ATS0/ATH0/ATSP0. No simulated scanner data is used.";
 connect.textContent = "Connect OBD-II Scanner";
 top.textContent = "Connect Scanner";
 el("btnBtScanAll").hidden = true;

@@ -3,6 +3,10 @@ import {
   assertBleUuid,
   bleHexToText,
   buildRequestDeviceOptions,
+  bytesToBleHex,
+  decodeBleNotification,
+  formatBlePayloadDiagnostic,
+  isBleHexString,
   notificationEventKeys,
   textToBleHex,
 } from "../web/js/capacitor-ble-transport.js";
@@ -18,6 +22,7 @@ for (const token of atz.split(" ")) {
 }
 
 assert.throws(() => bleHexToText("QVRaDQ=="), /not BLE hex/);
+assert.equal(isBleHexString("QVRaDQ=="), false);
 assert.throws(() => assertBleUuid("fff0", "Service"), /128-bit/);
 assert.equal(
   assertBleUuid("0000FFF0-0000-1000-8000-00805F9B34FB", "Service"),
@@ -37,5 +42,36 @@ assert.deepEqual(keys, [
 const request = buildRequestDeviceOptions();
 assert.deepEqual(request, {});
 assert.equal(Object.hasOwn(request, "services"), false);
+
+// Test-only fixture. Cited format: ISO 15031-5 / SAE J1979 Mode 03 reply with an
+// ELM327 prompt, encoded the way @capacitor-community/bluetooth-le 6.1.0 iOS
+// Conversion.swift dataToString / Data.toHexString() delivers notifications:
+// contiguous hex, no spaces. This is not a live vehicle recording.
+const elmAscii = "03\rSEARCHING...\r43 01 03 00\r>";
+const unspaced = Buffer.from(elmAscii, "ascii").toString("hex");
+assert.equal(unspaced.includes(" "), false);
+assert.equal(isBleHexString(unspaced), true);
+assert.equal(bleHexToText(unspaced), elmAscii);
+
+const decoded = decodeBleNotification(unspaced);
+assert.equal(decoded.encoding, "ble-hex");
+assert.equal(decoded.text, elmAscii);
+assert.equal(bytesToBleHex(decoded.bytes).replace(/\s+/g, ""), unspaced);
+
+const diagnostic = formatBlePayloadDiagnostic(decoded.bytes, decoded.text);
+assert.match(diagnostic, /Raw adapter payload \(hex\):/);
+assert.match(diagnostic, /Raw adapter payload \(ASCII\):/);
+assert.match(diagnostic, /43 01 03 00/);
+assert.match(diagnostic, /SEARCHING/);
+
+const view = new DataView(decoded.bytes.buffer, decoded.bytes.byteOffset, decoded.bytes.byteLength);
+assert.equal(decodeBleNotification(view).text, elmAscii);
+assert.equal(decodeBleNotification(Uint8Array.from(decoded.bytes)).text, elmAscii);
+
+// Already-decoded ASCII ELM text (defensive path).
+assert.equal(decodeBleNotification("NO DATA\r>").encoding, "ascii");
+assert.equal(decodeBleNotification("NO DATA\r>").text, "NO DATA\r>");
+
+assert.throws(() => decodeBleNotification("not-hex-and-not-an-ELM-reply"), /not BLE hex/);
 
 console.log("capacitor-ble-payload: ok");
