@@ -306,3 +306,26 @@ Full text: `docs/status-board/TEAM-DIRECTIVE-COMMAND-ROOM-2026-11-23.md`
 | Platform project route | Login page |
 | Drive OAuth in this environment | Unset |
 
+## Entry — 2026-11-23 ~12:55 PM America/Chicago
+
+**Agent:** Cursor Cloud, ATDD TestFlight DTC read  
+**Branch:** `cursor/atdd-testflight-dtc-read-40b5`  
+**PR:** [#33](https://github.com/mp720c-star/Netgene/pull/33)  
+**Action:** Build 22 stopped after one reply it could not parse. Mode 03 now repeats until the reply parses or the scanner is disconnected. Mode 04 stays blocked.
+
+### Progress
+
+- [x] Parse failure and an unfinished Mode 03 send both request Mode 03 again
+- [x] A parsed reply, including no stored codes, stops the retries
+- [x] Disconnect stops the retries
+- [x] `npm test` in `atdd/` passed, including `read-until-parsed.test.mjs`
+- [x] [Run 23](https://github.com/mp720c-star/Netgene/actions/runs/45242271494) uploaded. Apple processing state **VALID**. Marketing version **1.2.0**, build **23**, uploaded 12:52 PM America/Chicago
+- [ ] FIXD compatibility remains **UNVERIFIED** until a real-device capture is on the record
+
+### Evidence
+
+| Item | Result |
+| --- | --- |
+| Build 23 Apple state | `APPLE_PROCESSING_STATE=VALID`, `APPLE_BUILD_NUMBER=23`, `MARKETING_VERSION=1.2.0` |
+| One-shot push trigger | Removed after the Mac runner started, so this board entry did not upload another build |
+
