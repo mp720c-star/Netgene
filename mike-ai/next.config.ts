@@ -1,8 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  serverExternalPackages: ["@electric-sql/pglite"],
   turbopack: {
     root: __dirname,
+    resolveAlias: {
+      "./identity.dev.js": "./cursor/identity.dev.ts",
+      "./identity.js": "./cursor/identity.ts",
+    },
   },
   // Serve static Netgene HTML apps under /apps/*/ without requiring index.html in the URL.
   async rewrites() {
