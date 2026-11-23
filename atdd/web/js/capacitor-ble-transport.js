@@ -7,6 +7,7 @@
 import { CANDIDATE_GATT_PROFILES } from "./fixd-protocol-probe.js";
 import { pickCharacteristics } from "./web-bluetooth-transport.js";
 import { assertAllowedObdCommand } from "./obd-command-guard.js";
+import { reassembleElmReply } from "./elm-reply.js";
 
 function getCapacitor() {
   return typeof window !== "undefined" ? window.Capacitor : null;
@@ -229,7 +230,10 @@ export function createCapacitorBleTransport({ onDisconnect, onRawPayload, requir
       }
       buffer += decoded.text;
       if (buffer.length > 32768) throw new Error("Scanner reply exceeded the receive buffer.");
-      if (buffer.includes(">")) finish(null, buffer);
+      // Do not stop on the first ">". Multiline Mode 03 replies often prompt
+      // after each row; later notifications still belong to this command.
+      const reply = reassembleElmReply(buffer, pending.command);
+      if (reply) finish(null, reply);
     } catch (error) {
       finish(error);
     }
@@ -363,7 +367,7 @@ export function createCapacitorBleTransport({ onDisconnect, onRawPayload, requir
           reject(new Error("Scanner disconnected."));
           return;
         }
-        const command = { resolve, reject };
+        const command = { resolve, reject, command: allowed };
         pending = command;
         buffer = "";
         command.timeout = setTimeout(() => {

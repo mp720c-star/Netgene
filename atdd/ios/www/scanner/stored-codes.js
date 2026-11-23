@@ -55,8 +55,10 @@ export function storedCodes(reply) {
         if (Number.parseInt(label, 16) !== (row++ % 16)) throw new Error("A scanner response row is missing.");
         data.push(...bytes(values));
       }
-      if (!row || data.length !== length) throw new Error("Incomplete multiline vehicle response.");
-      readPayload(data, codes);
+      // ELM's three-digit count is the payload size. Later rows may pad with
+      // zeros; a short row list is a reply that was cut off between notifications.
+      if (!row || data.length < length) throw new Error("Incomplete multiline vehicle response.");
+      readPayload(data.slice(0, length), codes);
       messages++;
       continue;
     }
