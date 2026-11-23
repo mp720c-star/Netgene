@@ -30,7 +30,11 @@ assert.deepEqual(storedCodes(searchingDone), ["P0300"]);
 const searchingShort = "SEARCHING...\r006\r0: 43 02 03 00\r>";
 const shortReply = reassembleElmReply(searchingShort, "03");
 assert.equal(shortReply, "006\r0: 43 02 03 00\r>");
-assert.throws(() => storedCodes(shortReply), /Incomplete multiline vehicle response/);
+assert.deepEqual(storedCodes(shortReply), ["P0300"]);
+
+const mode3Short = "SEARCHING...\r008\r0: 43 02 03 00 04 20\r>";
+assert.equal(reassembleElmReply(mode3Short, "03"), "008\r0: 43 02 03 00 04 20\r>");
+assert.deepEqual(storedCodes(reassembleElmReply(mode3Short, "03")), ["P0300", "P0420"]);
 
 assert.equal(reassembleElmReply("SEARCHING...\r>", "03"), "SEARCHING...\r>");
 assert.throws(() => storedCodes("SEARCHING...\r>"), /did not reply/);

@@ -55,6 +55,8 @@ assert.match(html, /id="scanReadout"/);
 assert.match(html, /src="\.\/scanReadout\.js"/);
 const bluetooth = html.indexOf('id="bluetoothCard"');
 const readout = html.indexOf('id="scanReadoutCard"');
+const scannerCode = html.indexOf("Scanner code");
 assert.ok(bluetooth >= 0 && readout > bluetooth, "scan readout must sit below the Connect OBD-II Scanner card");
+assert.ok(bluetooth < scannerCode, "Connect OBD-II Scanner sits above the scanner code field");
 
 console.log("scan-readout: database meanings, unknown label, no stored codes, and could-not-parse raw reply covered");
