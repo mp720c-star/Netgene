@@ -54,7 +54,13 @@ export function assertBleUuid(uuid, label) {
   return s;
 }
 
-/** Bluetooth-base UUIDs are shortened by CBUUID.uuidString, which the plugin uses in event names. */
+/**
+ * Bluetooth-base UUIDs are shortened by CBUUID.uuidString. Plugin.swift emits
+ * notification events with that short lowercase form ("fff1"), so the listener
+ * has to include it. Device.swift must store the native callback under
+ * cbuuidToStringUppercase or didUpdateValueFor never finds it and Mode 03
+ * bytes never arrive. See ios/scripts/patch-ble-notifications.mjs.
+ */
 export function shortBluetoothUuid(uuid) {
   const full = assertBleUuid(uuid, "UUID");
   const alias16 = full.match(/^0000([0-9a-f]{4})-0000-1000-8000-00805f9b34fb$/);

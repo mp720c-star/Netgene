@@ -72,6 +72,28 @@ async function prepareAdapter(scanner) {
   }
 }
 
+async function readStored(scanner) {
+  log("Requesting stored fault codes (Mode 03 only). No Mode 04 clear is sent.");
+  const reply = await scanner.send("03");
+  log("Vehicle reply for Mode 03\n" + String(reply).trim());
+  if (active !== scanner) throw new Error("Scanner disconnected before the read finished.");
+  const api = readout();
+  try {
+    const codes = storedCodes(reply);
+    field.value = codes.join("\n");
+    field.dispatchEvent(new Event("input", { bubbles: true }));
+    if (api) api.showScanReadout({ ok: true, codes, reply });
+    if (codes.length) {
+      log("Stored codes from the vehicle: " + codes.join(", ") + ". Decoded meanings are listed below this card.");
+    } else {
+      log("The vehicle reported no stored fault codes.");
+    }
+  } catch (error) {
+    if (api) api.showScanReadout({ ok: false, reply, error: error?.message || String(error) });
+    log("could not parse\n" + String(reply || "(empty reply)") + "\n" + (error?.message || String(error)));
+  }
+}
+
 async function choose() {
   panel.hidden = false;
   panel.scrollIntoView({ block: "start" });
@@ -100,7 +122,12 @@ async function choose() {
     ready = true;
     const name = device.name || "BLE adapter";
     const fixdName = device.isFixdName ? " (FIXD-named device; protocol still " + FIXD_COMPATIBILITY + ")" : "";
-    log("Connected to " + name + fixdName + ". Tap Read codes to request stored faults (Mode 03 only).");
+    log("Connected to " + name + fixdName + ". Reading stored fault codes.");
+    if (!adapterReady) {
+      await prepareAdapter(scanner);
+      adapterReady = true;
+    }
+    await readStored(scanner);
   });
 }
 
@@ -112,29 +139,7 @@ async function readVehicle() {
       await prepareAdapter(scanner);
       adapterReady = true;
     }
-    log("Requesting stored fault codes (Mode 03 only). No Mode 04 clear is sent.");
-    const reply = await scanner.send("03");
-    log("Vehicle reply for Mode 03\n" + String(reply).trim());
-    if (active !== scanner) throw new Error("Scanner disconnected before the read finished.");
-    const api = readout();
-    try {
-      const codes = storedCodes(reply);
-      field.value = codes.join("\n");
-      field.dispatchEvent(new Event("input", { bubbles: true }));
-      if (api) {
-        api.showScanReadout({ ok: true, codes, reply });
-      }
-      if (codes.length) {
-        log("Stored codes from the vehicle: " + codes.join(", ") + ". Decoded meanings are listed below this card.");
-      } else {
-        log("The vehicle reported no stored fault codes.");
-      }
-    } catch (error) {
-      if (api) {
-        api.showScanReadout({ ok: false, reply, error: error?.message || String(error) });
-      }
-      log("could not parse\n" + String(reply || "(empty reply)") + "\n" + (error?.message || String(error)));
-    }
+    await readStored(scanner);
   });
 }
 

@@ -6,7 +6,7 @@
   "scripts": {
     "build:www": "node scripts/sync-www.mjs",
     "sync": "npm run sync:android && npm run sync:ios",
-    "sync:ios": "npm run build:www && npx cap sync ios",
+    "sync:ios": "node scripts/patch-ble-notifications.mjs && npm run build:www && npx cap sync ios",
     "sync:android": "node scripts/sync-www.mjs android && npx cap sync android",
     "open:ios": "npx cap open ios",
     "open:android": "npx cap open android",
