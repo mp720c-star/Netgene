@@ -329,3 +329,36 @@ Full text: `docs/status-board/TEAM-DIRECTIVE-COMMAND-ROOM-2026-11-23.md`
 | Build 23 Apple state | `APPLE_PROCESSING_STATE=VALID`, `APPLE_BUILD_NUMBER=23`, `MARKETING_VERSION=1.2.0` |
 | One-shot push trigger | Removed after the Mac runner started, so this board entry did not upload another build |
 
+## Entry — 2026-11-23 ~3:12 PM America/Chicago
+
+**Agent:** Cursor  
+**Branch:** `cursor/atdd-testflight-dtc-read-40b5`  
+**PR:** [#33](https://github.com/mp720c-star/Netgene/pull/33)  
+**Action:** Record Michael Paine’s official team directive and run the access checks Cursor can actually perform. **Directive status: NOT COMPLETE.**
+
+Full text: `docs/status-board/OFFICIAL-TEAM-DIRECTIVE-2026-11-23.md`
+
+### Accepted
+
+- ChatGPT: administrator and coordinator.
+- Cursor: development, repairs, integration, and testing.
+- Sync & Merge: platform operations, data integrity, and independent audit to Michael.
+- Gemini: temporary, task-scoped Google work only.
+- Grok bot, Grok app, and Claude: removed. Their outstanding team assignments are cancelled. Prior board history is kept.
+
+### Verified this turn
+
+- GitHub access to this repo is only `mp720c-star`. No removed-agent collaborator was present to remove.
+- No Drive, OpenAI, Anthropic, xAI, Gemini, Grok, Claude, or owner-token credential is set in this environment. Nothing was printed. Sync & Merge access was not removed.
+- The Google Doc, project-memory host, and platform chat API return 401. The platform route shows the login page. `mike-ai.vercel.app` returns 503 and stays paused.
+- Ravin Lookup work was not started. No paid Work credits were used.
+
+### Still open
+
+- OneDrive master storage and Drive/iCloud backup sync were not reachable, so they were not verified.
+- Invitation, deploy-key, and Actions-secret lists returned HTTP 403.
+- No Google, OneDrive, or iCloud permission for a removed agent was changed.
+- `mike-ai/` still references Vercel and OpenAI. It was not migrated.
+- Command Room account, token, and connection are still missing.
+- Sync & Merge’s independent audit is not Cursor’s report and is not done.
+
