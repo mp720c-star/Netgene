@@ -38,6 +38,11 @@ assert.equal(empty.title, "No stored codes");
 assert.equal(empty.message, "No stored codes");
 assert.equal(empty.items.length, 0);
 
+const retrying = api.buildScanReadout({ ok: false, trying: true, reply: "NO DATA\r>", error: "Scanner reported NO DATA." }, lookup);
+assert.equal(retrying.status, "trying");
+assert.equal(retrying.message, "Could not parse. Trying Mode 03 again.");
+assert.equal(retrying.items.length, 0);
+
 const failed = api.buildScanReadout({ ok: false, reply: "UNABLE TO CONNECT\r>", error: "incomplete" }, lookup);
 assert.equal(failed.status, "parse-error");
 assert.equal(failed.message, "could not parse");

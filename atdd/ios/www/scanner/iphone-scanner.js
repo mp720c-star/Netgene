@@ -1,5 +1,6 @@
 import { capacitorBleAvailable, createCapacitorBleTransport, formatBlePayloadDiagnostic } from "../tools/js/capacitor-ble-transport.js";
 import { FIXD_COMPATIBILITY } from "../tools/js/obd-command-guard.js";
+import { readUntilParsed } from "./read-until-parsed.js";
 import { storedCodes } from "./stored-codes.js";
 
 const ELM_ADAPTER_INIT = Object.freeze(["ATZ", "ATE0", "ATL0", "ATS0", "ATH0", "ATSP0"]);
@@ -12,11 +13,14 @@ const top = el("btnBluetoothTop");
 const read = el("btnBtReadCodes");
 const disconnect = el("btnBtDisconnect");
 const output = el("btLog");
+const PARSE_RETRY_MS = 2000;
+
 let active;
 let ready = false;
 let adapterReady = false;
 let busy = false;
 let available = false;
+let readToken;
 
 function readout() {
   return typeof window !== "undefined" ? window.ATDDScanReadout : null;
@@ -26,7 +30,7 @@ function buttons() {
   top.disabled = busy;
   connect.disabled = busy || !available || Boolean(active);
   read.disabled = busy || !ready;
-  disconnect.disabled = busy || !ready;
+  disconnect.disabled = !active;
 }
 
 function log(message) {
@@ -35,12 +39,20 @@ function log(message) {
 }
 
 async function release(scanner) {
+  readToken = null;
   if (active === scanner) {
     active = undefined;
     ready = false;
     adapterReady = false;
   }
   if (scanner) await scanner.disconnect();
+}
+
+async function pause(ms, shouldContinue) {
+  const step = 200;
+  for (let waited = 0; waited < ms && shouldContinue(); waited += step) {
+    await new Promise((resolve) => setTimeout(resolve, step));
+  }
 }
 
 async function perform(action) {
@@ -73,24 +85,40 @@ async function prepareAdapter(scanner) {
 }
 
 async function readStored(scanner) {
-  log("Requesting stored fault codes (Mode 03 only). No Mode 04 clear is sent.");
-  const reply = await scanner.send("03");
+  const token = {};
+  readToken = token;
+  const alive = () => active === scanner && readToken === token;
+  log("Requesting stored fault codes (Mode 03 only). No Mode 04 clear is sent. A reply that cannot be parsed is requested again.");
+  const result = await readUntilParsed({
+    request: () => scanner.send("03"),
+    parse: storedCodes,
+    shouldContinue: alive,
+    pause: () => pause(PARSE_RETRY_MS, alive),
+    onFailure: async ({ attempt, kind, error, reply }) => {
+      const api = readout();
+      const message = error?.message || String(error);
+      if (kind === "parse") {
+        if (api) api.showScanReadout({ ok: false, trying: true, reply, error: message });
+        log("could not parse\n" + String(reply || "(empty reply)") + "\n" + message);
+      } else {
+        if (api) api.showScanReadout({ ok: false, trying: true, reply, error: message });
+        log("Mode 03 did not finish: " + message);
+      }
+      if (alive()) log("Trying Mode 03 again (" + (attempt + 1) + "). No Mode 04 clear is sent.");
+    },
+  });
+  if (!result.ok || !alive()) return;
+  const reply = result.reply;
+  const codes = result.codes;
   log("Vehicle reply for Mode 03\n" + String(reply).trim());
-  if (active !== scanner) throw new Error("Scanner disconnected before the read finished.");
+  field.value = codes.join("\n");
+  field.dispatchEvent(new Event("input", { bubbles: true }));
   const api = readout();
-  try {
-    const codes = storedCodes(reply);
-    field.value = codes.join("\n");
-    field.dispatchEvent(new Event("input", { bubbles: true }));
-    if (api) api.showScanReadout({ ok: true, codes, reply });
-    if (codes.length) {
-      log("Stored codes from the vehicle: " + codes.join(", ") + ". Decoded meanings are listed below this card.");
-    } else {
-      log("The vehicle reported no stored fault codes.");
-    }
-  } catch (error) {
-    if (api) api.showScanReadout({ ok: false, reply, error: error?.message || String(error) });
-    log("could not parse\n" + String(reply || "(empty reply)") + "\n" + (error?.message || String(error)));
+  if (api) api.showScanReadout({ ok: true, codes, reply });
+  if (codes.length) {
+    log("Stored codes from the vehicle: " + codes.join(", ") + ". Decoded meanings are listed below this card.");
+  } else {
+    log("The vehicle reported no stored fault codes.");
   }
 }
 
@@ -149,7 +177,7 @@ panel.querySelector(".lead").textContent =
   ".";
 panel.querySelector("h2").textContent = "Connect OBD-II Scanner";
 panel.querySelector("p.small.mt-8").textContent =
-  "A successful Mode 03 read lists decoded codes below this card. Mode 04 clear-codes stays blocked. Adapter setup is limited to ATZ/ATE0/ATL0/ATS0/ATH0/ATSP0. No simulated scanner data is used.";
+  "A successful Mode 03 read lists decoded codes below this card. If a reply cannot be parsed, Mode 03 is requested again until it parses or you disconnect. Mode 04 clear-codes stays blocked. Adapter setup is limited to ATZ/ATE0/ATL0/ATS0/ATH0/ATSP0. No simulated scanner data is used.";
 connect.textContent = "Connect OBD-II Scanner";
 top.textContent = "Connect Scanner";
 el("btnBtScanAll").hidden = true;
@@ -162,10 +190,15 @@ el("btSupport").textContent = available
   : "The native Bluetooth connection is unavailable in this copy.";
 top.onclick = connect.onclick = choose;
 read.onclick = readVehicle;
-disconnect.onclick = () => perform(async () => {
-  await release(active);
-  log("Disconnected.");
-});
+disconnect.onclick = () => {
+  const scanner = active;
+  readToken = null;
+  busy = false;
+  void release(scanner).then(() => {
+    log("Disconnected.");
+    buttons();
+  });
+};
 buttons();
 
 window.ATDDIphoneScanner = {

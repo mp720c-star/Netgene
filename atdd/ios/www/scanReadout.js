@@ -26,6 +26,16 @@
   }
 
   function buildScanReadout(result, lookupFn) {
+    if (result && result.ok === false && result.trying) {
+      return {
+        status: "trying",
+        title: "Trying again",
+        message: "Could not parse. Trying Mode 03 again.",
+        raw: String(result.reply || result.raw || ""),
+        error: result.error ? String(result.error) : "",
+        items: []
+      };
+    }
     if (!result || result.ok === false) {
       return {
         status: "parse-error",
@@ -92,10 +102,11 @@
     const target = rootEl || (typeof document !== "undefined" ? document.getElementById("scanReadout") : null);
     if (card) card.hidden = false;
     if (!target) return model;
-    if (!model || model.status === "parse-error") {
+    if (!model || model.status === "parse-error" || model.status === "trying") {
       const raw = model && model.raw ? escapeHtml(model.raw) : "(empty reply)";
+      const label = model && model.status === "trying" ? model.message : COULD_NOT_PARSE;
       target.innerHTML =
-        '<p class="scan-readout-error">' + escapeHtml(COULD_NOT_PARSE) + "</p>" +
+        '<p class="scan-readout-error">' + escapeHtml(label) + "</p>" +
         '<pre class="scan-readout-raw">' + raw + "</pre>";
       return model;
     }
