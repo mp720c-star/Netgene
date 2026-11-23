@@ -6,6 +6,25 @@ function bytes(text) {
   return hex.match(/../g).map((pair) => Number.parseInt(pair, 16));
 }
 
+// A SEARCHING reply can end before every declared byte arrives. Decode the
+// complete code pairs that are present. Do not invent the missing ones, and
+// do not fail the scan.
+function readPartialPayload(payload, codes) {
+  if (!payload.length || payload[0] !== 0x43) return;
+  const data = payload.slice(1);
+  if (!data.length) return;
+  let body = data;
+  let limit = Math.floor(data.length / 2);
+  if (data.length % 2 === 1) {
+    limit = Math.min(data[0], Math.floor((data.length - 1) / 2));
+    body = data.slice(1);
+  }
+  for (let i = 0; i < limit; i++) {
+    const code = decodeDtcPair(body[i * 2], body[i * 2 + 1]);
+    if (code) codes.add(code);
+  }
+}
+
 function readPayload(payload, codes) {
   if (payload[0] === 0x7f) throw new Error("The vehicle rejected the stored-code request.");
   if (payload[0] !== 0x43 || payload.length < 2) throw new Error("Missing a complete stored-code response.");
@@ -55,8 +74,11 @@ export function storedCodes(reply) {
         if (Number.parseInt(label, 16) !== (row++ % 16)) throw new Error("A scanner response row is missing.");
         data.push(...bytes(values));
       }
-      if (!row || data.length !== length) throw new Error("Incomplete multiline vehicle response.");
-      readPayload(data, codes);
+      // ELM's three-digit count is the payload size. Later rows may pad with
+      // zeros. A short row list after SEARCHING still holds the codes that arrived.
+      if (!row) throw new Error("Incomplete multiline vehicle response.");
+      if (data.length < length) readPartialPayload(data, codes);
+      else readPayload(data.slice(0, length), codes);
       messages++;
       continue;
     }

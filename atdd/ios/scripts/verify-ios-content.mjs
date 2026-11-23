@@ -43,6 +43,8 @@ for (const allowed of ["ATZ", "ATE0", "ATL0", "ATS0", "ATH0", "ATSP0"]) {
 assert.doesNotMatch(scannerText, /\bATMA\b|\bATPP\b|\bATS1\b|send\(["']04["']\)/);
 assert.match(scannerText, /FIXD_COMPATIBILITY/);
 assert.match(scannerText, /scanner\.send\("03"\)/);
+assert.match(scannerText, /readUntilParsed/);
+assert.match(scannerText, /Trying Mode 03 again/);
 assert.match(entry, /id="scanReadoutCard"/);
 assert.match(entry, /id="scanReadout"/);
 

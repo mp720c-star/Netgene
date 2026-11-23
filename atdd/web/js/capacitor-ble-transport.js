@@ -7,6 +7,7 @@
 import { CANDIDATE_GATT_PROFILES } from "./fixd-protocol-probe.js";
 import { pickCharacteristics } from "./web-bluetooth-transport.js";
 import { assertAllowedObdCommand } from "./obd-command-guard.js";
+import { reassembleElmReply } from "./elm-reply.js";
 
 function getCapacitor() {
   return typeof window !== "undefined" ? window.Capacitor : null;
@@ -54,7 +55,13 @@ export function assertBleUuid(uuid, label) {
   return s;
 }
 
-/** Bluetooth-base UUIDs are shortened by CBUUID.uuidString, which the plugin uses in event names. */
+/**
+ * Bluetooth-base UUIDs are shortened by CBUUID.uuidString. Plugin.swift emits
+ * notification events with that short lowercase form ("fff1"), so the listener
+ * has to include it. Device.swift must store the native callback under
+ * cbuuidToStringUppercase or didUpdateValueFor never finds it and Mode 03
+ * bytes never arrive. See ios/scripts/patch-ble-notifications.mjs.
+ */
 export function shortBluetoothUuid(uuid) {
   const full = assertBleUuid(uuid, "UUID");
   const alias16 = full.match(/^0000([0-9a-f]{4})-0000-1000-8000-00805f9b34fb$/);
@@ -203,6 +210,8 @@ export function createCapacitorBleTransport({ onDisconnect, onRawPayload, requir
   let lastServices = [];
   let writeMode = "writeWithoutResponse";
   let notifyHandles = [];
+  // After a prompt, wait this long for another row before accepting a short reply.
+  const PROMPT_SETTLE_MS = 1200;
 
   function finish(error, reply) {
     if (!pending) return;
@@ -210,8 +219,18 @@ export function createCapacitorBleTransport({ onDisconnect, onRawPayload, requir
     pending = null;
     buffer = "";
     clearTimeout(command.timeout);
+    clearTimeout(command.settle);
     if (error) command.reject(error);
     else command.resolve(reply);
+  }
+
+  function armPromptSettle(command) {
+    clearTimeout(command.settle);
+    command.settle = setTimeout(() => {
+      if (pending !== command) return;
+      const settled = reassembleElmReply(buffer, command.command, { acceptPartial: true });
+      if (settled) finish(null, settled);
+    }, PROMPT_SETTLE_MS);
   }
 
   function onValue(value) {
@@ -223,7 +242,14 @@ export function createCapacitorBleTransport({ onDisconnect, onRawPayload, requir
       }
       buffer += decoded.text;
       if (buffer.length > 32768) throw new Error("Scanner reply exceeded the receive buffer.");
-      if (buffer.includes(">")) finish(null, buffer);
+      // Do not stop on the first ">". Multiline Mode 03 replies often prompt
+      // after each row; later notifications still belong to this command.
+      // A prompt that stays quiet is the adapter's end of reply, so accept it
+      // instead of leaving the codes card blank until the overall timeout.
+      clearTimeout(pending.settle);
+      const reply = reassembleElmReply(buffer, pending.command);
+      if (reply) finish(null, reply);
+      else if (buffer.includes(">")) armPromptSettle(pending);
     } catch (error) {
       finish(error);
     }
@@ -357,7 +383,7 @@ export function createCapacitorBleTransport({ onDisconnect, onRawPayload, requir
           reject(new Error("Scanner disconnected."));
           return;
         }
-        const command = { resolve, reject };
+        const command = { resolve, reject, command: allowed };
         pending = command;
         buffer = "";
         command.timeout = setTimeout(() => {
@@ -366,7 +392,9 @@ export function createCapacitorBleTransport({ onDisconnect, onRawPayload, requir
             const extra = partial
               ? " Partial reply:\n" + formatBlePayloadDiagnostic(new TextEncoder().encode(partial), partial)
               : " No bytes were received.";
-            finish(new Error("Timed out waiting for a complete scanner reply." + extra));
+            const error = new Error("Timed out waiting for a complete scanner reply." + extra);
+            error.partial = partial;
+            finish(error);
           }
         }, timeoutMs);
         Promise.resolve().then(() => ble[writeMode]({

@@ -38,6 +38,11 @@ assert.equal(empty.title, "No stored codes");
 assert.equal(empty.message, "No stored codes");
 assert.equal(empty.items.length, 0);
 
+const retrying = api.buildScanReadout({ ok: false, trying: true, reply: "NO DATA\r>", error: "Scanner reported NO DATA." }, lookup);
+assert.equal(retrying.status, "trying");
+assert.equal(retrying.message, "Could not parse. Trying Mode 03 again.");
+assert.equal(retrying.items.length, 0);
+
 const failed = api.buildScanReadout({ ok: false, reply: "UNABLE TO CONNECT\r>", error: "incomplete" }, lookup);
 assert.equal(failed.status, "parse-error");
 assert.equal(failed.message, "could not parse");
@@ -55,6 +60,8 @@ assert.match(html, /id="scanReadout"/);
 assert.match(html, /src="\.\/scanReadout\.js"/);
 const bluetooth = html.indexOf('id="bluetoothCard"');
 const readout = html.indexOf('id="scanReadoutCard"');
+const scannerCode = html.indexOf("Scanner code");
 assert.ok(bluetooth >= 0 && readout > bluetooth, "scan readout must sit below the Connect OBD-II Scanner card");
+assert.ok(bluetooth < scannerCode, "Connect OBD-II Scanner sits above the scanner code field");
 
 console.log("scan-readout: database meanings, unknown label, no stored codes, and could-not-parse raw reply covered");
