@@ -1,11 +1,6 @@
 name: atdd-ios-testflight
 
 on:
-  # Push on this branch uploads a new TestFlight build. workflow_dispatch
-  # is not permitted for the connected token. Remove after a runner starts.
-  push:
-    branches:
-      - cursor/atdd-testflight-dtc-read-40b5
   workflow_dispatch:
     inputs:
       upload:
@@ -268,7 +263,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload the verified build to TestFlight
-        if: ${{ inputs.upload == true || (github.event_name == 'push' && github.ref == 'refs/heads/cursor/atdd-testflight-dtc-read-40b5') }}
+        if: ${{ inputs.upload }}
         uses: apple-actions/upload-testflight-build@v2
         with:
           app-path: ${{ steps.export.outputs.path }}
@@ -277,7 +272,7 @@ jobs:
           api-private-key: ${{ secrets.ASC_PRIVATE_KEY }}
 
       - name: Record Apple processing status
-        if: ${{ inputs.upload == true || (github.event_name == 'push' && github.ref == 'refs/heads/cursor/atdd-testflight-dtc-read-40b5') }}
+        if: ${{ inputs.upload }}
         env:
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
