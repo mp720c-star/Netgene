@@ -275,3 +275,34 @@ Then say **secrets added** — agent runs TestFlight upload workflow.
 | Google Doc | `1KkCQdfBMGUe4QPG_zFT_GpN66DjFJjdTpPpeZiAIQf4` — edit, export, and published URLs return 401 |
 | Tests recorded on PR #33 | `npm test` in `atdd/` passed before these uploads, including the BLE callback, multiline, SEARCHING, and short-row cases |
 
+## Entry — 2026-11-23 ~11:00 AM America/Chicago
+
+**Agent:** Cursor Cloud  
+**Branch:** `cursor/atdd-testflight-dtc-read-40b5`  
+**PR:** [#33](https://github.com/mp720c-star/Netgene/pull/33)  
+**Action:** Record Michael’s Command Room authorization. Checked the known room hosts again. No account, token, or signed-in session exists here.
+
+### Team directive
+
+Cursor is authorized for full AI Command Room access: messaging, project coordination, shared records, and testing.
+
+That authorization covers the Command Room. It does not cover Michael’s entire computer, personal accounts, or passwords.
+
+Full text: `docs/status-board/TEAM-DIRECTIVE-COMMAND-ROOM-2026-11-23.md`
+
+### Not yet completed
+
+- [ ] Account provisioning
+- [ ] Token issuance (none created or shown)
+- [ ] Authentication
+- [ ] Successful connection
+
+### Evidence
+
+| Surface | Result |
+| --- | --- |
+| Google Doc Status Board | HTTP 401 |
+| Project memory host | HTTP 401 |
+| Platform project route | Login page |
+| Drive OAuth in this environment | Unset |
+
