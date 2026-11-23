@@ -210,6 +210,8 @@ export function createCapacitorBleTransport({ onDisconnect, onRawPayload, requir
   let lastServices = [];
   let writeMode = "writeWithoutResponse";
   let notifyHandles = [];
+  // After a prompt, wait this long for another row before accepting a short reply.
+  const PROMPT_SETTLE_MS = 1200;
 
   function finish(error, reply) {
     if (!pending) return;
@@ -217,8 +219,18 @@ export function createCapacitorBleTransport({ onDisconnect, onRawPayload, requir
     pending = null;
     buffer = "";
     clearTimeout(command.timeout);
+    clearTimeout(command.settle);
     if (error) command.reject(error);
     else command.resolve(reply);
+  }
+
+  function armPromptSettle(command) {
+    clearTimeout(command.settle);
+    command.settle = setTimeout(() => {
+      if (pending !== command) return;
+      const settled = reassembleElmReply(buffer, command.command, { acceptPartial: true });
+      if (settled) finish(null, settled);
+    }, PROMPT_SETTLE_MS);
   }
 
   function onValue(value) {
@@ -232,8 +244,12 @@ export function createCapacitorBleTransport({ onDisconnect, onRawPayload, requir
       if (buffer.length > 32768) throw new Error("Scanner reply exceeded the receive buffer.");
       // Do not stop on the first ">". Multiline Mode 03 replies often prompt
       // after each row; later notifications still belong to this command.
+      // A prompt that stays quiet is the adapter's end of reply, so accept it
+      // instead of leaving the codes card blank until the overall timeout.
+      clearTimeout(pending.settle);
       const reply = reassembleElmReply(buffer, pending.command);
       if (reply) finish(null, reply);
+      else if (buffer.includes(">")) armPromptSettle(pending);
     } catch (error) {
       finish(error);
     }
@@ -376,7 +392,9 @@ export function createCapacitorBleTransport({ onDisconnect, onRawPayload, requir
             const extra = partial
               ? " Partial reply:\n" + formatBlePayloadDiagnostic(new TextEncoder().encode(partial), partial)
               : " No bytes were received.";
-            finish(new Error("Timed out waiting for a complete scanner reply." + extra));
+            const error = new Error("Timed out waiting for a complete scanner reply." + extra);
+            error.partial = partial;
+            finish(error);
           }
         }, timeoutMs);
         Promise.resolve().then(() => ble[writeMode]({
