@@ -43,10 +43,14 @@ for (const allowed of ["ATZ", "ATE0", "ATL0", "ATS0", "ATH0", "ATSP0"]) {
 assert.doesNotMatch(scannerText, /\bATMA\b|\bATPP\b|\bATS1\b|send\(["']04["']\)/);
 assert.match(scannerText, /FIXD_COMPATIBILITY/);
 assert.match(scannerText, /scanner\.send\("03"\)/);
+assert.match(scannerText, /scanner\.send\("0100"/);
 assert.match(scannerText, /readUntilParsed/);
 assert.match(scannerText, /Trying Mode 03 again/);
 assert.match(entry, /id="scanReadoutCard"/);
 assert.match(entry, /id="scanReadout"/);
+assert.match(entry, /id="liveReadoutCard"/);
+assert.match(entry, /id="liveReadout"/);
+assert.ok(fs.readFileSync(path.join(root, "scanner/live-readings.js")).equals(fs.readFileSync(path.join(ios, "scanner/live-readings.js"))));
 
 for (const file of ["capacitor-ble-transport.js", "fixd-protocol-probe.js", "obd-command-guard.js", "obd-protocol-v3-frame-aware.js", "web-bluetooth-transport.js"]) {
   assert.ok(fs.readFileSync(path.join(root, "tools/js", file)).equals(fs.readFileSync(path.join(ios, "../web/js", file))), file);

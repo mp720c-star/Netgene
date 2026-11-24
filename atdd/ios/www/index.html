@@ -100,6 +100,12 @@
             <div id="scanReadout" class="scan-readout"></div>
           </section>
 
+          <section class="card" id="liveReadoutCard" hidden>
+            <h2>Live data from this scan</h2>
+            <p class="small">Each number is decoded from the scanner's Mode 01 reply. A missing line was not reported and is not estimated.</p>
+            <div id="liveReadout" class="scan-readout"></div>
+          </section>
+
           <label for="codes">Scanner code (optional)</label>
           <textarea id="codes" placeholder="P0300" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false"></textarea>
           <div class="chip-row" id="exampleCodes" aria-label="Example codes">

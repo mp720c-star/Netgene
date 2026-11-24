@@ -362,3 +362,29 @@ Full text: `docs/status-board/OFFICIAL-TEAM-DIRECTIVE-2026-11-23.md`
 - Command Room account, token, and connection are still missing.
 - Sync & Merge’s independent audit is not Cursor’s report and is not done.
 
+## Entry — 2026-11-23 ~10:36 PM America/Chicago
+
+**Agent:** Cursor cloud agent  
+**Branch:** `cursor/atdd-live-readings-3db1` (continues `05ddaad`, which is after TestFlight build 23)  
+**Action:** Administrator directive. ATDD Connect is the only code repair in this turn. Success on a physical iPhone is not claimed.
+
+### Completed
+
+- [x] Inspected TestFlight build 17 (`main` `79d4ca855`, workflow run 17, success) and builds 18–23 on `cursor/atdd-testflight-dtc-read-40b5`. Build 18 failed. Builds 19–23 succeeded. Build 23 is Apple build 23, marketing version 1.2.0, processing state VALID.
+- [x] Build 23 still requested only Mode 03. Live Mode 01 data was never sent, so the readout stayed empty even after a stored-code read.
+- [x] Added a Mode 01 live readout. The app asks `0100`, then only PIDs that map marks supported, then `0140` when PID `20` is supported. SAE J1979 formulas decode load, coolant, rpm, speed, intake temperature, throttle, and control-module voltage. A short frame, `NO DATA`, or a rejected PID produces no number.
+- [x] Documented compatible BLE ELM UART profiles (FFF0, FFE0, 18F0, Nordic UART) and unsupported paths: unverified FIXD proprietary protocol, classic Bluetooth serial, Wi-Fi ELM, and iPhone Safari / Home Screen web Bluetooth.
+- [x] Bundle id in the Xcode project is `com.netgene.atdd.ble` for Debug and Release. Packaged DTC database SHA-256 remains `ed75aeb0a429ae920969bf65d324b2b006a252a4c15da42a1f2c75778070a923` (4783 rows). CDI pinout database remains 69 profiles. Vehicle index remains 438 entries.
+- [x] `npm test` in `atdd/` passed, including the new live-readings test and `verify-ios-content`.
+- [x] Ravin Lookup Windows 1.0.0 installers on disk match `downloads/SHA256SUMS.txt`. `npm test` in `ravin-lookup/` passed. Those files were not modified.
+- [x] Checksums for Sync & Merge: `docs/status-board/SYNC-SOURCE-CHECKSUMS-2026-11-23.json`.
+
+### Not done — do not treat as success
+
+- [ ] No signed IPA and no TestFlight upload. This machine has no Xcode, and the upload was not started. A real iPhone plus a scanner still has to confirm FIXD or ELM live data.
+- [ ] FIXD compatibility remains `UNVERIFIED`. A device name is not a protocol proof.
+- [ ] No Ravin Lookup iPhone edition, URL, or version is in this repo. The Windows source has no parts search, manuals, diagrams, pricing, specials, or recall data, so none of that was invented.
+- [ ] Vercel authentication was declined. `mike-ai.vercel.app` was left paused. No paid hosting and no OpenAI call.
+- [ ] Windows D:, OneDrive, Google Drive, iCloud, Apple Developer, and App Store Connect are not mounted here. OneDrive was not written. D: synchronization was not touched.
+- [ ] Supabase `ai-project-platform` still has the existing 13 project rows. Files, memory, and sync rows were not replaced. Platform, Command Room, and cross-device auth were not repaired in this turn.
+

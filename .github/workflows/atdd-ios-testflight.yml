@@ -81,6 +81,7 @@ jobs:
           npm run sync:ios
           node scripts/verify-ios-content.mjs ios/App/App/public
           node tests/stored-codes.test.mjs
+          node tests/live-readings.test.mjs
 
       - name: Open the actual app in the iPhone simulator
         if: ${{ inputs.private_device_test }}
