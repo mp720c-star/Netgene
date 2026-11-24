@@ -87,6 +87,18 @@ if (args[0] !== "deploy") {
   process.exit(result.status ?? 1);
 }
 
+const branch = process.env.WORKERS_CI_BRANCH || "";
+const productionBranch = process.env.WORKERS_CI_PRODUCTION_BRANCH || "main";
+const productionAllowed =
+  process.env.ALLOW_PRODUCTION_DEPLOY === "1" ||
+  (branch.length > 0 && branch === productionBranch);
+if (!productionAllowed) {
+  console.error(
+    "wrangler-proxy: refusing deploy. Branch previews must use wrangler preview or wrangler versions upload. Production was not published.",
+  );
+  process.exit(1);
+}
+
 const clean = stripNameArgs(args.slice(1));
 const preferred = detectPreferredName();
 const order = preferred
