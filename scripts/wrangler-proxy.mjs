@@ -130,12 +130,8 @@ if (!productionAllowed) {
   const home = path.join(root, "site", "index.html");
   const homeHtml = fs.existsSync(home) ? fs.readFileSync(home, "utf8") : "";
   if (!homeHtml.includes("AI Project Platform")) {
-    const prepared = spawnSync(process.execPath, [path.join(root, "scripts", "prepare-platform-preview.mjs")], {
-      stdio: "inherit",
-      cwd: root,
-      env: process.env,
-    });
-    if ((prepared.status ?? 1) !== 0) process.exit(prepared.status ?? 1);
+    console.error("wrangler-proxy: site/index.html is not the AI Project Platform home screen. Production was not published.");
+    process.exit(1);
   }
   const ensured = spawnSync(process.execPath, [path.join(root, "scripts", "ensure-preview-d1.mjs")], {
     stdio: "inherit",

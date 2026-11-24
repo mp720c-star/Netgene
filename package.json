@@ -4,7 +4,7 @@
   "description": "Netgene apps + Mike AI test deploy (production Vercel hostname untouched)",
   "scripts": {
     "postinstall": "node ./scripts/link-wrangler-proxy.mjs",
-    "build": "node ./scripts/prepare-platform-preview.mjs",
+    "build": "node ./scripts/use-committed-preview.mjs",
     "deploy": "node ./scripts/wrangler-proxy.mjs deploy",
     "dev:mike-ai": "npm --prefix mike-ai run dev",
     "build:mike-ai": "npm --prefix mike-ai run build",
