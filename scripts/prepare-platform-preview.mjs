@@ -14,7 +14,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const mike = path.join(root, "mike-ai");
 const site = path.join(root, "site");
 const apiDir = path.join(mike, "src", "app", "api");
-const stash = path.join(os.tmpdir(), "mike-ai-api-stash-preview");
+const stash = path.join(os.tmpdir(), `mike-ai-api-stash-preview-${process.pid}-${Date.now()}`);
 
 function run(command, args, env = process.env) {
   const result = spawnSync(command, args, { stdio: "inherit", cwd: root, env });
@@ -38,7 +38,7 @@ if (!fs.existsSync(path.join(mike, "node_modules", "next"))) {
   run("npm", ["ci", "--prefix", "mike-ai"]);
 }
 
-fs.rmSync(stash, { recursive: true, force: true });
+fs.rmSync(path.join(mike, ".next", "lock"), { force: true });
 const stashed = fs.existsSync(apiDir);
 if (stashed) fs.renameSync(apiDir, stash);
 
@@ -52,8 +52,13 @@ try {
   buildStatus = result.status ?? 1;
 } finally {
   if (stashed) {
-    fs.rmSync(apiDir, { recursive: true, force: true });
-    fs.renameSync(stash, apiDir);
+    if (fs.existsSync(apiDir)) fs.rmSync(apiDir, { recursive: true, force: true });
+    if (!fs.existsSync(stash)) {
+      console.error("prepare-platform-preview: API stash missing; routes were not restored");
+      buildStatus = 1;
+    } else {
+      fs.renameSync(stash, apiDir);
+    }
   }
 }
 if (buildStatus !== 0) process.exit(buildStatus);
