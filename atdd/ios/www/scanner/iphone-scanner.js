@@ -1,5 +1,6 @@
 import { capacitorBleAvailable, createCapacitorBleTransport, formatBlePayloadDiagnostic } from "../tools/js/capacitor-ble-transport.js";
 import { FIXD_COMPATIBILITY } from "../tools/js/obd-command-guard.js";
+import { liveCommands, readingFromReply, supportBitmap, unsupportedSummary } from "./live-readings.js";
 import { readUntilParsed } from "./read-until-parsed.js";
 import { storedCodes } from "./stored-codes.js";
 
@@ -21,6 +22,7 @@ let adapterReady = false;
 let busy = false;
 let available = false;
 let readToken;
+let liveAttempted = false;
 
 function readout() {
   return typeof window !== "undefined" ? window.ATDDScanReadout : null;
@@ -38,8 +40,44 @@ function log(message) {
   output.scrollTop = output.scrollHeight;
 }
 
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function showLive(model) {
+  const card = el("liveReadoutCard");
+  const target = el("liveReadout");
+  if (!card || !target) return;
+  card.hidden = false;
+  if (!model.ok) {
+    target.innerHTML =
+      '<p class="scan-readout-error">' + escapeHtml(model.message) + "</p>" +
+      (model.raw ? '<pre class="scan-readout-raw">' + escapeHtml(model.raw) + "</pre>" : "");
+    return;
+  }
+  if (!model.items.length) {
+    target.innerHTML = '<p class="scan-readout-empty">' + escapeHtml(model.message) + "</p>";
+    return;
+  }
+  target.innerHTML = model.items.map((item) =>
+    '<div class="scan-code"><span class="code">' + escapeHtml(item.name) + '</span><span class="meta">' + escapeHtml(item.display) + "</span></div>"
+  ).join("");
+}
+
+function clearLive() {
+  const card = el("liveReadoutCard");
+  const target = el("liveReadout");
+  if (target) target.innerHTML = "";
+  if (card) card.hidden = true;
+}
+
 async function release(scanner) {
   readToken = null;
+  liveAttempted = false;
   if (active === scanner) {
     active = undefined;
     ready = false;
@@ -84,6 +122,53 @@ async function prepareAdapter(scanner) {
   }
 }
 
+async function readLiveOnce(scanner) {
+  if (liveAttempted || active !== scanner) return;
+  liveAttempted = true;
+  log("Requesting live data (Mode 01). Only PIDs the vehicle marks as supported are read. A missing reply is left blank.");
+  let supportReply = "";
+  try {
+    supportReply = await scanner.send("0100", { timeoutMs: 8000 });
+    const supported = supportBitmap(supportReply, "00");
+    log("Vehicle reply for Mode 0100\n" + String(supportReply).trim());
+    const commands = liveCommands(supported);
+    if (supported.includes("20") && active === scanner) {
+      try {
+        const mapReply = await scanner.send("0140", { timeoutMs: 8000 });
+        for (const command of liveCommands(supportBitmap(mapReply, "40"))) {
+          if (!commands.includes(command)) commands.push(command);
+        }
+      } catch (error) {
+        log("Mode 0140 was not read: " + (error?.message || error));
+      }
+    }
+    const items = [];
+    for (const command of commands) {
+      if (active !== scanner) return;
+      const pid = command.slice(2);
+      try {
+        const reply = await scanner.send(command, { timeoutMs: 8000 });
+        const item = readingFromReply(pid, reply);
+        items.push(item);
+        log(command + " → " + item.display);
+      } catch (error) {
+        log(command + " was not read: " + (error?.message || error));
+      }
+    }
+    showLive({
+      ok: true,
+      items,
+      message: items.length
+        ? ""
+        : "The vehicle did not report any live data item this app can decode.",
+    });
+  } catch (error) {
+    const message = (error?.message || String(error)) + " " + unsupportedSummary();
+    showLive({ ok: false, message, raw: String(supportReply || "") });
+    log(message);
+  }
+}
+
 async function readStored(scanner) {
   const token = {};
   readToken = token;
@@ -105,6 +190,7 @@ async function readStored(scanner) {
         log("Mode 03 did not finish: " + message);
       }
       if (alive()) log("Trying Mode 03 again (" + (attempt + 1) + "). No Mode 04 clear is sent.");
+      await readLiveOnce(scanner);
     },
   });
   if (!result.ok || !alive()) return;
@@ -120,6 +206,7 @@ async function readStored(scanner) {
   } else {
     log("The vehicle reported no stored fault codes.");
   }
+  await readLiveOnce(scanner);
 }
 
 async function choose() {
@@ -150,7 +237,8 @@ async function choose() {
     ready = true;
     const name = device.name || "BLE adapter";
     const fixdName = device.isFixdName ? " (FIXD-named device; protocol still " + FIXD_COMPATIBILITY + ")" : "";
-    log("Connected to " + name + fixdName + ". Reading stored fault codes.");
+    log("Connected to " + name + fixdName + ". Reading stored fault codes, then live data.");
+    liveAttempted = false;
     if (!adapterReady) {
       await prepareAdapter(scanner);
       adapterReady = true;
@@ -161,6 +249,7 @@ async function choose() {
 
 async function readVehicle() {
   if (!ready) return;
+  liveAttempted = false;
   await perform(async () => {
     const scanner = active;
     if (!adapterReady) {
@@ -172,12 +261,12 @@ async function readVehicle() {
 }
 
 panel.querySelector(".lead").textContent =
-  "Connect a FIXD or generic ELM327-style BLE OBD-II scanner, then read stored codes (Mode 01/03 only). FIXD compatibility is " +
+  "Connect an ELM327-style BLE OBD-II scanner. Stored codes are Mode 03. Live data is Mode 01 and only appears when the vehicle replies. FIXD compatibility is " +
   FIXD_COMPATIBILITY +
   ".";
 panel.querySelector("h2").textContent = "Connect OBD-II Scanner";
 panel.querySelector("p.small.mt-8").textContent =
-  "A successful Mode 03 read lists decoded codes below this card. If a reply cannot be parsed, Mode 03 is requested again until it parses or you disconnect. Mode 04 clear-codes stays blocked. Adapter setup is limited to ATZ/ATE0/ATL0/ATS0/ATH0/ATSP0. No simulated scanner data is used.";
+  "A successful Mode 03 read lists decoded codes below this card. Live data is listed under that. If a reply cannot be parsed, Mode 03 is requested again until it parses or you disconnect. Mode 04 clear-codes stays blocked. Adapter setup is limited to ATZ/ATE0/ATL0/ATS0/ATH0/ATSP0. Classic Bluetooth serial, Wi-Fi, and an unverified FIXD protocol are not given invented readings.";
 connect.textContent = "Connect OBD-II Scanner";
 top.textContent = "Connect Scanner";
 el("btnBtScanAll").hidden = true;
@@ -204,6 +293,7 @@ buttons();
 window.ATDDIphoneScanner = {
   async resetSession() {
     await release(active);
+    clearLive();
     if (output) output.textContent = "Idle. Tap Connect, with the adapter powered in the OBD port.";
   },
 };

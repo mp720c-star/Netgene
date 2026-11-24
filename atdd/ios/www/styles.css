@@ -266,7 +266,7 @@ details.extra[open] summary{margin-bottom:10px}
 .confirm-dialog .dialog-actions button{min-height:var(--tap)}
 
 /* Inline Mode 03 readout under Connect OBD-II Scanner */
-#scanReadoutCard .scan-readout{display:grid;gap:8px}
+#scanReadoutCard .scan-readout,#liveReadoutCard .scan-readout{display:grid;gap:8px}
 .scan-code{display:block;width:100%;text-align:left;min-height:var(--tap);background:#0f0f0f;border:1px solid #4a310e;border-radius:14px;padding:12px;color:var(--text);font-weight:600}
 .scan-code .code{display:block}
 .scan-code .meta{display:block;font-weight:400;color:var(--muted);font-size:.9375rem;margin-top:4px;line-height:var(--lh)}

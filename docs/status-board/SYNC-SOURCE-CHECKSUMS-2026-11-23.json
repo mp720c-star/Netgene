@@ -1,0 +1,56 @@
+{
+  "recorded_at": "2026-11-23T22:36:00-06:00",
+  "recorder": "cursor",
+  "purpose": "Source locations and SHA-256 checksums for Sync & Merge. Content hashes of files read on this machine. OneDrive remains the cloud master. This file does not copy, delete, or reconcile D: drive files.",
+  "git": {
+    "repo": "github.com/mp720c-star/Netgene",
+    "code_commit": "fd5d4f04719ccdfb6b8e11f52bb07a633e59a4f0",
+    "parent_of_this_work": "05ddaad1cf17258e346e28cfa5aba6c2abda6a87",
+    "main_at_build_17": "79d4ca8551171df64915b8e0ddda18ff5cf96af0"
+  },
+  "files": [
+    {
+      "path": "downloads/Ravin-Lookup-ATV-1.0.0-win-x64.exe",
+      "version": "1.0.0",
+      "sha256": "914ad52e251c566892e7fe108a0bfda4e3cfd071e964f5812af3c952598d58f3",
+      "matches_published_sums": true
+    },
+    {
+      "path": "downloads/Ravin-Lookup-Car-Truck-1.0.0-win-x64.exe",
+      "version": "1.0.0",
+      "sha256": "e25b584f26f7b3e5af363af784a507f223acd6d59eee83189034810be637fdec",
+      "matches_published_sums": true
+    },
+    {
+      "path": "downloads/Ravin-Lookup-Dirt-Bike-1.0.0-win-x64.exe",
+      "version": "1.0.0",
+      "sha256": "dcf846745cfeb3468a9efb027b3678f8de55ceffe639f547b504ba21e3807097",
+      "matches_published_sums": true
+    },
+    {
+      "path": "atdd/ios/scanner/live-readings.js",
+      "sha256": "bfe25f83ea9b9c14386ca0b6afed87c830c3e04d84abefb8241c5d161f8e8bf6"
+    },
+    {
+      "path": "atdd/ios/scanner/iphone-scanner.js",
+      "sha256": "247122b969e688503792f108aba371d5a727b67e85570bf39e2e12f23d97b656"
+    },
+    {
+      "path": "atdd/classic/index.html",
+      "sha256": "17c0e19e53d261b7922c053aa7487287c8b332bf8a7e601f6544dedb856c50eb"
+    },
+    {
+      "path": "atdd/ios/www/data/dtc-db.js",
+      "sha256": "ed75aeb0a429ae920969bf65d324b2b006a252a4c15da42a1f2c75778070a923",
+      "note": "4783 baseline DTC rows. Matches verify-ios-content."
+    }
+  ],
+  "not_on_this_machine": [
+    "Windows D: drive",
+    "OneDrive master copies",
+    "Google Drive",
+    "iCloud",
+    "Apple TestFlight IPA for this commit",
+    "Ravin Lookup iPhone edition"
+  ]
+}

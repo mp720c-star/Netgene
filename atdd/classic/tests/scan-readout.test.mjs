@@ -57,11 +57,15 @@ assert.ok(!invented.items.some((item) => item.code === "P0300"));
 const html = fs.readFileSync(path.join(classic, "index.html"), "utf8");
 assert.match(html, /id="scanReadoutCard"/);
 assert.match(html, /id="scanReadout"/);
+assert.match(html, /id="liveReadoutCard"/);
+assert.match(html, /id="liveReadout"/);
 assert.match(html, /src="\.\/scanReadout\.js"/);
 const bluetooth = html.indexOf('id="bluetoothCard"');
 const readout = html.indexOf('id="scanReadoutCard"');
+const live = html.indexOf('id="liveReadoutCard"');
 const scannerCode = html.indexOf("Scanner code");
 assert.ok(bluetooth >= 0 && readout > bluetooth, "scan readout must sit below the Connect OBD-II Scanner card");
+assert.ok(readout >= 0 && live > readout, "live data must sit below the stored-code readout");
 assert.ok(bluetooth < scannerCode, "Connect OBD-II Scanner sits above the scanner code field");
 
 console.log("scan-readout: database meanings, unknown label, no stored codes, and could-not-parse raw reply covered");
