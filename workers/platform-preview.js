@@ -127,10 +127,133 @@ async function rows(db, sql, params = []) {
   return result.results || [];
 }
 
-let schemaReady = null;
+function createMemoryDb(tables) {
+  function insert(table, columns, params) {
+    const row = {};
+    columns.forEach((column, index) => {
+      row[column] = params[index];
+    });
+    const conflict = table === "file_chunks" ? ["file_id", "idx"] : ["id"];
+    const exists = tables[table].some((item) => conflict.every((key) => item[key] === row[key]));
+    if (!exists) tables[table].push(row);
+  }
+
+  function select(sql, params) {
+    sql = sql.replace(/\s+/g, " ").trim();
+    let rows = [];
+    if (sql.includes("FROM projects")) rows = tables.projects.map((row) => ({ ...row }));
+    else if (sql.includes("FROM files")) rows = tables.files.map((row) => ({ ...row }));
+    else if (sql.includes("FROM file_chunks")) rows = tables.file_chunks.map((row) => ({ ...row }));
+    else if (sql.includes("FROM revisions")) rows = tables.revisions.map((row) => ({ ...row }));
+    const where = sql.match(/WHERE (.+?)(?: ORDER BY| LIMIT|$)/);
+    if (where) {
+      const clauses = where[1].split(" AND ");
+      let index = 0;
+      rows = rows.filter((row) =>
+        clauses.every((clause) => {
+          const column = clause.split("=")[0].trim();
+          const expected = params[index];
+          index += 1;
+          return row[column] === expected;
+        }),
+      );
+    }
+    if (sql.includes("ORDER BY CASE WHEN status = 'archived'")) {
+      rows.sort((a, b) => {
+        const archived = (row) => (row.status === "archived" ? 1 : 0);
+        return archived(a) - archived(b) || String(b.updated_at).localeCompare(String(a.updated_at));
+      });
+    } else if (sql.includes("ORDER BY updated_at DESC")) {
+      rows.sort((a, b) => String(b.updated_at).localeCompare(String(a.updated_at)));
+    } else if (sql.includes("ORDER BY created_at DESC")) {
+      rows.sort((a, b) => String(b.created_at).localeCompare(String(a.created_at)));
+    } else if (sql.includes("ORDER BY idx")) {
+      rows.sort((a, b) => a.idx - b.idx);
+    }
+    const limit = sql.match(/LIMIT (\d+)/);
+    if (limit) rows = rows.slice(0, Number(limit[1]));
+    const selected = sql.match(/^SELECT (.+) FROM/);
+    if (!selected || selected[1].trim() === "*") return rows;
+    const columns = selected[1].split(",").map((column) => column.trim());
+    return rows.map((row) => {
+      const picked = {};
+      for (const column of columns) picked[column] = row[column];
+      return picked;
+    });
+  }
+
+  function run(sql, params) {
+    sql = sql.replace(/\s+/g, " ").trim();
+    if (sql.startsWith("CREATE TABLE")) return;
+    const match = sql.match(/INSERT INTO (\w+) \(([^)]+)\)/);
+    if (!match) return;
+    insert(
+      match[1],
+      match[2].split(",").map((column) => column.trim()),
+      params,
+    );
+  }
+
+  return {
+    memory: true,
+    prepare(sql) {
+      const statement = {
+        sql,
+        params: [],
+        bind(...params) {
+          this.params = params;
+          return this;
+        },
+        all() {
+          return Promise.resolve({ results: select(this.sql, this.params) });
+        },
+        run() {
+          run(this.sql, this.params);
+          return Promise.resolve({});
+        },
+      };
+      return statement;
+    },
+    async batch(statements) {
+      for (const statement of statements) {
+        if (statement.sql.startsWith("SELECT")) await statement.all();
+        else await statement.run();
+      }
+    },
+  };
+}
+
+const EMPTY_TABLES = () => ({ projects: [], files: [], file_chunks: [], revisions: [] });
+
+async function openDatabase(env, request) {
+  if (env.DB) return { db: env.DB, persist() {} };
+  const cacheKey = new Request(new URL("/__preview_state", request.url));
+  let tables = EMPTY_TABLES();
+  try {
+    const hit = await caches.default.match(cacheKey);
+    if (hit) tables = await hit.json();
+  } catch {
+    /* a fresh isolate keeps the request in memory */
+  }
+  return {
+    db: createMemoryDb(tables),
+    async persist() {
+      try {
+        await caches.default.put(
+          cacheKey,
+          new Response(JSON.stringify(tables), {
+            headers: { "content-type": "application/json", "cache-control": "public, max-age=31536000" },
+          }),
+        );
+      } catch {
+        /* this isolate still has the tables for later requests */
+      }
+    },
+  };
+}
 
 function ensureSchema(db) {
-  schemaReady ??= (async () => {
+  return (async () => {
     await db.batch([
       db.prepare(`CREATE TABLE IF NOT EXISTS projects (
         id TEXT PRIMARY KEY,
@@ -178,7 +301,6 @@ function ensureSchema(db) {
       ),
     );
   })();
-  return schemaReady;
 }
 
 async function projects(db) {
@@ -392,7 +514,7 @@ async function handle(request, db) {
     return json({
       ok: complete,
       count: list.length,
-      source: "preview-d1",
+        source: db.memory ? "preview-memory" : "preview-d1",
       hosted: false,
       projects: list,
       apps: HUB_APPS,
@@ -489,7 +611,7 @@ async function handle(request, db) {
   if (path === "/api/sync/peers" && request.method === "GET") {
     return json({
       ok: true,
-      source: "preview-d1",
+        source: db.memory ? "preview-memory" : "preview-d1",
       projects: await projects(db),
       files: await files(db),
       revisions: await rows(db, `SELECT id, project_id, title FROM revisions`),
@@ -514,8 +636,10 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     if (url.pathname.startsWith("/api/")) {
-      if (!env.DB) return json({ error: "preview_store_missing" }, 500);
-      return handle(request, env.DB);
+      const opened = await openDatabase(env, request);
+      const response = await handle(request, opened.db);
+      await opened.persist();
+      return response;
     }
     if (env.ASSETS) return env.ASSETS.fetch(request);
     return json({ error: "assets_missing" }, 500);
