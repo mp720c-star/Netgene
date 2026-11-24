@@ -87,11 +87,75 @@ if (args[0] !== "deploy") {
   process.exit(result.status ?? 1);
 }
 
+function branchName() {
+  const fromEnv =
+    process.env.WORKERS_CI_BRANCH ||
+    process.env.GITHUB_HEAD_REF ||
+    process.env.GITHUB_REF_NAME ||
+    "";
+  if (fromEnv && fromEnv !== "HEAD") return fromEnv;
+  const shown = spawnSync("git", ["rev-parse", "--abbrev-ref", "HEAD"], {
+    cwd: root,
+    encoding: "utf8",
+  });
+  return (shown.stdout || "").trim();
+}
+
+function previewAliasFor(name) {
+  return name
+    .replace(/[^a-zA-Z0-9-]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .toLowerCase();
+}
+
+const branch = branchName();
+const productionBranch = process.env.WORKERS_CI_PRODUCTION_BRANCH || "main";
+const productionAllowed =
+  process.env.ALLOW_PRODUCTION_DEPLOY === "1" ||
+  (branch.length > 0 && branch === productionBranch);
+
 const clean = stripNameArgs(args.slice(1));
 const preferred = detectPreferredName();
 const order = preferred
   ? [preferred, ...WORKERS.filter((w) => w !== preferred)]
   : WORKERS;
+
+if (!productionAllowed) {
+  const alias = previewAliasFor(branch);
+  if (!alias) {
+    console.error("wrangler-proxy: refusing deploy. No branch name for a preview alias. Production was not published.");
+    process.exit(1);
+  }
+  const home = path.join(root, "site", "index.html");
+  const homeHtml = fs.existsSync(home) ? fs.readFileSync(home, "utf8") : "";
+  if (!homeHtml.includes("AI Project Platform")) {
+    console.error("wrangler-proxy: site/index.html is not the AI Project Platform home screen. Production was not published.");
+    process.exit(1);
+  }
+  const ensured = spawnSync(process.execPath, [path.join(root, "scripts", "ensure-preview-d1.mjs")], {
+    stdio: "inherit",
+    cwd: root,
+    env: process.env,
+  });
+  if ((ensured.status ?? 1) !== 0) process.exit(ensured.status ?? 1);
+  let lastStatus = 1;
+  for (const name of order) {
+    console.log(`wrangler-proxy: uploading preview version as "${name}" alias "${alias}"`);
+    setTomlName(name);
+    const result = spawnSync(
+      process.execPath,
+      [wranglerCli, "versions", "upload", "--name", name, "--preview-alias", alias, ...clean],
+      { stdio: "inherit", cwd: root, env: process.env },
+    );
+    lastStatus = result.status ?? 1;
+    if (lastStatus === 0) {
+      console.log(`wrangler-proxy: preview version uploaded as "${name}". Production was not published.`);
+      process.exit(0);
+    }
+  }
+  process.exit(lastStatus);
+}
 
 let lastStatus = 1;
 for (const name of order) {

@@ -3,6 +3,7 @@
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { previewDecision, type PreviewKind } from "@/lib/file-preview";
 import styles from "./page.module.css";
 
 type AuthStatus = {
@@ -100,6 +101,14 @@ export default function HomePage() {
     "projects",
   );
   const [chatgptExport, setChatgptExport] = useState<string>("");
+  const [recordSource, setRecordSource] = useState<string>("");
+  const [opened, setOpened] = useState<{
+    name: string;
+    kind: PreviewKind | "download";
+    url: string;
+    text?: string;
+    note?: string;
+  } | null>(null);
   const [chatInput, setChatInput] = useState("");
   const [chatHint, setChatHint] = useState<string | null>(null);
   const chatTransport = useMemo(
@@ -135,6 +144,7 @@ export default function HomePage() {
       projects?: Project[];
       apps?: HubApp[];
       catalog?: CatalogInfo;
+      source?: string;
     };
     const fJson = (await fRes.json()) as { files?: FileRow[] };
     const sJson = (await sRes.json()) as { providers?: SyncProvider[] };
@@ -142,6 +152,7 @@ export default function HomePage() {
     setProjects(pJson.projects || []);
     setApps(pJson.apps || []);
     setCatalog(pJson.catalog || null);
+    setRecordSource(pJson.source || "");
     setFiles(fJson.files || []);
     setSync(sJson.providers || []);
     setMemory(mJson.entries || []);
@@ -167,17 +178,95 @@ export default function HomePage() {
   useEffect(() => {
     if (!auth?.unlocked) return;
     let cancelled = false;
-    void (async () => {
-      try {
-        await loadWorkspace();
-      } catch (e) {
+    const refresh = () => {
+      if (cancelled || document.visibilityState === "hidden") return;
+      void loadWorkspace().catch((e: unknown) => {
         if (!cancelled) setError(e instanceof Error ? e.message : "Load failed");
-      }
-    })();
+      });
+    };
+    refresh();
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", refresh);
     return () => {
       cancelled = true;
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", refresh);
     };
   }, [auth?.unlocked, loadWorkspace]);
+
+  function closeOpened() {
+    setOpened((current) => {
+      if (current?.url) URL.revokeObjectURL(current.url);
+      return null;
+    });
+  }
+
+  async function saveBlob(blob: Blob, name: string): Promise<"shared" | "downloaded"> {
+    const shareFile = new File([blob], name, { type: blob.type || "application/octet-stream" });
+    if (navigator.canShare?.({ files: [shareFile] })) {
+      await navigator.share({ files: [shareFile], title: name });
+      return "shared";
+    }
+    const objectUrl = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = objectUrl;
+    anchor.download = name;
+    anchor.rel = "noopener";
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+    return "downloaded";
+  }
+
+  async function openStoredFile(file: FileRow) {
+    setBusy(true);
+    setError(null);
+    try {
+      const decision = previewDecision(file.mime_type, file.name);
+      const inline = decision.kind !== "none";
+      const res = await fetch(
+        `/api/files/download?id=${encodeURIComponent(file.id)}${inline ? "&inline=1" : ""}`,
+        { cache: "no-store", credentials: "same-origin" },
+      );
+      if (!res.ok) {
+        const json = (await res.json().catch(() => null)) as { message?: string; error?: string } | null;
+        throw new Error(json?.message || json?.error || `Could not open file (${res.status})`);
+      }
+      const bytes = await res.arrayBuffer();
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+      const actual = [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
+      const headerSum = res.headers.get("X-Checksum-SHA256");
+      if (actual !== file.checksum_sha256 || (headerSum && headerSum !== actual)) {
+        throw new Error("Checksum mismatch. The file was not opened.");
+      }
+      const blob = new Blob([bytes], { type: decision.mime || file.mime_type || "application/octet-stream" });
+      const url = URL.createObjectURL(blob);
+      const next = {
+        name: file.name,
+        kind: decision.kind === "none" ? ("download" as const) : decision.kind,
+        url,
+        text: decision.kind === "text" ? new TextDecoder().decode(bytes.slice(0, 200_000)) : undefined,
+        note: undefined as string | undefined,
+      };
+      if (decision.kind === "none") {
+        const saved = await saveBlob(blob, file.name);
+        next.note =
+          saved === "shared"
+            ? "The share sheet can save this file on this iPhone."
+            : "Download started. If the phone did not save it, use Save file.";
+      }
+      setOpened((current) => {
+        if (current?.url) URL.revokeObjectURL(current.url);
+        return next;
+      });
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") return;
+      setError(err instanceof Error ? err.message : "Could not open file");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function unlockWithPassword(e: FormEvent) {
     e.preventDefault();
@@ -481,6 +570,7 @@ export default function HomePage() {
             Catalog: {catalog.available}/{catalog.expected}{" "}
             {catalog.complete ? "complete" : "incomplete"}
             {catalog.ravinPaused ? " · Ravin paused" : ""}
+            {recordSource ? ` · shared store ${recordSource}` : ""}
             {auth.viewerName ? ` · ${auth.viewerName}` : ""}
           </p>
         ) : null}
@@ -660,17 +750,22 @@ export default function HomePage() {
           <ul className={styles.list}>
             {visibleFiles.map((f) => (
               <li key={f.id}>
-                <div>
-                  <strong>{f.name}</strong>
-                  <span className={styles.muted}>
-                    {" "}
-                    · {fmtBytes(f.size_bytes)} · {fmtWhen(f.updated_at)} CT
+                <button
+                  type="button"
+                  className={styles.fileOpen}
+                  disabled={busy}
+                  onClick={() => void openStoredFile(f)}
+                >
+                  <span>
+                    <strong>{f.name}</strong>
+                    <span className={styles.muted}>
+                      {" "}
+                      · {fmtBytes(f.size_bytes)} · {fmtWhen(f.updated_at)} CT
+                    </span>
+                    <span className={styles.hash}>{f.checksum_sha256}</span>
                   </span>
-                  <div className={styles.hash}>{f.checksum_sha256}</div>
-                </div>
-                <a className={styles.secondary} href={`/api/files/download?id=${encodeURIComponent(f.id)}`}>
-                  Download
-                </a>
+                  <span className={styles.secondary}>Open</span>
+                </button>
               </li>
             ))}
             {visibleFiles.length === 0 && (
@@ -682,9 +777,19 @@ export default function HomePage() {
 
       {tab === "sync" && (
         <section className={styles.panel}>
-          <button type="button" className={styles.primary} disabled={busy} onClick={runSync}>
-            Sync now (OneDrive → Drive → iCloud)
-          </button>
+          <p className={styles.muted}>
+            Windows and iPhone show the same projects and files when both are unlocked on this
+            server ({recordSource || "unknown store"}). Returning to the app refreshes that list.
+            Cloud copy below does not run unless you press it.
+          </p>
+          <div className={styles.syncActions}>
+            <button type="button" className={styles.secondary} disabled={busy} onClick={() => void loadWorkspace()}>
+              Refresh shared records
+            </button>
+            <button type="button" className={styles.primary} disabled={busy} onClick={runSync}>
+              Sync now (OneDrive → Drive → iCloud)
+            </button>
+          </div>
           <ul className={styles.list}>
             {sync.map((p) => (
               <li key={p.provider}>
@@ -781,6 +886,45 @@ export default function HomePage() {
             </pre>
           )}
         </section>
+      )}
+
+      {opened && (
+        <div className={styles.preview} role="dialog" aria-modal="true" aria-label={opened.name}>
+          <div className={styles.previewCard}>
+            <div className={styles.topRow}>
+              <strong>{opened.name}</strong>
+              <button type="button" className={styles.secondary} onClick={closeOpened}>
+                Close
+              </button>
+            </div>
+            {opened.kind === "image" && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={opened.url} alt={opened.name} />
+            )}
+            {opened.kind === "pdf" && (
+              <iframe title={opened.name} src={opened.url} className={styles.previewFrame} />
+            )}
+            {opened.kind === "text" && <pre className={styles.previewText}>{opened.text}</pre>}
+            {opened.kind === "audio" && <audio controls src={opened.url} />}
+            {opened.kind === "video" && <video controls src={opened.url} className={styles.previewFrame} />}
+            {opened.kind === "download" && <p className={styles.muted}>{opened.note}</p>}
+            <button
+              type="button"
+              className={styles.primary}
+              onClick={() => {
+                const blobUrl = opened.url;
+                void fetch(blobUrl)
+                  .then((res) => res.blob())
+                  .then((blob) => saveBlob(blob, opened.name))
+                  .catch((err: unknown) => {
+                    setError(err instanceof Error ? err.message : "Could not save file");
+                  });
+              }}
+            >
+              Save file
+            </button>
+          </div>
+        </div>
       )}
     </main>
   );
