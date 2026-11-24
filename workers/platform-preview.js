@@ -227,13 +227,17 @@ const EMPTY_TABLES = () => ({ projects: [], files: [], file_chunks: [], revision
 
 async function openDatabase(env, request) {
   if (env.DB) return { db: env.DB, persist() {} };
-  const cacheKey = new Request(new URL("/__preview_state", request.url));
-  let tables = EMPTY_TABLES();
+  if (!globalThis.__previewTables) globalThis.__previewTables = EMPTY_TABLES();
+  const tables = globalThis.__previewTables;
+  const cacheKey = new Request(new URL("/__preview_state", request.url).toString(), { method: "GET" });
   try {
     const hit = await caches.default.match(cacheKey);
-    if (hit) tables = await hit.json();
-  } catch {
-    /* a fresh isolate keeps the request in memory */
+    if (hit && tables.files.length === 0 && tables.projects.length === 0) {
+      const stored = await hit.json();
+      for (const key of Object.keys(tables)) tables[key] = stored[key] || [];
+    }
+  } catch (error) {
+    globalThis.__storeError = error instanceof Error ? error.message : String(error);
   }
   return {
     db: createMemoryDb(tables),
@@ -245,8 +249,9 @@ async function openDatabase(env, request) {
             headers: { "content-type": "application/json", "cache-control": "public, max-age=31536000" },
           }),
         );
-      } catch {
-        /* this isolate still has the tables for later requests */
+        globalThis.__storeError = "";
+      } catch (error) {
+        globalThis.__storeError = error instanceof Error ? error.message : String(error);
       }
     },
   };
@@ -627,7 +632,13 @@ async function handle(request, db) {
     });
   }
   if (path === "/api/health" && request.method === "GET") {
-    return json({ ok: true, modelCredentials: false, preview: true });
+    return json({
+      ok: true,
+      modelCredentials: false,
+      preview: true,
+      store: db.memory ? "preview-memory" : "preview-d1",
+      storeError: globalThis.__storeError || "",
+    });
   }
   return json({ error: "not_found", path }, 404);
 }

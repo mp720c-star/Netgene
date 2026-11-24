@@ -79,7 +79,20 @@ if (!/^[0-9a-f-]{36}$/i.test(id) || id === placeholder) {
   useMemoryStore("preview database id was not available");
   process.exit(0);
 }
-const toml = fs.readFileSync(tomlPath, "utf8").split(placeholder).join(id);
+let toml = fs.readFileSync(tomlPath, "utf8").split(placeholder).join(id);
+if (!toml.includes(id)) {
+  toml += `
+[[d1_databases]]
+binding = "DB"
+database_name = "${databaseName}"
+database_id = "${id}"
+
+[[previews.d1_databases]]
+binding = "DB"
+database_name = "${databaseName}"
+database_id = "${id}"
+`;
+}
 fs.writeFileSync(tomlPath, toml);
 fs.mkdirSync(path.join(root, "site"), { recursive: true });
 fs.writeFileSync(path.join(root, "site", "preview-store.txt"), "d1\n");
