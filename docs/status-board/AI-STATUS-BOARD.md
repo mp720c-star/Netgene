@@ -365,7 +365,8 @@ Full text: `docs/status-board/OFFICIAL-TEAM-DIRECTIVE-2026-11-23.md`
 ## Entry — 2026-11-23 ~10:36 PM America/Chicago
 
 **Agent:** Cursor cloud agent  
-**Branch:** `cursor/atdd-live-readings-3db1` (continues `05ddaad`, which is after TestFlight build 23)  
+**Branch:** `cursor/atdd-live-readings-3db1`  
+**Code commit:** `fd5d4f04719ccdfb6b8e11f52bb07a633e59a4f0` (parent `05ddaad`, after TestFlight build 23)  
 **Action:** Administrator directive. ATDD Connect is the only code repair in this turn. Success on a physical iPhone is not claimed.
 
 ### Completed

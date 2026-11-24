@@ -4,6 +4,7 @@
   "purpose": "Source locations and SHA-256 checksums for Sync & Merge. Content hashes of files read on this machine. OneDrive remains the cloud master. This file does not copy, delete, or reconcile D: drive files.",
   "git": {
     "repo": "github.com/mp720c-star/Netgene",
+    "code_commit": "fd5d4f04719ccdfb6b8e11f52bb07a633e59a4f0",
     "parent_of_this_work": "05ddaad1cf17258e346e28cfa5aba6c2abda6a87",
     "main_at_build_17": "79d4ca8551171df64915b8e0ddda18ff5cf96af0"
   },
