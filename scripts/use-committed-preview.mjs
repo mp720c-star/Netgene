@@ -3,6 +3,7 @@
  * Cloudflare builds should upload the committed home screen.
  * Rebuilding Next here is what made the branch preview fail closed.
  */
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -21,3 +22,8 @@ if (!fs.existsSync(manifestPath)) {
 fs.mkdirSync(path.join(root, "site", "hub"), { recursive: true });
 fs.copyFileSync(path.join(root, "index.html"), path.join(root, "site", "hub", "index.html"));
 console.log("use-committed-preview: ./site is the mike-ai home screen; hub is at /hub");
+const ensured = spawnSync(process.execPath, [path.join(root, "scripts", "ensure-preview-d1.mjs")], {
+  stdio: "inherit",
+  cwd: root,
+});
+process.exit(ensured.status ?? 1);

@@ -23,6 +23,8 @@ function useMemoryStore(reason) {
     toml += '\n[vars]\nPREVIEW_STORE = "memory"\n';
   }
   fs.writeFileSync(tomlPath, toml);
+  fs.mkdirSync(path.join(root, "site"), { recursive: true });
+  fs.writeFileSync(path.join(root, "site", "preview-store.txt"), `memory\n${reason}\n`);
   console.log(`ensure-preview-d1: using the preview memory store (${reason})`);
 }
 
@@ -79,4 +81,6 @@ if (!/^[0-9a-f-]{36}$/i.test(id) || id === placeholder) {
 }
 const toml = fs.readFileSync(tomlPath, "utf8").split(placeholder).join(id);
 fs.writeFileSync(tomlPath, toml);
+fs.mkdirSync(path.join(root, "site"), { recursive: true });
+fs.writeFileSync(path.join(root, "site", "preview-store.txt"), "d1\n");
 console.log(`ensure-preview-d1: bound ${databaseName} (${id})`);
