@@ -130,6 +130,31 @@
     }
   }
 
+  function runDiagnosisFromScan() {
+    if (typeof document === "undefined") return;
+    const diagnose = document.getElementById("btnRunDiagnosis") || document.getElementById("btnRunDiagnosisTop");
+    if (diagnose) diagnose.click();
+    const resultsTab = document.getElementById("tabBtnResults");
+    if (resultsTab) resultsTab.click();
+    const results = document.getElementById("results");
+    if (results && typeof results.scrollIntoView === "function") {
+      results.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }
+
+  function nextStepsHtml(model) {
+    const hasCodes = Array.isArray(model.items) && model.items.length > 0;
+    if (!hasCodes) return "";
+    return (
+      '<div class="scan-next-steps">' +
+        '<p class="scan-note">Tap a code for lookup, or run Diagnose for repair steps and how-to checks.</p>' +
+        '<div class="row secondary-actions">' +
+          '<button type="button" class="warn" data-run-diagnosis>Diagnose and repair steps</button>' +
+        "</div>" +
+      "</div>"
+    );
+  }
+
   function renderScanReadout(model, rootEl) {
     const card = typeof document !== "undefined" ? document.getElementById("scanReadoutCard") : null;
     const target = rootEl || (typeof document !== "undefined" ? document.getElementById("scanReadout") : null);
@@ -151,10 +176,8 @@
       return model;
     }
     if (model.status === "report") {
-      target.innerHTML = renderReport(model);
-      target.querySelectorAll("[data-open-guidance]").forEach((button) => {
-        button.addEventListener("click", () => openCodeGuidance(button.getAttribute("data-open-guidance")));
-      });
+      target.innerHTML = renderReport(model) + nextStepsHtml(model);
+      bindReadoutActions(target);
       return model;
     }
     target.innerHTML = model.items.map((item) => {
@@ -165,11 +188,18 @@
           '<span class="meta">' + escapeHtml(meaning) + "</span>" +
         "</button>"
       );
-    }).join("");
+    }).join("") + nextStepsHtml(model);
+    bindReadoutActions(target);
+    return model;
+  }
+
+  function bindReadoutActions(target) {
     target.querySelectorAll("[data-open-guidance]").forEach((button) => {
       button.addEventListener("click", () => openCodeGuidance(button.getAttribute("data-open-guidance")));
     });
-    return model;
+    target.querySelectorAll("[data-run-diagnosis]").forEach((button) => {
+      button.addEventListener("click", () => runDiagnosisFromScan());
+    });
   }
 
   function statusRow(label, value) {
@@ -254,6 +284,7 @@
     buildScanReadout,
     renderScanReadout,
     showScanReadout,
-    openCodeGuidance
+    openCodeGuidance,
+    runDiagnosisFromScan
   };
 })(typeof window !== "undefined" ? window : globalThis);

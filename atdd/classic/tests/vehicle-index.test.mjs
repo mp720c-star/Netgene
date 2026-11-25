@@ -57,10 +57,10 @@ runInNewContext(fs.readFileSync(path.join(classic, "vehicleCatalog.js"), "utf8")
 const Catalog = catalogWin.window.VehicleCatalog;
 const counts = Catalog.data().counts;
 
-assert.equal(counts.source_rows, 677);
-assert.equal(counts.entries, 438);
-assert.equal(counts.exact_merges, 239);
-assert.equal(counts.near_match_pairs, 22);
+assert.equal(counts.source_rows, 3632);
+assert.equal(counts.entries, 3464);
+assert.equal(counts.exact_merges, 168);
+assert.equal(counts.near_match_pairs, 31);
 assert.equal(counts.cdi_profiles_represented, 69);
 assert.equal(counts.catalog_sources, 361);
 const sourceKinds = new Set();
@@ -68,18 +68,18 @@ for (const entry of Catalog.data().entries) {
   for (const s of entry.sources || []) sourceKinds.add(s.kind);
 }
 assert.deepEqual([...sourceKinds].sort(), ["catalog", "cdi", "vehicle_genius"]);
-assert.equal(counts.vehicle_genius_sources, 247);
-assert.equal(counts.by_type.car_truck, 237);
-assert.equal(counts.by_type.dirt_bike, 110);
-assert.equal(counts.by_type.atv, 74);
+assert.equal(counts.vehicle_genius_sources, 3202);
+assert.equal(counts.by_type.car_truck, 3129);
+assert.equal(counts.by_type.dirt_bike, 168);
+assert.equal(counts.by_type.atv, 150);
 assert.equal(counts.by_type.atc, 9);
 assert.equal(counts.by_type.snowmobile, 4);
 assert.equal(counts.by_type.motorcycle, 2);
 assert.equal(counts.by_type.generic_reference, 2);
 assert.equal(counts.by_type.simulated, undefined);
-assert.equal(counts.by_workflow.generic_automotive, 237);
+assert.equal(counts.by_workflow.generic_automotive, 3129);
 assert.equal(counts.by_workflow.cdi_pinout, 69);
-assert.equal(counts.by_workflow.index_only, 132);
+assert.equal(counts.by_workflow.index_only, 266);
 
 const trucks = Catalog.search({ type: "car_truck", make: "Ford", query: "F-150" });
 assert.ok(trucks.length > 0);
