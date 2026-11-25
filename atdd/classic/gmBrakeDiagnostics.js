@@ -208,18 +208,28 @@
     },
   ]);
 
-  /** SAE J2012-aligned chassis codes reported on the Sierra; subtypes noted when known. */
+  /** Chassis codes from the Sierra FIXD app report + owner ATDD sessions; subtypes not invented. */
   var PRIORITY_ABS_CODES = Object.freeze({
     C0035: {
       code: "C0035",
       title: "Left front wheel speed sensor circuit",
       sae: "Left Front Wheel Speed Sensor Circuit",
       gmNotes:
-        "On GMT900 trucks this is typically the LF wheel-speed sensor circuit (open, short, or erratic). Confirm exact failure subtype (e.g. C0035 00/0A/0B) from the EBCM freeze data in service information — ATDD does not invent subtypes.",
+        "Seen on the 2008 Sierra FIXD report. Typically LF wheel-speed sensor circuit. Confirm subtype from EBCM data in SI — ATDD does not invent subtypes.",
       checks: [
         "Inspect the left-front wheel-speed harness at the strut and hub for rub-through.",
         "Check the sensor tip and tone ring for debris, cracks, or rust jacking.",
         "Measure sensor resistance only per the service manual range for this truck.",
+      ],
+    },
+    C0040: {
+      code: "C0040",
+      title: "Right front wheel speed sensor circuit",
+      sae: "Right Front Wheel Speed Sensor Circuit",
+      gmNotes: "Seen on the 2008 Sierra FIXD report. Confirm subtype from EBCM / SI.",
+      checks: [
+        "Inspect the right-front wheel-speed harness.",
+        "Check tone ring / encoder and bearing play.",
       ],
     },
     C0045: {
@@ -227,7 +237,7 @@
       title: "Left rear wheel speed sensor circuit",
       sae: "Left Rear Wheel Speed Sensor Circuit",
       gmNotes:
-        "Typically LR wheel-speed sensor circuit on GMT900. Confirm subtype letters/bytes from EBCM data; do not assume open vs short without the module payload.",
+        "Seen on the 2008 Sierra FIXD report. Typically LR wheel-speed sensor circuit. Confirm subtype from EBCM data.",
       checks: [
         "Inspect the left-rear harness along the axle and frame clips.",
         "Check tone ring / encoder and bearing play at that corner.",
@@ -238,25 +248,76 @@
       code: "C0050",
       title: "Right rear wheel speed sensor circuit",
       sae: "Right Rear Wheel Speed Sensor Circuit",
-      gmNotes:
-        "Typically RR wheel-speed sensor circuit on GMT900. Verify subtype against SI for this VIN family.",
+      gmNotes: "Seen on the 2008 Sierra FIXD report. Verify subtype against SI for this truck.",
       checks: [
         "Inspect the right-rear harness and connector.",
         "Check tone ring / encoder condition.",
-        "Compare live wheel speeds only when the EBCM actually returns verified data.",
+        "Compare live wheel speeds only when the EBCM returns verified data.",
       ],
     },
+    C0245: {
+      code: "C0245",
+      title: "Wheel speed sensor frequency error",
+      sae: "Wheel Speed Sensor Frequency Error",
+      gmNotes:
+        "Listed on the Sierra FIXD ABS set. Treat as ABS/traction related until EBCM SI names the exact corner.",
+      checks: [
+        "Compare all four corners when live data is available.",
+        "Inspect tone rings for missing teeth / debris.",
+      ],
+    },
+    C0561: {
+      code: "C0561",
+      title: "System disabled information stored elsewhere",
+      sae: "System Disabled Information Stored In Other Module",
+      gmNotes:
+        "Listed on the Sierra FIXD ABS set. Often means another module requested ABS/traction disable — pull companion codes.",
+      checks: [
+        "Read engine/body companions (e.g. U-codes).",
+        "Do not clear ABS alone and assume the root cause is gone.",
+      ],
+    },
+  });
+
+  /**
+   * Owner-confirmed Sierra evidence (not invented by this cloud agent):
+   * - Last ATDD TestFlight build reached the 2008 Sierra (owner statement 2026-11-24).
+   * - PR #36 documented live Mode 03 ELM replies on that truck (P0016 / P0325).
+   * - FIXD app PDF (2026-11-17) listed ABS C0035/C0040/C0045/C0050/C0245/C0561 (+ engine/body).
+   * That PDF is not raw CAN; EBCM header reach via ATDD still needs a captured transcript
+   * from Full Vehicle Scan on this branch.
+   */
+  var SIERRA_EVIDENCE = Object.freeze({
+    ownerConfirmedReach: true,
+    vehicle: "2008 GMC Sierra 1500",
+    lastBuildReachedTruck: true,
+    powertrainMode03Codes: Object.freeze(["P0016", "P0325"]),
+    fixdAppPdfCodes: Object.freeze([
+      "P0016",
+      "P0325",
+      "P1153",
+      "C0035",
+      "C0040",
+      "C0045",
+      "C0050",
+      "C0245",
+      "C0561",
+      "U0184",
+    ]),
+    fixdAppPdfNote:
+      "FIXD Diagnostic Report PDF (2026-11-17 23:19:31 UTC) — app list, not raw ELM/CAN frames.",
   });
 
   var HARDWARE_LIMITS = Object.freeze({
     adapter: "FIXD Bluetooth OBD-II (and other ELM327-style BLE adapters)",
     vehicle: PRIMARY_VEHICLE,
-    fixdClaim: "UNVERIFIED",
+    fixdClaim: "PARTIAL",
+    sierraEvidence: SIERRA_EVIDENCE,
     summary: [
-      "FIXD exposes a BLE UART that often speaks a subset of ELM327. It is not assumed to support every AT command or every GM manufacturer header.",
-      "GMT900 ABS/EBCM and BCM traffic frequently uses module addresses or GMLAN paths that consumer OBD adapters never reach from the 16-pin connector HS-CAN pins alone.",
-      "If EBCM candidates stay silent, ATDD reports unreachable — it does not invent ABS codes, wheel speeds, or parking-brake states.",
-      "Compatible alternatives (not purchased by this agent): a bidirectional scan tool with GM ABS coverage (OEM Tech 2/MDI-class or an aftermarket tool that documents EBCM access), or an ELM327 that documents HS-CAN physical addressing to the EBCM on this truck.",
+      "Owner confirmed: the last ATDD TestFlight build reached the 2008 Sierra. Powertrain Mode 03 on that truck returned real codes (P0016 / P0325 in the PR #36 capture).",
+      "FIXD still speaks a limited ELM327-style BLE UART. Not every AT command or GM manufacturer header is assumed to work.",
+      "ABS codes appear on the FIXD app PDF for this truck (C0035/C0040/C0045/C0050/C0245/C0561). ATDD Full Vehicle Scan must still prove which EBCM/BCM headers answer on FIXD — silent modules stay unreachable, never invented.",
+      "Wheel-speed / parking-brake live values stay unavailable until a module returns a DID and SI scaling is verified.",
     ],
     blockedActions: [
       "No module programming / reflash",
@@ -436,6 +497,7 @@
 
   root.ATDDGmBrake = {
     PRIMARY_VEHICLE: PRIMARY_VEHICLE,
+    SIERRA_EVIDENCE: SIERRA_EVIDENCE,
     GM_MODULE_CANDIDATES: GM_MODULE_CANDIDATES,
     LIVE_PARAMETERS: LIVE_PARAMETERS,
     PRIORITY_ABS_CODES: PRIORITY_ABS_CODES,

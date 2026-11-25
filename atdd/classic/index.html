@@ -122,7 +122,7 @@
             <button class="secondary" id="btnBtDisconnect" disabled>Disconnect</button>
           </div>
           <pre id="btLog" class="bt-log" aria-live="polite">Idle. Tap Connect, with the adapter powered in the OBD port.</pre>
-          <p class="small mt-8">Full Vehicle Scan asks for stored, pending, and permanent codes, the check-engine light, VIN, distances, GM candidate modules (ECM/TCM/EBCM/BCM), and live DID probes. A module that stays silent is reported unreachable — never invented. FIXD protocol claim stays <code>UNVERIFIED</code>. New scan does not clear codes.</p>
+          <p class="small mt-8">Full Vehicle Scan asks for stored, pending, and permanent codes, the check-engine light, VIN, distances, GM candidate modules (ECM/TCM/EBCM/BCM), and live DID probes. A module that stays silent is reported unreachable — never invented. FIXD protocol claim is <code>PARTIAL</code> (Sierra Mode 03 reached; EBCM/live DIDs still fail-closed). New scan does not clear codes.</p>
         </section>
 
         <section class="card" id="scanReadoutCard" hidden>

@@ -1,7 +1,7 @@
 /**
  * Capacitor BLE transport for native iPhone/Android ATDD Connect FIXD.
  * Uses @capacitor-community/bluetooth-le when running inside the Capacitor shell.
- * FIXD application protocol remains UNVERIFIED.
+ * FIXD application protocol claim is PARTIAL (Sierra Mode 03 owner-confirmed).
  */
 
 import { CANDIDATE_GATT_PROFILES } from "./fixd-protocol-probe.js";

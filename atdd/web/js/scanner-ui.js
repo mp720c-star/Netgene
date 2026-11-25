@@ -121,7 +121,7 @@ export function mountScannerUi(root, options = {}) {
     outEl.textContent =
       `Live GATT connected to ${name}.\n` +
       `Services discovered: ${(state.services || []).map((s) => s.uuid).join(", ") || "(see probe)"}\n` +
-      "Running protocol probe (FIXD claim stays UNVERIFIED until this succeeds)...\n";
+      "Running protocol probe (FIXD claim PARTIAL — Sierra Mode 03 confirmed; EBCM still fail-closed)...\n";
     try {
       const report = await session.probeProtocol();
       outEl.textContent =
@@ -189,7 +189,7 @@ export function mountScannerUi(root, options = {}) {
     if (!session) return;
     try {
       const report = await session.probeProtocol();
-      const banner = "Live probe (FIXD protocol claim still UNVERIFIED)\n";
+      const banner = "Live probe (FIXD protocol claim PARTIAL)\n";
       outEl.textContent = banner + JSON.stringify(report, null, 2);
     } catch (err) {
       outEl.textContent = `Probe failed: ${err.message || err}\n`;
@@ -204,7 +204,7 @@ export function mountScannerUi(root, options = {}) {
         outEl.textContent = "No data – this adapter path is not a live vehicle reading. No result was shown as a diagnosis.\n";
         return;
       }
-      const banner = "Live adapter payload (FIXD protocol claim still UNVERIFIED)\n";
+      const banner = "Live adapter payload (FIXD protocol claim PARTIAL)\n";
       outEl.textContent = banner + JSON.stringify(dtcs, null, 2);
     } catch (err) {
       outEl.textContent = `Read DTCs failed: ${err.message || err}\n`;

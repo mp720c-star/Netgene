@@ -12,10 +12,12 @@
  * so it can answer 1902FF. Programming session 1002 stays blocked.
  *
  * Blocked: ATMA, ATPP, every other AT command, and every other service.
- * FIXD compatibility stays UNVERIFIED. Do not invent scanner data here.
+ * FIXD compatibility is PARTIAL: owner-confirmed last TestFlight reached the
+ * 2008 Sierra and Mode 03 returned real powertrain codes. EBCM/BCM headers
+ * and live DID scaling remain unproven — never invent scanner data.
  */
 
-export const FIXD_COMPATIBILITY = "UNVERIFIED";
+export const FIXD_COMPATIBILITY = "PARTIAL";
 
 export const ALLOWED_ELM_ADAPTER_INIT = Object.freeze([
   "ATZ",
@@ -87,10 +89,10 @@ export function assertAllowedObdCommand(command) {
     normalized.startsWith("ATBD")
   ) {
     throw new Error(
-      "Blocked: monitoring-all, programmable parameters, and the programming session are disabled. FIXD compatibility is UNVERIFIED.",
+      "Blocked: monitoring-all, programmable parameters, and the programming session are disabled. FIXD compatibility is PARTIAL.",
     );
   }
   throw new Error(
-    "Blocked: that command is not a supported read or the confirmed clear. FIXD compatibility is UNVERIFIED.",
+    "Blocked: that command is not a supported read or the confirmed clear. FIXD compatibility is PARTIAL.",
   );
 }

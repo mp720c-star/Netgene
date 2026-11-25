@@ -3,12 +3,13 @@
  * Non-module bridge for the v1.2.0 shell (CSP script-src 'self').
  *
  * A failed live connect does not invent codes.
- * FIXD protocol claim stays UNVERIFIED until a live Mode 03 round-trip succeeds.
+ * FIXD protocol claim is PARTIAL: owner-confirmed Sierra reach + Mode 03
+ * powertrain codes. Module ABS headers and live DID scaling still need proof.
  */
 (function (global) {
   "use strict";
 
-  const FIXD_CLAIM = "UNVERIFIED";
+  const FIXD_CLAIM = "PARTIAL";
   const OPTIONAL_SERVICES = [
     0xfff0,
     "0000fff0-0000-1000-8000-00805f9b34fb",

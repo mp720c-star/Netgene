@@ -1,7 +1,7 @@
 /**
  * Web Bluetooth transport for ATDD live Connect Scanner (FIXD / ELM-class adapters).
  * Connection = GATT link + UART-like write/notify chars.
- * FIXD application protocol remains UNVERIFIED until Mode 03 (or vendor) round-trip evidence exists.
+ * FIXD application protocol claim is PARTIAL: Sierra Mode 03 owner-confirmed; EBCM/live DID still fail-closed.
  */
 
 import { CANDIDATE_GATT_PROFILES } from "./fixd-protocol-probe.js";

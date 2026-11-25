@@ -2,8 +2,8 @@
 
 **Primary vehicle:** 2008 GMC Sierra 1500 SLT, 5.3L V8 (GMT900)  
 **Primary adapter:** FIXD Bluetooth OBD-II  
-**App claim for FIXD protocol:** `UNVERIFIED`  
-**Branch work:** enhanced module diagnostics on top of full OBD scan + clear
+**App claim for FIXD protocol:** `PARTIAL`  
+**Evidence:** Owner confirmed (2026-11-24) the last ATDD TestFlight build reached the Sierra. PR #36 recorded live Mode 03 powertrain codes (`P0016`, `P0325`). FIXD app PDF (2026-11-17) listed ABS `C0035`/`C0040`/`C0045`/`C0050`/`C0245`/`C0561` (app list, not raw CAN).
 
 ## What ATDD does now
 
@@ -16,19 +16,21 @@
 4. Live DID probes (`22xxxx`) only against modules that answered. Without a verified decode profile, replies are **raw_unverified** — never shown as wheel-speed or switch readings.
 5. **Clear All Supported Codes** saves before/after snapshots, requires confirmation, clears answered modules only, rescans, and reports cleared / remained / appeared.
 6. UI sections: Engine, Transmission, ABS, Traction Control, Parking Brake, Live Sensor Data, Full Vehicle Scan, Diagnostic History.
-7. Priority guidance for **C0035**, **C0045**, **C0050** (LF / LR / RR wheel-speed sensor circuits). Subtypes are not invented.
+7. Priority guidance for **C0035**, **C0040**, **C0045**, **C0050**, **C0245**, **C0561** from the Sierra FIXD set. Subtypes are not invented.
 
-## What this cloud agent could not physically verify
+## Verified vs still open
 
 | Check | Status |
 |-------|--------|
-| Live FIXD BLE pairing on iPhone | Not run in this environment (no phone/adapter) |
-| Actual FIXD↔Sierra EBCM conversation | Not captured here |
+| Last TestFlight ↔ Sierra reach | Owner-confirmed |
+| Mode 03 powertrain on Sierra | Confirmed (`P0016` / `P0325`) |
+| FIXD app ABS code list for this truck | PDF evidence (not raw frames) |
+| ATDD Full Vehicle Scan EBCM/BCM headers on FIXD | Needs session transcript on this branch |
 | Wheel-speed DID scaling for GMT900 | Unverified — fail-closed |
 | Parking-brake / fluid / lamp DID mapping | Unverified — fail-closed |
-| Clear-all before/after on the truck | Requires TestFlight + vehicle |
+| Clear-all before/after on the truck | Needs TestFlight + vehicle transcript |
 
-## Technical reason FIXD may miss ABS / BCM
+## Technical reason FIXD may still miss ABS / BCM
 
 GMT900 EBCM and BCM traffic often uses module headers or GMLAN paths that many consumer OBD dongles never bridge from the 16-pin HS-CAN pins alone. FIXD’s public BLE surface behaves like a limited ELM327 UART. ATDD therefore:
 
@@ -52,8 +54,8 @@ GMT900 EBCM and BCM traffic often uses module headers or GMLAN paths that many c
 
 ## TestFlight
 
-Unsigned/unit tests run in CI/local Node. A verified TestFlight build still requires:
+Unsigned/unit tests run in CI/local Node. A verified ABS/module session still requires:
 
 1. Merge/build this branch with signing secrets
 2. `workflow_dispatch` on `atdd-ios-testflight.yml` with `upload: true`
-3. Physical Sierra + FIXD evidence attached to the board before calling the build “verified”
+3. Full Vehicle Scan transcript from the Sierra attached to the board (powertrain reach alone is already confirmed)

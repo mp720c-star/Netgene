@@ -116,7 +116,7 @@ function renderObd2Gate(options = {}) {
   renderVehicles('vehiclesObd');
   el('obd2Body').innerHTML = `
     <p><strong>Connect Scanner</strong> talks to your real FIXD when Bluetooth is available. A failed connect does not invent codes.</p>
-    <p><strong>FIXD protocol claim:</strong> <code>UNVERIFIED</code> until a live Mode 03 (or vendor) round-trip is recorded on a physical truck. Parser v3 (<code>${PROTOCOL_V3_META.version}</code>) runs after connect.</p>
+    <p><strong>FIXD protocol claim:</strong> <code>PARTIAL</code> — owner confirmed the last TestFlight reached the 2008 Sierra; Mode 03 powertrain codes recorded. EBCM/BCM headers and live DID scaling still need a session transcript. Parser v3 (<code>${PROTOCOL_V3_META.version}</code>) runs after connect.</p>
     <div id="scannerMount"></div>
   `;
   mountScannerUi(el('scannerMount'), { autoStart: options.autoStart === true });

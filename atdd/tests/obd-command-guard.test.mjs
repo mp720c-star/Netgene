@@ -6,7 +6,7 @@ import {
   normalizeObdCommand,
 } from "../web/js/obd-command-guard.js";
 
-assert.equal(FIXD_COMPATIBILITY, "UNVERIFIED");
+assert.equal(FIXD_COMPATIBILITY, "PARTIAL");
 assert.deepEqual(ALLOWED_ELM_ADAPTER_INIT, ["ATZ", "ATE0", "ATL0", "ATS0", "ATH0", "ATSP0"]);
 assert.equal(normalizeObdCommand(" 01 00 "), "0100");
 assert.equal(assertAllowedObdCommand("03"), "03");
@@ -42,7 +42,7 @@ for (const blocked of [
   assert.throws(() => assertAllowedObdCommand(blocked), /Blocked/, blocked);
 }
 
-console.log("obd-command-guard: reads, confirmed clear, and header setup allowed; ATMA, ATPP, programming session, and other commands blocked; FIXD claim UNVERIFIED");
+console.log("obd-command-guard: reads, confirmed clear, and header setup allowed; ATMA, ATPP, programming session, and other commands blocked; FIXD claim PARTIAL");
 
 import { createCapacitorBleTransport } from "../web/js/capacitor-ble-transport.js";
 const transport = createCapacitorBleTransport();
