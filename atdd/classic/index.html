@@ -91,7 +91,7 @@
           <div class="row secondary-actions">
             <button class="secondary" id="btnLookup">Code-only lookup</button>
             <button class="secondary" id="btnSearchDtc">Search words</button>
-            <button class="secondary" id="btnClearCodes">Clear code</button>
+            <button class="secondary" id="btnClearCodes">Clear entered code</button>
           </div>
           <label for="dbQuery">Search a word (optional)</label>
           <input id="dbQuery" placeholder="thermostat, misfire, starter">
@@ -110,17 +110,18 @@
 
         <section class="card" id="bluetoothCard" hidden>
           <h2>Bluetooth · Connect FIXD</h2>
-          <p class="lead">Pair your scanner and read stored codes. The app does not invent results.</p>
+          <p class="lead">Pair any ELM327-style Bluetooth OBD-II scanner and read the vehicle. The app does not invent results.</p>
           <p class="small" id="btSupport">Checking Bluetooth…</p>
           <div class="status-banner warn" id="btIphoneGate" hidden></div>
           <div class="row secondary-actions">
-            <button class="warn" id="btnBtConnect">Connect FIXD</button>
+            <button class="warn" id="btnBtConnect">Connect OBD-II Scanner</button>
             <button class="secondary" id="btnBtScanAll">Scan any BLE device</button>
             <button class="secondary" id="btnBtReadCodes" disabled>Read codes</button>
+            <button class="warn" id="btnBtClearVehicle" disabled>Clear vehicle codes</button>
             <button class="secondary" id="btnBtDisconnect" disabled>Disconnect</button>
           </div>
           <pre id="btLog" class="bt-log" aria-live="polite">Idle. Tap Connect, with the adapter powered in the OBD port.</pre>
-          <p class="small mt-8">FIXD protocol claim stays <code>UNVERIFIED</code> until a live Mode 03 round-trip succeeds on a physical truck. A failed connect does not invent codes.</p>
+          <p class="small mt-8">Read codes asks for stored, pending, and permanent codes, the check-engine light, VIN, distances, and every module that answers, including chassis modules. A module that stays silent is left out. FIXD protocol claim stays <code>UNVERIFIED</code>. New scan does not send Mode 04.</p>
         </section>
 
         <section class="card" id="scanReadoutCard" hidden>
@@ -301,6 +302,17 @@
     <button type="button" role="tab" id="tabBtnMore" data-tab="more" aria-controls="tab-more" aria-selected="false">More</button>
   </nav>
 
+  <dialog id="clearCodesDialog" class="confirm-dialog" aria-labelledby="clearCodesDialogTitle">
+    <form method="dialog" id="clearCodesForm">
+      <h2 id="clearCodesDialogTitle">Clear codes on this vehicle?</h2>
+      <p>This sends Mode 04, the standard OBD clear, and a clear-all request to each module that answered the last scan. The check-engine light goes off only if the vehicle accepts it. Park, switch the key on, and leave the engine off.</p>
+      <p class="small">New scan does not clear codes. No codes are added if a module does not answer.</p>
+      <div class="row dialog-actions">
+        <button type="button" class="secondary" id="btnClearVehicleCancel">Cancel</button>
+        <button type="submit" class="warn" id="btnClearVehicleConfirm" value="confirm">Clear vehicle codes</button>
+      </div>
+    </form>
+  </dialog>
   <dialog id="newScanDialog" class="confirm-dialog" aria-labelledby="newScanDialogTitle">
     <form method="dialog" id="newScanForm">
       <h2 id="newScanDialogTitle">Start a new scan / new vehicle?</h2>
@@ -329,6 +341,7 @@
   <script src="./diagnosticsEngine.js"></script>
   <script src="./sessionReset.js"></script>
   <script src="./scanReadout.js"></script>
+  <script src="./obdVehicleScan.js"></script>
   <script src="./bluetooth.js"></script>
   <script src="./app.js"></script>
 </body>
