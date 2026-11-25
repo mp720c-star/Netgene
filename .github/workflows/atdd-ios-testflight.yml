@@ -1,6 +1,10 @@
 name: atdd-ios-testflight
 
 on:
+  # One-shot: upload the catalog/ABS/BLE branch to TestFlight, then remove this push trigger.
+  push:
+    branches:
+      - cursor/atdd-abs-bt-catalog-6679
   workflow_dispatch:
     inputs:
       upload:
@@ -263,7 +267,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload the verified build to TestFlight
-        if: ${{ inputs.upload }}
+        if: ${{ inputs.upload || github.event_name == 'push' }}
         uses: apple-actions/upload-testflight-build@v2
         with:
           app-path: ${{ steps.export.outputs.path }}
@@ -272,7 +276,7 @@ jobs:
           api-private-key: ${{ secrets.ASC_PRIVATE_KEY }}
 
       - name: Record Apple processing status
-        if: ${{ inputs.upload }}
+        if: ${{ inputs.upload || github.event_name == 'push' }}
         env:
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
