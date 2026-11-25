@@ -1,4 +1,4 @@
-import { createScannerSession, createSimulatedTransport } from "./scanner-session.js";
+import { createScannerSession } from "./scanner-session.js";
 import {
   createWebBluetoothTransport,
   webBluetoothAvailable,
@@ -18,8 +18,8 @@ function escapeHtml(str) {
 }
 
 /**
- * Connect FIXD / live BLE is separate from Demo.
- * Live connect never silently falls back to Demo — that was hiding real FIXD failures.
+ * Live FIXD / BLE only. This UI does not invent demo or simulated scan results.
+ * A failed live connect does not invent codes.
  */
 export function mountScannerUi(root, options = {}) {
   const autoStart = options.autoStart === true;
@@ -29,13 +29,13 @@ export function mountScannerUi(root, options = {}) {
 
   root.innerHTML = `
     <div class="scanner-ui">
-      <p><strong>Connect FIXD</strong> is the live Bluetooth path for your real scanner.
-        Demo is separate and labeled SIMULATED — it will not pretend to be FIXD.</p>
+      <p><strong>Connect Scanner</strong> pairs your real <strong>FIXD</strong> over Bluetooth.
+        The app does not invent demo or simulated scan results.</p>
       <p id="btSupport" class="note"></p>
+      <div id="iphoneInstallGate" class="warn" hidden></div>
       <div class="row">
-        <button type="button" id="connectScannerBtn" class="primary">Connect FIXD</button>
+        <button type="button" id="connectScannerBtn" class="primary">Connect Scanner</button>
         <button type="button" id="scanAllBtn" class="ghost">Scan all BLE devices</button>
-        <button type="button" id="demoBtn" class="ghost">Demo only (SIMULATED)</button>
         <button type="button" id="probeBtn" class="ghost" disabled>Probe protocol</button>
         <button type="button" id="dtcBtn" class="ghost" disabled>Read DTCs</button>
         <button type="button" id="discBtn" class="ghost" disabled>Disconnect</button>
@@ -52,7 +52,6 @@ export function mountScannerUi(root, options = {}) {
   const outEl = root.querySelector("#scanOut");
   const connectBtn = root.querySelector("#connectScannerBtn");
   const scanAllBtn = root.querySelector("#scanAllBtn");
-  const demoBtn = root.querySelector("#demoBtn");
   const probeBtn = root.querySelector("#probeBtn");
   const dtcBtn = root.querySelector("#dtcBtn");
   const discBtn = root.querySelector("#discBtn");
@@ -61,20 +60,26 @@ export function mountScannerUi(root, options = {}) {
   const webOk = webBluetoothAvailable();
   const bleOk = capOk || webOk;
   const blockReason = !bleOk ? webBluetoothBlockReason() : null;
+  const installGate = root.querySelector("#iphoneInstallGate");
   supportEl.textContent = capOk
-    ? "Native iPhone/Android Bluetooth ready. Tap Connect FIXD with the dongle powered in the OBD port."
+    ? "Native Bluetooth ready. Tap Connect Scanner with FIXD powered in the OBD port."
     : webOk
-      ? "Web Bluetooth ready. Tap Connect FIXD, keep the dongle powered in the OBD port, and choose the FIXD device."
+      ? "Web Bluetooth ready. Tap Connect Scanner, pick your FIXD device."
       : blockReason || "Bluetooth unavailable.";
   if (!bleOk) {
     connectBtn.disabled = true;
     scanAllBtn.disabled = true;
+    const isiOS = /iPhone|iPad|iPod/i.test(navigator.userAgent || "");
+    if (isiOS && installGate) {
+      installGate.hidden = false;
+      installGate.textContent =
+        "Bluetooth is not available in this screen. Open the ATDD Connect app from the Home Screen or TestFlight, then tap Connect Scanner.";
+    }
     outEl.textContent =
-      "Live FIXD connect is blocked here.\n\n" +
+      "Live FIXD connect is blocked in this web shell.\n\n" +
       (blockReason || "") +
-      "\n\nOn iPhone use the ATDD Connect native app (Capacitor BLE).\n" +
-      "Or use Chrome/Edge on Android / Windows / Mac.\n" +
-      "Demo only (SIMULATED) does not talk to your FIXD.\n";
+      "\n\nConnect Scanner cannot reach FIXD until native Bluetooth is available.\n" +
+      "No simulated or demo codes are invented.\n";
   }
 
   function setBusy(next) {
@@ -83,7 +88,6 @@ export function mountScannerUi(root, options = {}) {
       connectBtn.disabled = busy;
       scanAllBtn.disabled = busy;
     }
-    demoBtn.disabled = busy;
   }
 
   function bindSession(nextSession) {
@@ -106,7 +110,6 @@ export function mountScannerUi(root, options = {}) {
           connectBtn.disabled = linked;
           scanAllBtn.disabled = linked;
         }
-        demoBtn.disabled = linked;
       }
     });
   }
@@ -115,19 +118,10 @@ export function mountScannerUi(root, options = {}) {
     await session.connect(deviceId);
     const state = session.getState();
     const name = state.selected?.name || deviceId;
-    if (transportKind === "simulated") {
-      outEl.textContent =
-        "Connected to SIMULATED adapter — not your FIXD.\nUse Connect FIXD for the real scanner.\n";
-      await session.probeProtocol();
-      outEl.textContent =
-        "⚠ DEMO PROBE (SIMULATED — not FIXD)\n" +
-        JSON.stringify(session.getState().lastProbe, null, 2);
-      return;
-    }
     outEl.textContent =
       `Live GATT connected to ${name}.\n` +
       `Services discovered: ${(state.services || []).map((s) => s.uuid).join(", ") || "(see probe)"}\n` +
-      "Running protocol probe (FIXD claim stays UNVERIFIED until this succeeds)...\n";
+      "Running protocol probe (FIXD claim PARTIAL — Sierra Mode 03 confirmed; EBCM still fail-closed)...\n";
     try {
       const report = await session.probeProtocol();
       outEl.textContent =
@@ -158,7 +152,7 @@ export function mountScannerUi(root, options = {}) {
         ? "Opening Web Bluetooth chooser (FIXD / OBD named devices first)…\nPower the FIXD in the vehicle OBD port, then select it.\n"
         : "Opening Web Bluetooth chooser (all BLE devices)…\nSelect your FIXD adapter.\n";
     listEl.innerHTML = "";
-    // Live path: do NOT fall back to Demo on cancel/failure.
+    // Live path only: a failed connect does not invent codes.
     const devices = await session.scan({ preferFixdName });
     listEl.innerHTML = devices
       .map(
@@ -171,21 +165,6 @@ export function mountScannerUi(root, options = {}) {
     await connectDevice(chosen.id);
   }
 
-  async function startDemo() {
-    transportKind = "simulated";
-    bindSession(createScannerSession(createSimulatedTransport()));
-    outEl.textContent =
-      "Demo only (SIMULATED). This is not your FIXD and will not pair to the vehicle.\n";
-    const devices = await session.scan();
-    listEl.innerHTML = devices
-      .map(
-        (d) =>
-          `<li><button type="button" data-id="${escapeHtml(d.id)}">Connect: ${escapeHtml(d.name)}</button></li>`,
-      )
-      .join("");
-    await connectDevice("sim-elm");
-  }
-
   async function run(fn) {
     if (busy) return;
     setBusy(true);
@@ -193,7 +172,7 @@ export function mountScannerUi(root, options = {}) {
       await fn();
     } catch (err) {
       const msg = err?.message || String(err);
-      outEl.textContent = `FIXD/live connect failed:\n${msg}\n\nDemo was NOT started. Fix the Bluetooth issue above, then tap Connect FIXD again.\n`;
+      outEl.textContent = `FIXD/live connect failed:\n${msg}\n\nNo codes were invented. Fix the Bluetooth issue above, then tap Connect Scanner again.\n`;
       statusEl.textContent = `Status: error — ${msg}`;
     } finally {
       setBusy(false);
@@ -206,18 +185,11 @@ export function mountScannerUi(root, options = {}) {
   scanAllBtn.addEventListener("click", () => {
     void run(() => startLive({ preferFixdName: false }));
   });
-  demoBtn.addEventListener("click", () => {
-    void run(() => startDemo());
-  });
-
   probeBtn.addEventListener("click", async () => {
     if (!session) return;
     try {
       const report = await session.probeProtocol();
-      const banner =
-        transportKind === "simulated"
-          ? "⚠ DEMO PROBE (SIMULATED — not FIXD)\n"
-          : "Live probe (FIXD protocol claim still UNVERIFIED)\n";
+      const banner = "Live probe (FIXD protocol claim PARTIAL)\n";
       outEl.textContent = banner + JSON.stringify(report, null, 2);
     } catch (err) {
       outEl.textContent = `Probe failed: ${err.message || err}\n`;
@@ -228,10 +200,11 @@ export function mountScannerUi(root, options = {}) {
     if (!session) return;
     try {
       const dtcs = await session.readStoredDtcs();
-      const banner =
-        dtcs.isSimulated || transportKind === "simulated"
-          ? "⚠ SIMULATED RESULTS — not your FIXD\n"
-          : "Live adapter payload (FIXD protocol claim still UNVERIFIED)\n";
+      if (dtcs.isSimulated) {
+        outEl.textContent = "No data – this adapter path is not a live vehicle reading. No result was shown as a diagnosis.\n";
+        return;
+      }
+      const banner = "Live adapter payload (FIXD protocol claim PARTIAL)\n";
       outEl.textContent = banner + JSON.stringify(dtcs, null, 2);
     } catch (err) {
       outEl.textContent = `Read DTCs failed: ${err.message || err}\n`;
@@ -245,15 +218,16 @@ export function mountScannerUi(root, options = {}) {
       connectBtn.disabled = false;
       scanAllBtn.disabled = false;
     }
-    demoBtn.disabled = false;
     outEl.textContent += "\nDisconnected.\n";
   });
 
-  // Auto-start = attempt LIVE FIXD connect only when Web Bluetooth exists.
-  if (autoStart) {
-    if (bleOk) void run(() => startLive({ preferFixdName: true }));
-    else {
-      statusEl.textContent = "Status: blocked — cannot live-connect FIXD in this browser";
-    }
+  // autoStart is only set from a button tap. Page load leaves it false so iOS
+  // does not present the Bluetooth sheet before the view controller is ready.
+  if (autoStart && bleOk) {
+    void run(() => startLive({ preferFixdName: true }));
+  } else if (bleOk) {
+    statusEl.textContent = "Status: ready — tap Connect Scanner";
+  } else if (autoStart) {
+    statusEl.textContent = "Status: Bluetooth is not available in this screen";
   }
 }

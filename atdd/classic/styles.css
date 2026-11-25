@@ -270,6 +270,18 @@ details.extra[open] summary{margin-bottom:10px}
 .scan-code{display:block;width:100%;text-align:left;min-height:var(--tap);background:#0f0f0f;border:1px solid #4a310e;border-radius:14px;padding:12px;color:var(--text);font-weight:600}
 .scan-code .code{display:block}
 .scan-code .meta{display:block;font-weight:400;color:var(--muted);font-size:.9375rem;margin-top:4px;line-height:var(--lh)}
+.scan-module{background:#0f0f0f;border:1px solid #4a310e;border-radius:14px;padding:12px}
+.scan-module h3{margin:0 0 8px;color:#ffd27b;font-size:var(--h3)}
+.scan-kvs{display:grid;gap:4px;margin:0 0 8px}
+.scan-kvs div{display:flex;justify-content:space-between;gap:12px;border-left:3px solid #2f6b45;padding:6px 8px;background:#141414;border-radius:8px}
+.scan-kvs dt{color:#f0d7a6}
+.scan-kvs dd{margin:0;text-align:right}
+.scan-section-label{margin:8px 0 4px;color:#ffd27b;font-weight:700}
+.scan-note{color:var(--muted);margin:0 0 8px;line-height:var(--lh)}
+.scan-next-steps{margin-top:12px;padding-top:8px;border-top:1px solid #4a310e}
+.module-diagnostics{display:grid;gap:10px}
+.module-diagnostics .scan-module{margin:0}
+.history-row{border:1px solid #4a310e;border-radius:12px;padding:10px;margin-bottom:8px;background:#0f0f0f}
 .scan-readout-empty,.scan-readout-error{margin:0;color:var(--text);font-size:var(--text-body);line-height:var(--lh)}
 .scan-readout-error{color:#ffb4b4}
 .scan-readout-raw{margin:8px 0 0;padding:12px;max-height:200px;overflow:auto;white-space:pre-wrap;word-break:break-word;background:#0b0b0b;border:1px solid #5c3a0d;border-radius:12px;color:#f0d7a6;font-size:.9375rem;line-height:var(--lh)}

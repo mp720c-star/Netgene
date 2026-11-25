@@ -1,14 +1,14 @@
 /**
  * FIXD protocol probe — does NOT assume ELM327.
  *
- * Public research notes that FIXD hardware may use application-specific
- * pairing/communication. Until a live FIXD GATT inspection + successful
- * Mode 03 (or vendor equivalent) round-trip is recorded, compatibility is
- * UNVERIFIED and ATDD must not claim FIXD support.
+ * Owner confirmed (2026-11-24): the last ATDD TestFlight reached the 2008
+ * Sierra. Mode 03 powertrain codes were recorded (PR #36). Claim is PARTIAL —
+ * not full brand certification. EBCM/BCM headers and live DID scaling still
+ * need a captured Full Vehicle Scan transcript on this branch.
  */
 
 export const FIXD_STATUS = {
-  claim: "UNVERIFIED",
+  claim: "PARTIAL",
   elm327Assumed: false,
   lastProbe: null
 };
@@ -95,11 +95,11 @@ export function evaluateElmProbe(transcript) {
     sawPid,
     sawNoData,
     sawError,
-    fixdClaim: "UNVERIFIED",
+    fixdClaim: "PARTIAL",
     note:
       verdict === "ELM_LIKE_OK"
-        ? "Adapter answered ELM-style AT/PID probes. Still not a FIXD brand certification."
-        : "FIXD support remains unverified. Do not claim FIXD compatibility."
+        ? "Adapter answered ELM-style AT/PID probes. Sierra Mode 03 is owner-confirmed PARTIAL; not a full FIXD brand certification."
+        : "FIXD claim stays PARTIAL from prior Sierra reach. This probe did not strengthen it."
   };
 }
 
@@ -115,9 +115,16 @@ export function buildProbeReport({ deviceName, services, transcript, connectionS
     connectionState: connectionState || "unknown",
     gattProfileMatches: matches.map((m) => m.id),
     elmProbe: elm,
-    fixdCompatibility: "UNVERIFIED",
-    allowedClaims: [],
-    deniedClaims: ["FIXD official protocol support", "Simulated readings as live vehicle data"]
+    fixdCompatibility: "PARTIAL",
+    allowedClaims: [
+      "Owner-confirmed Sierra reach via last ATDD TestFlight",
+      "Mode 03 powertrain codes on 2008 Sierra (P0016/P0325 capture)",
+    ],
+    deniedClaims: [
+      "FIXD official full-protocol certification",
+      "EBCM/BCM reach without session transcript",
+      "Simulated readings as live vehicle data",
+    ]
   };
   if (elm.verdict === "ELM_LIKE_OK" || elm.verdict === "ELM_LIKE_LINK_NO_ECU") {
     report.allowedClaims.push("ELM-like AT command transport (candidate)");

@@ -228,11 +228,13 @@ function fakeDom() {
   assert.match(resetFn, /release\(active\)/);
   assert.doesNotMatch(resetFn, /\.send\(/);
   assert.doesNotMatch(resetFn, /["']04["']/);
-  // Guard must stay unchanged: Mode 03 only, Mode 04 blocked in the read path.
-  assert.match(scanner, /scanner\.send\("03"\)/);
-  assert.match(scanner, /Mode 04 clear-codes stays blocked/);
+  assert.match(scanner, /FUNCTIONAL_READS|fullVehicleScan|readSections/);
+  assert.match(scanner, /New scan does not send Mode 04/);
+  assert.match(scanner, /btnBtClearVehicle/);
+  assert.match(scanner, /btnBtClearAllSupported/);
+  assert.match(scanner, /CLEAR_EMISSIONS/);
   assert.doesNotMatch(scanner, /send\(["']04["']\)/);
-  console.log("session-reset: iPhone scanner reset disconnects only; Mode 04 stays blocked");
+  console.log("session-reset: iPhone scanner reset disconnects only; clear is a separate confirmed action");
 }
 
 {
@@ -242,7 +244,8 @@ function fakeDom() {
   assert.match(guard, /ALLOWED_ELM_ADAPTER_INIT/);
   assert.match(guard, /ATMA/);
   assert.match(guard, /ATPP/);
-  console.log("session-reset: OBD command guard still blocks Mode 04, ATMA, and ATPP");
+  assert.match(guard, /1002/);
+  console.log("session-reset: OBD command guard keeps Mode 04 out of new scan and still blocks ATMA, ATPP, and programming session 1002");
 }
 
 console.log("session-reset.test.mjs passed");

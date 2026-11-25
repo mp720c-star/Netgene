@@ -11,7 +11,7 @@ sandbox.window = sandbox;
 vm.runInNewContext(source, sandbox);
 
 const { parseMode03Response, decodeDtcPair, claim } = sandbox.ATDDBluetooth;
-assert.equal(String(claim), "UNVERIFIED");
+assert.equal(String(claim), "PARTIAL");
 assert.equal(String(decodeDtcPair(0x03, 0x00)), "P0300");
 assert.equal(
   JSON.stringify([...parseMode03Response("43 02 03 00 04 20")].map(String)),

@@ -13,7 +13,7 @@ assert.match(entry, /<title>Auto\/Truck Diagnostics for Dummies<\/title>/);
 for (const label of ["Diagnose", "Listen", "Look", "Code"]) assert.ok(entry.includes(">" + label + "</button>"), label);
 assert.ok(entry.includes('id="btnBluetoothTop"'));
 assert.ok(entry.includes('src="./scanner/iphone-scanner.js"'));
-for (const file of ["app.js", "icon.png", "styles.css", "diagnosticsEngine.js", "scanReadout.js", "vehicleCatalog.js", "sessionReset.js", "dtcGuidance.js", "symptomRepair.js", "data/dtc-db.js", "data/common-jobs.js", "data/cdi-pinout-db.js", "data/cdi-pinout-db.json", "data/cdi-pinout-db.manifest.json", "data/vehicle-index.js", "data/vehicle-index.json", "data/dtc-sae-generic-additions.js", "data/dtc-guidance-overlay.js", "data/dtc-guidance.manifest.json", "data/symptom-repair-db.js", "data/symptom-repair.manifest.json"]) {
+for (const file of ["app.js", "icon.png", "styles.css", "diagnosticsEngine.js", "scanReadout.js", "vehicleCatalog.js", "sessionReset.js", "dtcGuidance.js", "symptomRepair.js", "gmBrakeDiagnostics.js", "diagnosticHistory.js", "moduleDiagnosticsUi.js", "obdVehicleScan.js", "data/dtc-db.js", "data/common-jobs.js", "data/cdi-pinout-db.js", "data/cdi-pinout-db.json", "data/cdi-pinout-db.manifest.json", "data/vehicle-index.js", "data/vehicle-index.json", "data/dtc-sae-generic-additions.js", "data/dtc-guidance-overlay.js", "data/dtc-guidance.manifest.json", "data/symptom-repair-db.js", "data/symptom-repair.manifest.json"]) {
   const packed = fs.readFileSync(path.join(root, file));
   assert.ok(packed.equals(fs.readFileSync(path.join(classic, file))), "Changed original " + file);
 }
@@ -42,9 +42,14 @@ for (const allowed of ["ATZ", "ATE0", "ATL0", "ATS0", "ATH0", "ATSP0"]) {
 }
 assert.doesNotMatch(scannerText, /\bATMA\b|\bATPP\b|\bATS1\b|send\(["']04["']\)/);
 assert.match(scannerText, /FIXD_COMPATIBILITY/);
-assert.match(scannerText, /scanner\.send\("03"\)/);
+assert.match(scannerText, /fullVehicleScan|FUNCTIONAL_READS|readSections/);
+assert.match(scannerText, /btnBtClearAllSupported/);
 assert.match(entry, /id="scanReadoutCard"/);
 assert.match(entry, /id="scanReadout"/);
+assert.match(entry, /id="btnBtClearAllSupported"/);
+assert.match(entry, /id="moduleDiagnosticsCard"/);
+assert.match(entry, /id="diagnosticHistoryCard"/);
+assert.match(entry, /src="\.\/gmBrakeDiagnostics\.js"/);
 
 for (const file of ["capacitor-ble-transport.js", "fixd-protocol-probe.js", "obd-command-guard.js", "obd-protocol-v3-frame-aware.js", "web-bluetooth-transport.js"]) {
   assert.ok(fs.readFileSync(path.join(root, "tools/js", file)).equals(fs.readFileSync(path.join(ios, "../web/js", file))), file);
@@ -106,11 +111,11 @@ assert.equal(pinout.profiles.HONDA_XR650L_DC.provenance, "verified");
 const indexCtx = { window: {} };
 runInNewContext(fs.readFileSync(path.join(root, "data/vehicle-index.js"), "utf8"), indexCtx);
 const index = indexCtx.window.VEHICLE_INDEX_DATA;
-assert.equal(index.counts.entries, 438);
+assert.equal(index.counts.entries, 3464);
 assert.equal(index.counts.cdi_profiles_represented, 69);
 assert.equal(index.counts.by_type.simulated, undefined);
-assert.equal(index.counts.near_match_pairs, 22);
-assert.equal(index.counts.by_type.car_truck, 237);
+assert.equal(index.counts.near_match_pairs, 31);
+assert.equal(index.counts.by_type.car_truck, 3129);
 assert.equal(index.counts.by_type.snowmobile, 4);
 assert.doesNotMatch(JSON.stringify(index), /P0300/);
 

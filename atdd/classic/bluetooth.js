@@ -3,12 +3,13 @@
  * Non-module bridge for the v1.2.0 shell (CSP script-src 'self').
  *
  * A failed live connect does not invent codes.
- * FIXD protocol claim stays UNVERIFIED until a live Mode 03 round-trip succeeds.
+ * FIXD protocol claim is PARTIAL: owner-confirmed Sierra reach + Mode 03
+ * powertrain codes. Module ABS headers and live DID scaling still need proof.
  */
 (function (global) {
   "use strict";
 
-  const FIXD_CLAIM = "UNVERIFIED";
+  const FIXD_CLAIM = "PARTIAL";
   const OPTIONAL_SERVICES = [
     0xfff0,
     "0000fff0-0000-1000-8000-00805f9b34fb",
@@ -46,11 +47,13 @@
     const connect = byId("btnBtConnect");
     const scanAll = byId("btnBtScanAll");
     const read = byId("btnBtReadCodes");
+    const clear = byId("btnBtClearVehicle");
     const disc = byId("btnBtDisconnect");
     const webOk = webBluetoothAvailable();
     if (connect) connect.disabled = busy || !webOk;
     if (scanAll) scanAll.disabled = busy || !webOk;
     if (read) read.disabled = busy || !writeChar;
+    if (clear) clear.disabled = busy || !writeChar;
     if (disc) disc.disabled = busy || !device;
   }
 
@@ -287,30 +290,44 @@
   }
 
   async function readCodesLive() {
-    if (!writeChar) throw new Error("Connect FIXD first.");
-    log("Reading Mode 03 DTCs…");
-    let reply;
-    try {
-      reply = await sendCommand("03", 1500);
-    } catch (err) {
-      showLiveScanReadout("", [], false);
-      throw err;
-    }
-    log(reply || "(empty Mode 03 reply)");
-    const codes = parseMode03Response(reply);
-    const looksComplete = /43/i.test(String(reply)) && String(reply).includes(">");
-    if (codes.length) {
+    if (!writeChar) throw new Error("Connect a scanner first.");
+    const scan = global.ATDDVehicleScan;
+    if (!scan) {
+      log("Reading Mode 03 DTCs…");
+      const reply = await sendCommand("03", 1500);
+      log(reply || "(empty Mode 03 reply)");
+      const codes = parseMode03Response(reply);
       applyCodesToScanner(codes);
-      showLiveScanReadout(reply, codes, true);
-      log("Parsed " + codes.length + " code(s). Decoded meanings are listed below this card.");
-    } else if (looksComplete) {
-      applyCodesToScanner(codes);
-      showLiveScanReadout(reply, [], true);
-      log("The vehicle reported no stored fault codes.");
-    } else {
-      showLiveScanReadout(reply, [], false);
-      log("could not parse\n" + (reply || "(empty Mode 03 reply)"));
+      showLiveScanReadout(reply, codes, /43/i.test(String(reply)));
+      return;
     }
+    const sections = [];
+    for (const step of scan.FUNCTIONAL_READS) {
+      log("Requesting " + step.label + ".");
+      const reply = await sendCommand(step.command, Math.min(step.timeoutMs, 2500));
+      log(reply || "(no reply)");
+      sections.push({ label: step.label, raw: reply });
+    }
+    log("Chassis-module reads run in the TestFlight app, which waits for each adapter reply. This browser lists the codes in the replies above.");
+    const report = scan.buildReport(sections);
+    applyCodesToScanner(report.uniqueCodes);
+    const reply = sections.map((section) => section.raw).join("\n");
+    const api = global.ATDDScanReadout;
+    if (api) api.showScanReadout({ ok: true, codes: report.uniqueCodes, reply, report });
+  }
+
+  async function clearVehicleLive() {
+    if (!writeChar) throw new Error("Connect a scanner first.");
+    const accepted = window.confirm("Clear codes on this vehicle? Park, key on, engine off. This sends the standard OBD clear.");
+    if (!accepted) {
+      log("Clear cancelled. Nothing was sent to the vehicle.");
+      return;
+    }
+    const scan = global.ATDDVehicleScan;
+    log("Clearing codes the vehicle accepts. New scan does not send a clear.");
+    const reply = await sendCommand(scan ? scan.CLEAR_EMISSIONS : "04", 2500);
+    log(reply || "(no reply)");
+    await readCodesLive();
   }
 
   function showBluetoothPanel() {
@@ -388,6 +405,20 @@
           await readCodesLive();
         } catch (err) {
           log("Read codes failed: " + (err && err.message ? err.message : err));
+        } finally {
+          setBusy(false);
+        }
+      };
+    }
+    const clear = byId("btnBtClearVehicle");
+    if (clear) {
+      clear.onclick = async () => {
+        if (busy) return;
+        setBusy(true);
+        try {
+          await clearVehicleLive();
+        } catch (err) {
+          log("Clear failed: " + (err && err.message ? err.message : err));
         } finally {
           setBusy(false);
         }

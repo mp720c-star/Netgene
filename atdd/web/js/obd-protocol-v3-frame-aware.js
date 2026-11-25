@@ -344,6 +344,6 @@ export const PROTOCOL_V3_META = {
   name: "obd-protocol-v3-frame-aware",
   version: "3.1.0-cloud-continuation",
   source: "netgene/atdd/obd (OneDrive original not imported)",
-  fixdClaim: "UNVERIFIED",
-  elm327Claim: "PARSER_ONLY — transport/protocol must be probed per adapter"
+  fixdClaim: "PARTIAL",
+  elm327Claim: "PARSER_ONLY — transport/protocol must be probed per adapter; Sierra Mode 03 owner-confirmed"
 };
