@@ -98,7 +98,15 @@ assert.equal(missed.items.length, 0);
 const html = fs.readFileSync(path.join(classic, "index.html"), "utf8");
 assert.match(html, /id="btnBtClearVehicle"/);
 assert.match(html, /id="clearCodesDialog"/);
+assert.match(html, /Clear codes \(incl\. ABS\)/);
 assert.match(html, /src="\.\/obdVehicleScan\.js"/);
 assert.match(html, /id="btnClearCodes"/);
+assert.ok(scan.EXTRA_NODES.length >= 5);
+assert.ok(scan.EXTRA_NODES.some((node) => node.request === "7B0"));
 
-console.log("vehicle-scan: live Mode 03 capture, per-module status, chassis codes, and empty replies covered");
+const bluetooth = fs.readFileSync(path.join(classic, "bluetooth.js"), "utf8");
+assert.match(bluetooth, /CLEAR_MODULE/);
+assert.match(bluetooth, /acceptAllDevices:\s*true/);
+assert.match(bluetooth, /NAME_FILTERS/);
+
+console.log("vehicle-scan: live Mode 03 capture, per-module status, chassis codes, ABS clear, and empty replies covered");

@@ -231,19 +231,20 @@ async function clearVehicle() {
 }
 
 panel.querySelector(".lead").textContent =
-  "Connect any ELM327-style Bluetooth OBD-II scanner. FIXD compatibility is " + FIXD_COMPATIBILITY + ".";
+  "Connect any Bluetooth-capable ELM327-style OBD-II reader. FIXD brand protocol claim is " + FIXD_COMPATIBILITY + ".";
 panel.querySelector("h2").textContent = "Connect OBD-II Scanner";
 panel.querySelector("p.small.mt-8").textContent =
-  "A read lists stored, pending, permanent, and module codes the vehicle returns, including chassis codes when that module answers. New scan does not send Mode 04. No simulated scanner data is used.";
+  "A read lists stored, pending, permanent, and module codes the vehicle returns, including ABS/chassis codes when that module answers. Clear sends Mode 04 plus a module clear to each computer that answered. New scan does not send Mode 04. No simulated scanner data is used.";
 connect.textContent = "Connect OBD-II Scanner";
 top.textContent = "Connect Scanner";
+if (clear) clear.textContent = "Clear codes (incl. ABS)";
 if (scanAll) scanAll.hidden = false;
 const demoBtn = el("btnBtDemo");
 if (demoBtn) demoBtn.remove();
 el("btIphoneGate").hidden = true;
 try { available = capacitorBleAvailable(); } catch { available = false; }
 el("btSupport").textContent = available
-  ? "iPhone Bluetooth is available. Any ELM327-style adapter can be chosen. FIXD compatibility is " + FIXD_COMPATIBILITY + "."
+  ? "iPhone Bluetooth is available. Pick any ELM327-style BLE OBD-II adapter. FIXD brand protocol claim is " + FIXD_COMPATIBILITY + "."
   : "The native Bluetooth connection is unavailable in this copy.";
 top.onclick = connect.onclick = () => choose();
 if (scanAll) scanAll.onclick = () => choose();

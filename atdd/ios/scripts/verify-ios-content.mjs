@@ -106,11 +106,11 @@ assert.equal(pinout.profiles.HONDA_XR650L_DC.provenance, "verified");
 const indexCtx = { window: {} };
 runInNewContext(fs.readFileSync(path.join(root, "data/vehicle-index.js"), "utf8"), indexCtx);
 const index = indexCtx.window.VEHICLE_INDEX_DATA;
-assert.equal(index.counts.entries, 438);
+assert.equal(index.counts.entries, 12432);
 assert.equal(index.counts.cdi_profiles_represented, 69);
 assert.equal(index.counts.by_type.simulated, undefined);
-assert.equal(index.counts.near_match_pairs, 22);
-assert.equal(index.counts.by_type.car_truck, 237);
+assert.equal(index.counts.near_match_pairs, 3578);
+assert.equal(index.counts.by_type.car_truck, 12097);
 assert.equal(index.counts.by_type.snowmobile, 4);
 assert.doesNotMatch(JSON.stringify(index), /P0300/);
 

@@ -39,13 +39,20 @@
   ]);
 
   // 29-bit physical addresses on the same diagnostic CAN. A silent address is
-  // not given a name or a code.
+  // not given a name or a code. Includes common ABS / chassis request IDs used
+  // on many light trucks and cars; an unanswered ID is never labeled ABS.
   var EXTRA_NODES = Object.freeze([
     { request: "18DA11F1", response: "18DAF111" },
     { request: "18DA18F1", response: "18DAF118" },
     { request: "18DA28F1", response: "18DAF128" },
     { request: "18DA40F1", response: "18DAF140" },
-    { request: "18DA60F1", response: "18DAF160" }
+    { request: "18DA60F1", response: "18DAF160" },
+    // Common chassis / ABS request headers (29-bit). Silent = omitted.
+    { request: "18DA10F1", response: "18DAF110" },
+    { request: "18DA20F1", response: "18DAF120" },
+    { request: "18DA30F1", response: "18DAF130" },
+    { request: "740", response: "748" },
+    { request: "7B0", response: "7B8" }
   ]);
 
   var MODULE_READS = Object.freeze([

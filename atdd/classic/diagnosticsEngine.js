@@ -115,6 +115,84 @@ const DiagEngine = (() => {
     U0121: { title: 'Lost communication with ABS module', firstChecks: ['Check ABS fuses and the module connector.', 'Inspect the ABS module for water (common in some trucks).', 'Verify battery voltage.'], likelyParts: ['ABS fuse / connector', 'Wheel-speed wiring short taking down the module', 'ABS module after power/ground proof'], warnings: ['ABS may be down. Brakes still work, but stopping distance and stability control can be worse.'] },
     C0035: { title: 'LF wheel speed sensor', firstChecks: ['Inspect the left-front wheel speed sensor harness.', 'Check for rust jacking or debris at the tone ring.', 'Check wheel bearing play.'], likelyParts: ['Wheel speed sensor', 'Harness repair', 'Hub / bearing if tone signal is unstable'], warnings: ['ABS and traction control may be reduced until repaired.'] },
     C0040: { title: 'RF wheel speed sensor', firstChecks: ['Inspect the right-front wheel speed sensor harness.', 'Check the tone ring / encoder.', 'Check that corner’s bearing play.'], likelyParts: ['Wheel speed sensor', 'Harness repair', 'Hub / bearing if confirmed'], warnings: ['ABS and traction control may be reduced until repaired.'] },
+    C0045: wheelSpeedGuide('right-rear'),
+    C0050: wheelSpeedGuide('left-rear'),
+    C0060: {
+      title: 'ABS lateral accelerometer',
+      firstChecks: ['Confirm the battery is charged — low voltage fakes yaw/accel codes.', 'Inspect the ABS / stability module connector for water.', 'Look for a loose module mounting after body or frame work.'],
+      likelyParts: ['ABS / yaw sensor cluster', 'Module connector repair', 'ABS module after power/ground proof'],
+      warnings: ['Stability control may be offline. Drive carefully; brakes still work without ABS.'],
+      diySteps: [
+        'Charge the battery and clean the main grounds first. Low voltage sets chassis sensor codes.',
+        'Find the ABS hydraulic unit (usually in the left-front engine bay). Unplug the big connector and look for green corrosion or water.',
+        'If the connector is wet, dry it with electrical cleaner, dielectric grease lightly, and reseat. Do not spray water into the module.',
+        'A yaw/lateral sensor sealed inside the module is not a driveway swap on most trucks. If power and grounds are good and the code returns immediately, that is a shop module/sensor job.',
+        'Clear codes only after the repair. Clearing alone will not fix a wet connector.'
+      ]
+    },
+    C0065: {
+      title: 'ABS longitudinal accelerometer',
+      firstChecks: ['Same path as a lateral-sensor code: battery, grounds, then the ABS connector.', 'Note whether the code set after a collision or a hard tow-hook hit.'],
+      likelyParts: ['ABS / G-sensor cluster', 'Connector / harness', 'ABS module after proof'],
+      warnings: ['Traction and stability aids may be disabled.'],
+      diySteps: [
+        'Verify battery voltage first. Then inspect the ABS module connector for water or bent pins.',
+        'Check that the ABS unit is bolted solid — a loose mount after crash work can throw accel codes.',
+        'Clear only after a dry, tight connector. If it returns with a healthy battery, stop guessing and have the module tested.'
+      ]
+    },
+    C0110: {
+      title: 'ABS pump motor circuit',
+      firstChecks: ['Listen for the ABS pump whir at key-on (many trucks self-test for a second).', 'Check ABS fuses and the pump-motor relay if equipped.', 'Inspect the ABS module connector for melted pump pins.'],
+      likelyParts: ['ABS fuse / relay', 'ABS pump / hydraulic unit', 'Harness repair'],
+      warnings: ['Pump codes are not a wheel-speed sensor. Do not keep buying sensors for a dead pump circuit.', 'A seized pump can be a whole hydraulic unit — that is usually a shop.'],
+      diySteps: [
+        'Key on, engine off. Listen near the ABS unit for a short pump buzz. Silence every key cycle means the pump is not being powered or the motor is dead.',
+        'Check every ABS / ESC fuse in the under-hood box. Replace a blown fuse once. If it blows again, there is a short — stop.',
+        'Unplug the ABS connector and look for burned pump-motor pins. A melted cavity needs a pigtail repair before a new unit.',
+        'Bleed procedure and unit replacement are vehicle-specific. Do not open brake lines until you have the correct bleed sequence and a way to keep the reservoir topped — air in ABS lines is dangerous.'
+      ]
+    },
+    C0121: {
+      title: 'ABS valve relay / solenoid supply',
+      firstChecks: ['Check ABS fuses and the valve-relay feed.', 'Inspect the ABS connector for corrosion.', 'Confirm the battery can hold above ~12.4 V key-off.'],
+      likelyParts: ['ABS fuse / relay', 'ABS module connector', 'ABS hydraulic unit if the relay is internal'],
+      warnings: ['Without valve power, ABS cannot modulate. Normal brakes should still work — test carefully in a safe lot.'],
+      diySteps: [
+        'Charge the battery. Weak batteries drop ABS relays and set supply codes.',
+        'Check ABS fuses. Swap a same-number relay if the under-hood box has a spare ABS/valve relay.',
+        'Inspect the ABS connector. Clean corrosion; reseat until it clicks.',
+        'If fuses and the connector are good and the code returns, the relay is often inside the hydraulic unit — that is a unit replacement, not a $5 part from the aisle.'
+      ]
+    },
+    C0131: {
+      title: 'ABS pressure sensor / circuit',
+      firstChecks: ['Check for an external brake-pressure sensor on the ABS unit or master cylinder.', 'Inspect the sensor connector.', 'Note hard or soft pedal complaints separately — those are hydraulic, not just the sensor.'],
+      likelyParts: ['Brake pressure sensor', 'ABS module (integral sensor)', 'Harness repair'],
+      warnings: ['Do not crack open ABS hydraulic fittings as a first DIY step. Pressurized brake fluid and trapped air are safety-critical.'],
+      diySteps: [
+        'If the pedal feels normal and only the ABS light is on, inspect the pressure-sensor connector on or near the ABS unit.',
+        'Clean and reseat the connector. Look for brake-fluid contamination on the pins — fluid eats connectors.',
+        'A soft pedal, a sinking pedal, or fluid on the ground is a hydraulic leak. Fix the leak before chasing the sensor code.',
+        'Integral sensors inside the ABS block are not separate aisle parts. After proving the wiring, that is a unit or shop diagnosis.'
+      ]
+    },
+    C0161: {
+      title: 'ABS / brake switch circuit',
+      firstChecks: ['Does the brake light work when you press the pedal?', 'Inspect the brake-light switch above the pedal.', 'Check the brake-light fuse.'],
+      likelyParts: ['Brake light / brake switch', 'Brake-light fuse', 'Pedal switch adjustment'],
+      warnings: ['A bad brake switch can keep cruise off and confuse ABS/traction logic.'],
+      diySteps: [
+        'Press the pedal and confirm the rear brake lights. If they stay dark, check the brake-light fuse first.',
+        'Find the switch on the brake pedal arm. Unplug it and look for a broken plastic tip or a switch that never clicks.',
+        'Many switches thread or clip in. Adjust so the lights are off with the pedal released and on with a light press.',
+        'Clear the code after the lights work correctly. If lights work and the code stays, inspect the signal wire to the ABS module.'
+      ]
+    },
+    C0221: wheelSpeedGuide('left-front'),
+    C0225: wheelSpeedGuide('right-front'),
+    C0235: wheelSpeedGuide('left-rear'),
+    C0240: wheelSpeedGuide('right-rear'),
     P0420: { title: 'Bank 1 catalyst efficiency', firstChecks: ['Repair upstream misfire, lean, or rich codes first.', 'Inspect exhaust leaks before the rear O2 sensor.', 'Confirm fuel and ignition condition before condemning the converter.'], likelyParts: ['Upstream ignition / fuel repair', 'Exhaust leak repair', 'Catalytic converter only after proof'], warnings: ['Do not replace a converter until upstream causes are ruled out.'] },
     P0430: { title: 'Bank 2 catalyst efficiency', firstChecks: ['Repair upstream misfire, lean, or rich codes first.', 'Inspect exhaust leaks before the rear O2 sensor.', 'Compare bank-to-bank fuel trims and misfire counts.'], likelyParts: ['Upstream ignition / fuel repair', 'Exhaust leak repair', 'Catalytic converter only after proof'], warnings: ['Do not replace a converter until upstream causes are ruled out.'] },
     P0101: { title: 'MAF range/performance', firstChecks: ['Inspect the intake tube after the MAF for splits.', 'Check the air filter and MAF screen for dirt or oil.', 'Clean the MAF only with MAF cleaner.'], likelyParts: ['Intake boot', 'Air filter', 'MAF sensor'], warnings: ['Do not spray brake cleaner on a MAF.'] },
@@ -193,6 +271,14 @@ const DiagEngine = (() => {
   }
   if (!DETAILED_GUIDANCE.C0040.diySteps) DETAILED_GUIDANCE.C0040 = wheelSpeedGuide('right-front');
   DETAILED_GUIDANCE.C0035.diySteps = DETAILED_GUIDANCE.C0035.diySteps || wheelSpeedGuide('left-front').diySteps;
+  DETAILED_GUIDANCE.C0040.diySteps = DETAILED_GUIDANCE.C0040.diySteps || wheelSpeedGuide('right-front').diySteps;
+  DETAILED_GUIDANCE.U0121.diySteps = DETAILED_GUIDANCE.U0121.diySteps || [
+    'Charge the battery and clean the main grounds. A weak battery drops the ABS module off the network and sets U0121.',
+    'Check every ABS / ESC fuse. Replace a blown fuse once; if it blows again, find the short before buying a module.',
+    'Unplug the ABS connector (usually on the hydraulic unit in the left-front bay). Look for water, mud, or green pins — common on trucks that see road splash.',
+    'Dry and reseat the connector. If a wheel-speed harness is chafed and shorted, it can pull the whole module offline — inspect the corners before condemning the ABS unit.',
+    'Clear codes after power and the connector are proven. A module that stays silent with good power is a shop diagnosis, not a guess-swap.'
+  ];
 
   DETAILED_GUIDANCE.P0171.diySteps = [
     'Engine off. Find the big plastic/rubber intake tube between the air box and the throttle. Look for splits, especially after the MAF sensor. Replace a cracked tube; do not tape it as a permanent fix.',
