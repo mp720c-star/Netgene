@@ -1,6 +1,11 @@
 name: atdd-ios-testflight
 
 on:
+  # One-shot upload. workflow_dispatch is not permitted for this token.
+  # Removed after a Mac runner starts so later pushes do not upload again.
+  push:
+    branches:
+      - cursor/atdd-gm-abs-diagnostics-dd32
   workflow_dispatch:
     inputs:
       upload:
@@ -263,7 +268,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload the verified build to TestFlight
-        if: ${{ inputs.upload }}
+        if: ${{ inputs.upload == true || (github.event_name == 'push' && github.ref == 'refs/heads/cursor/atdd-gm-abs-diagnostics-dd32') }}
         uses: apple-actions/upload-testflight-build@v2
         with:
           app-path: ${{ steps.export.outputs.path }}
@@ -272,7 +277,7 @@ jobs:
           api-private-key: ${{ secrets.ASC_PRIVATE_KEY }}
 
       - name: Record Apple processing status
-        if: ${{ inputs.upload }}
+        if: ${{ inputs.upload == true || (github.event_name == 'push' && github.ref == 'refs/heads/cursor/atdd-gm-abs-diagnostics-dd32') }}
         env:
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
