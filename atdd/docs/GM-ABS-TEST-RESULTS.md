@@ -23,6 +23,6 @@
 | Clear-all before/after on truck | Needs transcript |
 | Wheel-speed / park-brake live values | Fail-closed until live DID + SI scaling proven |
 
-**TestFlight:** marketing `1.2.0` build **24** uploaded 2026-11-24 (America/Chicago); Apple processing `VALID` ([run 45538697598](https://github.com/mp720c-star/Netgene/actions/runs/45538697598)).
+**TestFlight:** marketing `1.2.0` build **25** uploaded 2026-11-24 (America/Chicago); Apple processing `VALID` ([run 45546050060](https://github.com/mp720c-star/Netgene/actions/runs/45546050060)). Restores the primary **Read codes** button (build 24 had renamed/buried it as Full Vehicle Scan).
 
 Do **not** label ABS/module diagnostics “verified” until a Full Vehicle Scan transcript from the Sierra is attached. Powertrain reach is already established.
