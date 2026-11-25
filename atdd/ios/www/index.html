@@ -116,17 +116,24 @@
           <div class="row secondary-actions">
             <button class="warn" id="btnBtConnect">Connect OBD-II Scanner</button>
             <button class="secondary" id="btnBtScanAll">Scan any BLE device</button>
-            <button class="secondary" id="btnBtReadCodes" disabled>Read codes</button>
+            <button class="secondary" id="btnBtReadCodes" disabled>Full Vehicle Scan</button>
             <button class="warn" id="btnBtClearVehicle" disabled>Clear vehicle codes</button>
+            <button class="warn" id="btnBtClearAllSupported" disabled>Clear All Supported Codes</button>
             <button class="secondary" id="btnBtDisconnect" disabled>Disconnect</button>
           </div>
           <pre id="btLog" class="bt-log" aria-live="polite">Idle. Tap Connect, with the adapter powered in the OBD port.</pre>
-          <p class="small mt-8">Read codes asks for stored, pending, and permanent codes, the check-engine light, VIN, distances, and every module that answers, including chassis modules. A module that stays silent is left out. FIXD protocol claim stays <code>UNVERIFIED</code>. New scan does not send Mode 04.</p>
+          <p class="small mt-8">Full Vehicle Scan asks for stored, pending, and permanent codes, the check-engine light, VIN, distances, GM candidate modules (ECM/TCM/EBCM/BCM), and live DID probes. A module that stays silent is reported unreachable — never invented. FIXD protocol claim stays <code>UNVERIFIED</code>. New scan does not clear codes.</p>
         </section>
 
         <section class="card" id="scanReadoutCard" hidden>
           <h2>Codes from this scan</h2>
           <div id="scanReadout" class="scan-readout"></div>
+        </section>
+
+        <section class="card" id="moduleDiagnosticsCard" hidden>
+          <h2>Module diagnostics</h2>
+          <p class="lead">Sections show only what this adapter returned. Unsupported data stays labeled unavailable.</p>
+          <div id="moduleDiagnostics" class="module-diagnostics"></div>
         </section>
       </div>
 
@@ -194,6 +201,16 @@
             <button class="secondary" id="btnExport">Export</button>
           </div>
           <div id="results" class="out rich mt-10">Nothing yet. Capture sound or a photo, or enter a code, then tap <strong>Diagnose now</strong>.</div>
+        </section>
+
+        <section class="card" id="diagnosticHistoryCard">
+          <h2>Diagnostic History</h2>
+          <p class="lead">Vehicle scan snapshots saved on this device. Separate from the Diagnose case Save/Load buttons.</p>
+          <div class="row secondary-actions">
+            <button class="secondary" id="btnRefreshDiagHistory" type="button">Refresh</button>
+            <button class="warn" id="btnDeleteDiagHistory" type="button">Delete ATDD scan history</button>
+          </div>
+          <div id="diagnosticHistoryList" class="mt-10 small">No saved vehicle scans yet.</div>
         </section>
       </div>
 
@@ -307,10 +324,31 @@
     <form method="dialog" id="clearCodesForm">
       <h2 id="clearCodesDialogTitle">Clear codes on this vehicle?</h2>
       <p>This sends Mode 04, the standard OBD clear, and a clear-all request to each module that answered the last scan. The check-engine light goes off only if the vehicle accepts it. Park, switch the key on, and leave the engine off.</p>
-      <p class="small">New scan does not clear codes. No codes are added if a module does not answer.</p>
+      <p class="small">New scan does not clear codes. No codes are added if a module does not answer. This does not program modules or disable ABS.</p>
       <div class="row dialog-actions">
         <button type="button" class="secondary" id="btnClearVehicleCancel">Cancel</button>
         <button type="submit" class="warn" id="btnClearVehicleConfirm" value="confirm">Clear vehicle codes</button>
+      </div>
+    </form>
+  </dialog>
+  <dialog id="clearAllSupportedDialog" class="confirm-dialog" aria-labelledby="clearAllSupportedDialogTitle">
+    <form method="dialog" id="clearAllSupportedForm">
+      <h2 id="clearAllSupportedDialogTitle">Clear All Supported Codes?</h2>
+      <p>ATDD will save the current vehicle scan, clear every module that answered, then rescan and report which codes cleared, remained, or appeared. Unsupported modules stay unreachable — nothing is invented.</p>
+      <p class="small">Park, key on, engine off. Does not suppress warning lamps, change programming, or disable ABS.</p>
+      <div class="row dialog-actions">
+        <button type="button" class="secondary" id="btnClearAllSupportedCancel">Cancel</button>
+        <button type="submit" class="warn" id="btnClearAllSupportedConfirm" value="confirm">Clear All Supported Codes</button>
+      </div>
+    </form>
+  </dialog>
+  <dialog id="deleteHistoryDialog" class="confirm-dialog" aria-labelledby="deleteHistoryDialogTitle">
+    <form method="dialog" id="deleteHistoryForm">
+      <h2 id="deleteHistoryDialogTitle">Delete ATDD scan history?</h2>
+      <p>This deletes vehicle scan snapshots stored by ATDD on this device. It does not send any command to the vehicle and does not clear codes on the truck.</p>
+      <div class="row dialog-actions">
+        <button type="button" class="secondary" id="btnDeleteHistoryCancel">Cancel</button>
+        <button type="submit" class="warn" id="btnDeleteHistoryConfirm" value="confirm">Delete ATDD scan history</button>
       </div>
     </form>
   </dialog>
@@ -343,6 +381,9 @@
   <script src="./sessionReset.js"></script>
   <script src="./scanReadout.js"></script>
   <script src="./obdVehicleScan.js"></script>
+  <script src="./gmBrakeDiagnostics.js"></script>
+  <script src="./diagnosticHistory.js"></script>
+  <script src="./moduleDiagnosticsUi.js"></script>
   <script type="module" src="./scanner/iphone-scanner.js"></script>
   <script src="./app.js"></script>
 </body>

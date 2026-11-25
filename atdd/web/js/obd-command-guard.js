@@ -2,10 +2,12 @@
  * OBD-II command allowlist for the ATDD TestFlight / native scanner.
  *
  * Reads: Mode 01 current data, Mode 03 stored DTCs, Mode 07 pending DTCs,
- * Mode 0A permanent DTCs, Mode 09 vehicle information, and UDS 1902FF
- * (report DTC by status mask). Adapter setup configures the dongle only.
+ * Mode 0A permanent DTCs, Mode 09 vehicle information, UDS 1902FF
+ * (report DTC by status mask), and UDS Mode 22 DID reads (22xxxx) for
+ * live-data probes. Adapter setup configures the dongle only.
  * Mode 04 and UDS 14FFFFFF clear codes. They are allowed only when the
- * operator confirms Clear vehicle codes. New scan does not send them.
+ * operator confirms Clear vehicle codes / Clear All Supported Codes.
+ * New scan does not send them.
  * 1003 / 1001 switch a module into the extended diagnostic session and back
  * so it can answer 1902FF. Programming session 1002 stays blocked.
  *
@@ -35,6 +37,10 @@ const EXTRA_ADAPTER = new Set([
   "ATCP18",
   "ATSH7DF",
   "ATFCSD300000",
+  "ATI",
+  "ATDP",
+  "ATDPN",
+  "ATRV",
 ]);
 
 export function normalizeObdCommand(command) {
@@ -63,7 +69,8 @@ export function assertAllowedObdCommand(command) {
     normalized === "1001" ||
     normalized === "1003" ||
     /^01[0-9A-F]{2}$/.test(normalized) ||
-    /^09[0-9A-F]{2}$/.test(normalized)
+    /^09[0-9A-F]{2}$/.test(normalized) ||
+    /^22[0-9A-F]{4}$/.test(normalized)
   ) {
     return normalized;
   }

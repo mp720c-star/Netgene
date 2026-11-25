@@ -48,6 +48,30 @@
     { request: "18DA60F1", response: "18DAF160" }
   ]);
 
+  // GMT900 / GM light-truck candidate headers. Silent candidates stay out of
+  // the report. FIXD is not assumed to reach EBCM/BCM.
+  var GM_CANDIDATE_NODES = Object.freeze([
+    { request: "241", response: "641", label: "ABS/EBCM candidate 241" },
+    { request: "24C", response: "64C", label: "ABS/EBCM candidate 24C" },
+    { request: "244", response: "644", label: "BCM candidate 244" },
+    { request: "760", response: "768", label: "Module candidate 760" }
+  ]);
+
+  function allProbeNodes() {
+    var seen = {};
+    var out = [];
+    function add(node) {
+      var key = String(node.request || "").toUpperCase();
+      if (!key || seen[key]) return;
+      seen[key] = true;
+      out.push(node);
+    }
+    PHYSICAL_NODES.forEach(add);
+    EXTRA_NODES.forEach(add);
+    GM_CANDIDATE_NODES.forEach(add);
+    return out;
+  }
+
   var MODULE_READS = Object.freeze([
     { command: "03", timeoutMs: 4000, label: "stored codes" },
     { command: "07", timeoutMs: 4000, label: "pending codes" },
@@ -388,6 +412,7 @@
     FUNCTIONAL_READS: FUNCTIONAL_READS,
     PHYSICAL_NODES: PHYSICAL_NODES,
     EXTRA_NODES: EXTRA_NODES,
+    GM_CANDIDATE_NODES: GM_CANDIDATE_NODES,
     MODULE_READS: MODULE_READS,
     RESTORE_HEADER: RESTORE_HEADER,
     CLEAR_EMISSIONS: CLEAR_EMISSIONS,
@@ -401,6 +426,7 @@
     formatDistance: formatDistance,
     adapterHeader: adapterHeader,
     needsExtendedSession: needsExtendedSession,
-    replyHasVehicleData: replyHasVehicleData
+    replyHasVehicleData: replyHasVehicleData,
+    allProbeNodes: allProbeNodes
   };
 })(typeof window !== "undefined" ? window : globalThis);

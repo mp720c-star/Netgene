@@ -228,9 +228,10 @@ function fakeDom() {
   assert.match(resetFn, /release\(active\)/);
   assert.doesNotMatch(resetFn, /\.send\(/);
   assert.doesNotMatch(resetFn, /["']04["']/);
-  assert.match(scanner, /scanner\.send\("03"/);
+  assert.match(scanner, /FUNCTIONAL_READS|fullVehicleScan|readSections/);
   assert.match(scanner, /New scan does not send Mode 04/);
   assert.match(scanner, /btnBtClearVehicle/);
+  assert.match(scanner, /btnBtClearAllSupported/);
   assert.match(scanner, /CLEAR_EMISSIONS/);
   assert.doesNotMatch(scanner, /send\(["']04["']\)/);
   console.log("session-reset: iPhone scanner reset disconnects only; clear is a separate confirmed action");
