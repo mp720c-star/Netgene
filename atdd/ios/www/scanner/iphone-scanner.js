@@ -45,7 +45,7 @@ function buttons() {
   top.disabled = busy;
   connect.disabled = busy || !available || Boolean(active);
   if (scanAll) scanAll.disabled = busy || !available || Boolean(active);
-  read.disabled = busy || !ready;
+  if (read) read.disabled = busy || !ready;
   if (clear) clear.disabled = busy || !ready;
   if (clearAll) clearAll.disabled = busy || !ready;
   disconnect.disabled = busy || !ready;
@@ -270,7 +270,7 @@ async function fullVehicleScan() {
     if (report && historyApi()) {
       historyApi().addEntry({
         kind: "full_scan",
-        label: "Full Vehicle Scan",
+        label: "Read codes",
         adapterName,
         codesAfter: (window.ATDDGmBrake && window.ATDDGmBrake.collectCodesFromReport(report)) || report.uniqueCodes,
         modulesReached: answeredNodes.map((n) => n.response),
@@ -400,8 +400,9 @@ panel.querySelector(".lead").textContent =
   "Connect any ELM327-style Bluetooth OBD-II scanner, including FIXD. Compatibility is " + FIXD_COMPATIBILITY + ".";
 panel.querySelector("h2").textContent = "Connect OBD-II Scanner";
 panel.querySelector("p.small.mt-8").textContent =
-  "Full Vehicle Scan lists only codes and modules this adapter returns, including GM ABS/BCM candidates when they answer. Clear All Supported Codes requires confirmation and rescans. No simulated scanner data is used.";
+  "Read codes runs a full vehicle scan of every module this adapter returns, including GM ABS/BCM candidates when they answer. Clear All Supported Codes requires confirmation and rescans. No simulated scanner data is used.";
 connect.textContent = "Connect OBD-II Scanner";
+if (read) read.textContent = "Read codes";
 top.textContent = "Connect Scanner";
 if (scanAll) scanAll.hidden = false;
 const demoBtn = el("btnBtDemo");
@@ -419,7 +420,7 @@ el("btSupport").textContent = available
   : "The native Bluetooth connection is unavailable in this copy.";
 top.onclick = connect.onclick = () => choose();
 if (scanAll) scanAll.onclick = () => choose();
-read.onclick = fullVehicleScan;
+if (read) read.onclick = fullVehicleScan;
 if (clear) clear.onclick = clearVehicle;
 if (clearAll) clearAll.onclick = clearAllSupported;
 disconnect.onclick = () =>
@@ -455,7 +456,7 @@ async function choose() {
     ready = true;
     adapterName = device.name || "BLE adapter";
     const fixdNamed = device.isFixdName ? " (FIXD-named device; protocol still " + FIXD_COMPATIBILITY + ")" : "";
-    log("Connected to " + adapterName + fixdNamed + ". Tap Full Vehicle Scan.");
+    log("Connected to " + adapterName + fixdNamed + ". Tap Read codes.");
   });
 }
 
