@@ -1136,17 +1136,22 @@ function bindNewScanButtons(){
 function bindEvents(){
   initTabs();
   if(byId('btnLookup')) byId('btnLookup').onclick = quickLookup;
-  if(byId('btnLookupTop')) byId('btnLookupTop').onclick = () => { showEl('listenPanel'); const btn = byId('btnAudioRecord'); if(btn) btn.focus(); };
+  if(byId('btnLookupTop')) byId('btnLookupTop').onclick = () => openEvidencePanel('listen');
   if(byId('btnSearchDtc')) byId('btnSearchDtc').onclick = searchLocalDb;
   if(byId('btnClearCodes')) byId('btnClearCodes').onclick = () => { byId('codes').value = ''; html('codeResults',''); showStatus(''); };
   if(byId('btnRunDiagnosis')) byId('btnRunDiagnosis').onclick = runDiagnosis;
   if(byId('btnRunDiagnosisTop')) byId('btnRunDiagnosisTop').onclick = runDiagnosis;
   const rebuildBtn = byId('btnRebuildTop');
-  if(rebuildBtn) rebuildBtn.onclick = () => { showEl('codes'); const field = byId('codes'); if(field){ field.focus(); } };
+  if(rebuildBtn) rebuildBtn.onclick = () => {
+    showEl('lookupCard');
+    showEl('codeStep');
+    const field = byId('codes');
+    if(field){ field.focus(); field.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+  };
   if(window.ATDDBluetooth && typeof window.ATDDBluetooth.bind === 'function') window.ATDDBluetooth.bind();
   bindNewScanButtons();
   const jobsBtn = byId('btnJobsTop');
-  if(jobsBtn) jobsBtn.onclick = () => { showEl('lookPanel'); const btn = byId('btnStartCamera'); if(btn) btn.focus(); };
+  if(jobsBtn) jobsBtn.onclick = () => openEvidencePanel('look');
   const computerBtn = byId('btnComputerTop');
   if(computerBtn) computerBtn.onclick = () => showEl('computerCard');
   const rebuildDiag = byId('btnRebuildDiagnosis');
@@ -1239,38 +1244,36 @@ function renderHowtoHub(categoryId){
     artBox.innerHTML = '<div class="small">How-to hub content is not loaded.</div>';
     return;
   }
-  const selectedId = categoryId || (cats[0] && cats[0].id);
+  const selected = cats.find((c) => c.id === categoryId) || cats.find((c) => c.id === 'scanners') || cats[0];
   catBox.innerHTML = cats.map((cat) => (
-    `<button type="button" class="chip${cat.id === selectedId ? ' is-active' : ''}" data-howto-cat="${esc(cat.id)}">${esc(cat.title)}</button>`
+    `<button type="button" class="hub-topic${cat.id === selected.id ? ' is-active' : ''}" data-howto-cat="${esc(cat.id)}">
+      <span class="hub-topic-title">${esc(cat.title)}</span>
+      <span class="hub-topic-blurb">${esc(cat.blurb || '')}</span>
+    </button>`
   )).join('');
-  artBox.innerHTML = cats.map((cat) => {
-    const open = cat.id === selectedId;
-    const articles = (cat.articles || []).map((article) => `
-      <details class="playbook" id="howto-${esc(article.id)}"${open ? ' open' : ''}>
-        <summary>${esc(article.title)}</summary>
-        <p class="small mt-8">${esc(article.summary || '')}</p>
-        ${article.steps && article.steps.length ? `<ol class="checks diy-list mt-8">${article.steps.map((step) => `<li>${esc(step)}</li>`).join('')}</ol>` : ''}
-        ${article.links && article.links.length ? `<div class="chip-row mt-8">${article.links.map((link) => {
-          const kind = link.kind || 'tab';
-          const target = link.target || '';
-          const label = link.label || target;
-          if(kind === 'code') return `<button type="button" class="chip" data-howto-code="${esc(target)}">${esc(label)}</button>`;
-          if(kind === 'job') return `<button type="button" class="chip" data-howto-job="${esc(target)}">${esc(label)}</button>`;
-          if(kind === 'scroll') return `<button type="button" class="chip" data-howto-scroll="${esc(target)}">${esc(label)}</button>`;
-          return `<button type="button" class="chip" data-howto-tab="${esc(target)}">${esc(label)}</button>`;
-        }).join('')}</div>` : ''}
-      </details>
-    `).join('');
-    return `
-      <section class="howto-hub-section${open ? ' is-active' : ''}" id="howto-cat-${esc(cat.id)}" data-hub-section="${esc(cat.id)}">
-        <h3>${esc(cat.title)}</h3>
-        <p class="small">${esc(cat.blurb || '')}</p>
-        ${articles}
-      </section>
-    `;
-  }).join('');
-  const focus = byId('howto-cat-' + selectedId);
-  if(focus && categoryId) focus.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const articles = (selected.articles || []).map((article, index) => `
+    <details class="playbook" id="howto-${esc(article.id)}"${index === 0 ? ' open' : ''}>
+      <summary>${esc(article.title)}</summary>
+      <p class="small mt-8">${esc(article.summary || '')}</p>
+      ${article.steps && article.steps.length ? `<ol class="checks diy-list mt-8">${article.steps.map((step) => `<li>${esc(step)}</li>`).join('')}</ol>` : ''}
+      ${article.links && article.links.length ? `<div class="chip-row mt-8">${article.links.map((link) => {
+        const kind = link.kind || 'tab';
+        const target = link.target || '';
+        const label = link.label || target;
+        if(kind === 'code') return `<button type="button" class="chip" data-howto-code="${esc(target)}">${esc(label)}</button>`;
+        if(kind === 'job') return `<button type="button" class="chip" data-howto-job="${esc(target)}">${esc(label)}</button>`;
+        if(kind === 'scroll') return `<button type="button" class="chip" data-howto-scroll="${esc(target)}">${esc(label)}</button>`;
+        return `<button type="button" class="chip" data-howto-tab="${esc(target)}">${esc(label)}</button>`;
+      }).join('')}</div>` : ''}
+    </details>
+  `).join('');
+  artBox.innerHTML = `
+    <section class="howto-hub-section is-active" id="howto-cat-${esc(selected.id)}" data-hub-section="${esc(selected.id)}">
+      <h3>${esc(selected.title)}</h3>
+      <p class="small">${esc(selected.blurb || '')}</p>
+      ${articles}
+    </section>
+  `;
 }
 
 function openHowtoHub(categoryId){
@@ -1281,56 +1284,71 @@ function openHowtoHub(categoryId){
   if(card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+function openEvidencePanel(which){
+  const details = byId('evidenceDetails');
+  if(details) details.open = true;
+  showEl('lookupCard');
+  if(which === 'look'){
+    showEl('lookPanel');
+    const btn = byId('btnStartCamera');
+    if(btn) btn.focus();
+  }else{
+    showEl('listenPanel');
+    const btn = byId('btnAudioRecord');
+    if(btn) btn.focus();
+  }
+}
+
 function wireHowtoHub(){
   const card = byId('howtoHubCard');
-  if(!card || card.getAttribute('data-wired') === '1') return;
-  card.setAttribute('data-wired', '1');
-  card.addEventListener('click', (e) => {
-    const catBtn = e.target.closest && e.target.closest('[data-howto-cat]');
-    if(catBtn){
-      e.preventDefault();
-      renderHowtoHub(catBtn.getAttribute('data-howto-cat'));
-      return;
-    }
-    const codeBtn = e.target.closest && e.target.closest('[data-howto-code]');
-    if(codeBtn){
-      e.preventDefault();
-      const code = codeBtn.getAttribute('data-howto-code');
-      if(typeof useExampleCode === 'function') useExampleCode(code);
-      else if(byId('codes')){
-        byId('codes').value = code;
-        showTab('scan');
-        showEl('lookupCard');
+  if(card && card.getAttribute('data-wired') !== '1'){
+    card.setAttribute('data-wired', '1');
+    card.addEventListener('click', (e) => {
+      const catBtn = e.target.closest && e.target.closest('[data-howto-cat]');
+      if(catBtn){
+        e.preventDefault();
+        renderHowtoHub(catBtn.getAttribute('data-howto-cat'));
+        return;
       }
-      return;
-    }
-    const jobBtn = e.target.closest && e.target.closest('[data-howto-job]');
-    if(jobBtn){
-      e.preventDefault();
-      openJob(jobBtn.getAttribute('data-howto-job'));
-      return;
-    }
-    const tabBtn = e.target.closest && e.target.closest('[data-howto-tab]');
-    if(tabBtn){
-      e.preventDefault();
-      showTab(tabBtn.getAttribute('data-howto-tab'));
-      return;
-    }
-    const scrollBtn = e.target.closest && e.target.closest('[data-howto-scroll]');
-    if(scrollBtn){
-      e.preventDefault();
-      const id = scrollBtn.getAttribute('data-howto-scroll');
-      if(id === 'jobsCard' || id === 'howtoHubCard') showTab('more');
-      else if(id === 'bluetoothCard' || id === 'scanReadoutCard') showTab('scan');
-      showEl(id);
-      const node = byId(id);
-      if(node) node.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  });
-  const shortcuts = byId('guideShortcuts');
-  if(shortcuts && shortcuts.getAttribute('data-wired') !== '1'){
-    shortcuts.setAttribute('data-wired', '1');
-    shortcuts.addEventListener('click', (e) => {
+      const codeBtn = e.target.closest && e.target.closest('[data-howto-code]');
+      if(codeBtn){
+        e.preventDefault();
+        const code = codeBtn.getAttribute('data-howto-code');
+        if(typeof useExampleCode === 'function') useExampleCode(code);
+        else if(byId('codes')){
+          byId('codes').value = code;
+          showTab('scan');
+          showEl('lookupCard');
+        }
+        return;
+      }
+      const jobBtn = e.target.closest && e.target.closest('[data-howto-job]');
+      if(jobBtn){
+        e.preventDefault();
+        openJob(jobBtn.getAttribute('data-howto-job'));
+        return;
+      }
+      const tabBtn = e.target.closest && e.target.closest('[data-howto-tab]');
+      if(tabBtn){
+        e.preventDefault();
+        showTab(tabBtn.getAttribute('data-howto-tab'));
+        return;
+      }
+      const scrollBtn = e.target.closest && e.target.closest('[data-howto-scroll]');
+      if(scrollBtn){
+        e.preventDefault();
+        const id = scrollBtn.getAttribute('data-howto-scroll');
+        if(id === 'jobsCard' || id === 'howtoHubCard') showTab('more');
+        else if(id === 'bluetoothCard' || id === 'scanReadoutCard') showTab('scan');
+        showEl(id);
+        const node = byId(id);
+        if(node) node.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  }
+  if(document.documentElement.getAttribute('data-hub-open-wired') !== '1'){
+    document.documentElement.setAttribute('data-hub-open-wired', '1');
+    document.addEventListener('click', (e) => {
       const btn = e.target.closest && e.target.closest('[data-open-hub]');
       if(!btn) return;
       e.preventDefault();
