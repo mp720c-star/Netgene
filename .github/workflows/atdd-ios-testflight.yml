@@ -1,10 +1,6 @@
 name: atdd-ios-testflight
 
 on:
-  # One-shot: upload acceptance-matrix probe build to TestFlight, then remove this push trigger.
-  push:
-    branches:
-      - cursor/atdd-acceptance-matrix-7b3b
   workflow_dispatch:
     inputs:
       upload:
