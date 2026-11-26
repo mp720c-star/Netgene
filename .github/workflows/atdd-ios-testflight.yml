@@ -1,6 +1,10 @@
 name: atdd-ios-testflight
 
 on:
+  # One-shot: upload friendlier Scan/Guides layout to TestFlight, then remove this push trigger.
+  push:
+    branches:
+      - cursor/atdd-obd-hubs-ed70
   workflow_dispatch:
     inputs:
       upload:
