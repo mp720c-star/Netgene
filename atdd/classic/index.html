@@ -203,6 +203,13 @@
           <p class="lead">Optional libraries and device settings. Day-to-day use stays on Scan, Vehicle, Symptoms, and Results.</p>
         </section>
 
+        <details class="card collapsible" id="howtoHubCard">
+          <summary><strong>How-to hubs</strong> <span class="small">(OBD basics, scanners, ABS, diagnose flow)</span></summary>
+          <p class="small">Short guides that link into Scan, Symptoms, codes, and driveway jobs. Live readings still come only from a connected adapter.</p>
+          <div class="chip-row" id="howtoHubCats" aria-label="How-to hub categories"></div>
+          <div id="howtoHubArticles" class="mt-10"></div>
+        </details>
+
         <details class="card collapsible" id="jobsCard">
           <summary><strong>Browse how-to jobs</strong> <span class="small">(manual — diagnosis already pulls the right job when needed)</span></summary>
           <div class="small">Full driveway procedures stay available here if you already know the job. Diagnosis does not dump this list into every result.</div>
@@ -335,6 +342,7 @@
   <script src="./data/symptom-repair-db.js"></script>
   <script src="./symptomRepair.js"></script>
   <script src="./data/common-jobs.js"></script>
+  <script src="./data/howto-hub.js"></script>
   <script src="./data/cdi-pinout-db.js"></script>
   <script src="./data/vehicle-index.js"></script>
   <script src="./vehicleCatalog.js"></script>

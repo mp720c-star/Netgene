@@ -87,6 +87,7 @@ button.ghost,.button.ghost{background:transparent;border:1px solid #835300;color
 .secondary-actions{margin-top:8px}
 .chip-row{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 4px}
 button.chip,.chip{flex:0 1 auto;width:auto;min-height:var(--tap);padding:8px 12px;border-radius:999px;background:#1a1208;border:1px solid #6a4200;color:#ffd27b;font-size:.95rem;font-weight:600}
+button.chip.is-active,.chip.is-active{background:#3a2200;border-color:var(--gold);color:#fff3d1}
 button.chip:active,.chip:active{background:#2a1c0a}
 .small{font-size:.9375rem;color:var(--muted);line-height:var(--lh)}
 .out{white-space:pre-wrap;background:#0b0b0b;border:1px solid #47300f;border-radius:14px;padding:12px;min-height:140px}

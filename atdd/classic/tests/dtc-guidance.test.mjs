@@ -64,8 +64,8 @@ for (const rec of all) {
 assert.equal(missing, 0);
 assert.equal(missingTests, 0);
 assert.equal(badSpec, 0);
-assert.equal(tiers["detailed-existing"], 121);
-assert.equal(tiers["detailed-cited"], 9411);
+assert.equal(tiers["detailed-existing"], 147);
+assert.equal(tiers["detailed-cited"], 9385);
 assert.equal(tiers["generated-general"], 2646); // 2645 manufacturer-specific baseline + P0FFF undocumented generic
 
 const p0420 = G.guidanceFor("P0420", baseline.find((r) => r.code === "P0420"));

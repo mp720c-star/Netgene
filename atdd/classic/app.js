@@ -192,7 +192,7 @@ const ATDD_TAB_FOR = {
   vehicleSearchCard:'vehicle', selectedVehiclePanel:'vehicle', cdiPinoutView:'vehicle',
   symptomRepairCard:'symptoms', symptomEntryView:'symptoms', symptomSearchResults:'symptoms',
   resultsCard:'results', results:'results',
-  jobsCard:'more', rebuildCard:'more', solutionsCardWrap:'more', computerCard:'more',
+  jobsCard:'more', howtoHubCard:'more', rebuildCard:'more', solutionsCardWrap:'more', computerCard:'more',
   vehicleFieldsCard:'more', fluidCard:'more', privacyCard:'more', moreIntro:'more'
 };
 
@@ -1225,6 +1225,91 @@ function openJob(id){
   }
 }
 
+function howtoHubPack(){
+  return (typeof window !== 'undefined' && window.HOWTO_HUB_DATA) || (typeof globalThis !== 'undefined' && globalThis.HOWTO_HUB_DATA) || null;
+}
+
+function renderHowtoHub(categoryId){
+  const pack = howtoHubPack();
+  const catBox = byId('howtoHubCats');
+  const artBox = byId('howtoHubArticles');
+  if(!pack || !catBox || !artBox) return;
+  const cats = pack.categories || [];
+  if(!cats.length){
+    artBox.innerHTML = '<div class="small">How-to hub content is not loaded.</div>';
+    return;
+  }
+  const selected = cats.find((c) => c.id === categoryId) || cats[0];
+  catBox.innerHTML = cats.map((cat) => (
+    `<button type="button" class="chip${cat.id === selected.id ? ' is-active' : ''}" data-howto-cat="${esc(cat.id)}">${esc(cat.title)}</button>`
+  )).join('');
+  artBox.innerHTML = `<div class="small">${esc(selected.blurb || '')}</div>` + (selected.articles || []).map((article) => `
+    <details class="playbook" id="howto-${esc(article.id)}">
+      <summary>${esc(article.title)}</summary>
+      <div class="small mt-8">${esc(article.summary || '')}</div>
+      ${article.steps && article.steps.length ? `<ol class="checks diy-list mt-8">${article.steps.map((step) => `<li>${esc(step)}</li>`).join('')}</ol>` : ''}
+      ${article.links && article.links.length ? `<div class="chip-row mt-8">${article.links.map((link) => {
+        const kind = link.kind || 'tab';
+        const target = link.target || '';
+        const label = link.label || target;
+        if(kind === 'code') return `<button type="button" class="chip" data-howto-code="${esc(target)}">${esc(label)}</button>`;
+        if(kind === 'job') return `<button type="button" class="chip" data-howto-job="${esc(target)}">${esc(label)}</button>`;
+        if(kind === 'scroll') return `<button type="button" class="chip" data-howto-scroll="${esc(target)}">${esc(label)}</button>`;
+        return `<button type="button" class="chip" data-howto-tab="${esc(target)}">${esc(label)}</button>`;
+      }).join('')}</div>` : ''}
+    </details>
+  `).join('');
+}
+
+function wireHowtoHub(){
+  const card = byId('howtoHubCard');
+  if(!card || card.getAttribute('data-wired') === '1') return;
+  card.setAttribute('data-wired', '1');
+  card.addEventListener('click', (e) => {
+    const catBtn = e.target.closest && e.target.closest('[data-howto-cat]');
+    if(catBtn){
+      e.preventDefault();
+      renderHowtoHub(catBtn.getAttribute('data-howto-cat'));
+      return;
+    }
+    const codeBtn = e.target.closest && e.target.closest('[data-howto-code]');
+    if(codeBtn){
+      e.preventDefault();
+      const code = codeBtn.getAttribute('data-howto-code');
+      if(typeof useExampleCode === 'function') useExampleCode(code);
+      else if(byId('codes')){
+        byId('codes').value = code;
+        showTab('scan');
+        showEl('lookupCard');
+      }
+      return;
+    }
+    const jobBtn = e.target.closest && e.target.closest('[data-howto-job]');
+    if(jobBtn){
+      e.preventDefault();
+      openJob(jobBtn.getAttribute('data-howto-job'));
+      return;
+    }
+    const tabBtn = e.target.closest && e.target.closest('[data-howto-tab]');
+    if(tabBtn){
+      e.preventDefault();
+      showTab(tabBtn.getAttribute('data-howto-tab'));
+      return;
+    }
+    const scrollBtn = e.target.closest && e.target.closest('[data-howto-scroll]');
+    if(scrollBtn){
+      e.preventDefault();
+      const id = scrollBtn.getAttribute('data-howto-scroll');
+      if(id === 'jobsCard' || id === 'howtoHubCard') showTab('more');
+      else if(id === 'bluetoothCard' || id === 'scanReadoutCard') showTab('scan');
+      showEl(id);
+      const node = byId(id);
+      if(node) node.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+  renderHowtoHub('scanners');
+}
+
 function renderCommonJobs(filter){
   const box = byId('commonJobs');
   if(!box || typeof DiagEngine === 'undefined' || !DiagEngine.listCommonJobs) return;
@@ -1525,6 +1610,11 @@ async function init(){
   }
   // Browse libraries stay collapsed — diagnosis pulls only what is needed.
   document.querySelectorAll('details.extra, details.collapsible').forEach((el) => { el.open = false; });
+  wireHowtoHub();
+  const howtoHubCard = byId('howtoHubCard');
+  if(howtoHubCard){
+    howtoHubCard.addEventListener('toggle', () => { if(howtoHubCard.open) renderHowtoHub(); });
+  }
   const jobsCard = byId('jobsCard');
   if(jobsCard){
     jobsCard.addEventListener('toggle', () => { if(jobsCard.open) renderCommonJobs(); });
