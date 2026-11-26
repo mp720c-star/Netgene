@@ -1,10 +1,10 @@
 name: atdd-ios-testflight
 
 on:
-  # One-shot: upload iOS 15 deployment-target fix to TestFlight, then remove this push trigger.
+  # One-shot: upload acceptance-matrix probe build to TestFlight, then remove this push trigger.
   push:
     branches:
-      - cursor/atdd-abs-bt-catalog-6679
+      - cursor/atdd-acceptance-matrix-7b3b
   workflow_dispatch:
     inputs:
       upload:
