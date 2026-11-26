@@ -41,6 +41,12 @@
           <button id="btnRebuildTop">Code</button>
           <button class="warn" id="btnBluetoothTop" title="Connect scanner over Bluetooth">Connect</button>
         </div>
+        <div class="chip-row guide-shortcuts" id="guideShortcuts" aria-label="How-to guides">
+          <button type="button" class="chip" data-open-hub="scanners">Scanner guide</button>
+          <button type="button" class="chip" data-open-hub="obd_basics">OBD basics</button>
+          <button type="button" class="chip" data-open-hub="abs_chassis">ABS guide</button>
+          <button type="button" class="chip" data-open-hub="diagnose_flow">Diagnose flow</button>
+        </div>
 
         <section class="card primary-card" id="lookupCard">
           <h2>Scan</h2>
@@ -203,12 +209,13 @@
           <p class="lead">Optional libraries and device settings. Day-to-day use stays on Scan, Vehicle, Symptoms, and Results.</p>
         </section>
 
-        <details class="card collapsible" id="howtoHubCard">
-          <summary><strong>How-to hubs</strong> <span class="small">(OBD basics, scanners, ABS, diagnose flow)</span></summary>
-          <p class="small">Short guides that link into Scan, Symptoms, codes, and driveway jobs. Live readings still come only from a connected adapter.</p>
+        <section class="card" id="howtoHubCard">
+          <h2>How-to hubs</h2>
+          <p class="lead">Pick a topic. Each guide stays short and links into Scan, Symptoms, codes, or a driveway job.</p>
+          <p class="small">Live readings still come only from a connected adapter — these hubs do not invent codes.</p>
           <div class="chip-row" id="howtoHubCats" aria-label="How-to hub categories"></div>
-          <div id="howtoHubArticles" class="mt-10"></div>
-        </details>
+          <div id="howtoHubArticles" class="howto-hub-list mt-10"></div>
+        </section>
 
         <details class="card collapsible" id="jobsCard">
           <summary><strong>Browse how-to jobs</strong> <span class="small">(manual — diagnosis already pulls the right job when needed)</span></summary>

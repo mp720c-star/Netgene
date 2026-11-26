@@ -1239,26 +1239,46 @@ function renderHowtoHub(categoryId){
     artBox.innerHTML = '<div class="small">How-to hub content is not loaded.</div>';
     return;
   }
-  const selected = cats.find((c) => c.id === categoryId) || cats[0];
+  const selectedId = categoryId || (cats[0] && cats[0].id);
   catBox.innerHTML = cats.map((cat) => (
-    `<button type="button" class="chip${cat.id === selected.id ? ' is-active' : ''}" data-howto-cat="${esc(cat.id)}">${esc(cat.title)}</button>`
+    `<button type="button" class="chip${cat.id === selectedId ? ' is-active' : ''}" data-howto-cat="${esc(cat.id)}">${esc(cat.title)}</button>`
   )).join('');
-  artBox.innerHTML = `<div class="small">${esc(selected.blurb || '')}</div>` + (selected.articles || []).map((article) => `
-    <details class="playbook" id="howto-${esc(article.id)}">
-      <summary>${esc(article.title)}</summary>
-      <div class="small mt-8">${esc(article.summary || '')}</div>
-      ${article.steps && article.steps.length ? `<ol class="checks diy-list mt-8">${article.steps.map((step) => `<li>${esc(step)}</li>`).join('')}</ol>` : ''}
-      ${article.links && article.links.length ? `<div class="chip-row mt-8">${article.links.map((link) => {
-        const kind = link.kind || 'tab';
-        const target = link.target || '';
-        const label = link.label || target;
-        if(kind === 'code') return `<button type="button" class="chip" data-howto-code="${esc(target)}">${esc(label)}</button>`;
-        if(kind === 'job') return `<button type="button" class="chip" data-howto-job="${esc(target)}">${esc(label)}</button>`;
-        if(kind === 'scroll') return `<button type="button" class="chip" data-howto-scroll="${esc(target)}">${esc(label)}</button>`;
-        return `<button type="button" class="chip" data-howto-tab="${esc(target)}">${esc(label)}</button>`;
-      }).join('')}</div>` : ''}
-    </details>
-  `).join('');
+  artBox.innerHTML = cats.map((cat) => {
+    const open = cat.id === selectedId;
+    const articles = (cat.articles || []).map((article) => `
+      <details class="playbook" id="howto-${esc(article.id)}"${open ? ' open' : ''}>
+        <summary>${esc(article.title)}</summary>
+        <p class="small mt-8">${esc(article.summary || '')}</p>
+        ${article.steps && article.steps.length ? `<ol class="checks diy-list mt-8">${article.steps.map((step) => `<li>${esc(step)}</li>`).join('')}</ol>` : ''}
+        ${article.links && article.links.length ? `<div class="chip-row mt-8">${article.links.map((link) => {
+          const kind = link.kind || 'tab';
+          const target = link.target || '';
+          const label = link.label || target;
+          if(kind === 'code') return `<button type="button" class="chip" data-howto-code="${esc(target)}">${esc(label)}</button>`;
+          if(kind === 'job') return `<button type="button" class="chip" data-howto-job="${esc(target)}">${esc(label)}</button>`;
+          if(kind === 'scroll') return `<button type="button" class="chip" data-howto-scroll="${esc(target)}">${esc(label)}</button>`;
+          return `<button type="button" class="chip" data-howto-tab="${esc(target)}">${esc(label)}</button>`;
+        }).join('')}</div>` : ''}
+      </details>
+    `).join('');
+    return `
+      <section class="howto-hub-section${open ? ' is-active' : ''}" id="howto-cat-${esc(cat.id)}" data-hub-section="${esc(cat.id)}">
+        <h3>${esc(cat.title)}</h3>
+        <p class="small">${esc(cat.blurb || '')}</p>
+        ${articles}
+      </section>
+    `;
+  }).join('');
+  const focus = byId('howto-cat-' + selectedId);
+  if(focus && categoryId) focus.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function openHowtoHub(categoryId){
+  showTab('more', { scroll:false });
+  showEl('howtoHubCard');
+  renderHowtoHub(categoryId || 'scanners');
+  const card = byId('howtoHubCard');
+  if(card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function wireHowtoHub(){
@@ -1307,6 +1327,16 @@ function wireHowtoHub(){
       if(node) node.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   });
+  const shortcuts = byId('guideShortcuts');
+  if(shortcuts && shortcuts.getAttribute('data-wired') !== '1'){
+    shortcuts.setAttribute('data-wired', '1');
+    shortcuts.addEventListener('click', (e) => {
+      const btn = e.target.closest && e.target.closest('[data-open-hub]');
+      if(!btn) return;
+      e.preventDefault();
+      openHowtoHub(btn.getAttribute('data-open-hub'));
+    });
+  }
   renderHowtoHub('scanners');
 }
 
@@ -1611,10 +1641,6 @@ async function init(){
   // Browse libraries stay collapsed — diagnosis pulls only what is needed.
   document.querySelectorAll('details.extra, details.collapsible').forEach((el) => { el.open = false; });
   wireHowtoHub();
-  const howtoHubCard = byId('howtoHubCard');
-  if(howtoHubCard){
-    howtoHubCard.addEventListener('toggle', () => { if(howtoHubCard.open) renderHowtoHub(); });
-  }
   const jobsCard = byId('jobsCard');
   if(jobsCard){
     jobsCard.addEventListener('toggle', () => { if(jobsCard.open) renderCommonJobs(); });
