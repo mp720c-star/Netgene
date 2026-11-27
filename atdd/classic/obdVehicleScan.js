@@ -57,11 +57,31 @@
 
   // GMT900 / GM light-truck ABS/BCM candidates. Silent candidates stay out of
   // the report. FIXD is not assumed to reach EBCM/BCM on every truck.
+  // Primary reference vehicle: 2008 GMC Sierra 1500 SLT flex-fuel (GMT900).
+  var PRIMARY_VEHICLE = Object.freeze({
+    year: 2008,
+    make: "GMC",
+    model: "Sierra 1500",
+    trim: "SLT",
+    fuel: "flex-fuel",
+    platform: "GMT900",
+    label: "2008 GMC Sierra 1500 SLT flex-fuel (GMT900)"
+  });
+
   var GM_CANDIDATE_NODES = Object.freeze([
     { request: "241", response: "641", label: "ABS/EBCM candidate 241" },
     { request: "24C", response: "64C", label: "ABS/EBCM candidate 24C" },
     { request: "244", response: "644", label: "BCM candidate 244" },
     { request: "760", response: "768", label: "Module candidate 760" }
+  ]);
+
+  // Short ABS-only list for FIXD. Do not expand this into a full-bus thrash —
+  // long probes have upset key-on GMT900 trucks mid-scan.
+  var SIERRA_ABS_PROBE_NODES = Object.freeze([
+    { request: "241", response: "641", label: "ABS/EBCM candidate 241" },
+    { request: "24C", response: "64C", label: "ABS/EBCM candidate 24C" },
+    { request: "740", response: "748", label: "Chassis/ABS candidate 740" },
+    { request: "7B0", response: "7B8", label: "Chassis/ABS candidate 7B0" }
   ]);
 
   // ABS/chassis candidates first so a slow FIXD-class adapter still reaches them
@@ -89,6 +109,12 @@
     { command: "07", timeoutMs: 4000, label: "pending codes" },
     { command: "0A", timeoutMs: 4000, label: "permanent codes" },
     { command: "1902FF", timeoutMs: 4000, label: "module codes" }
+  ]);
+
+  // FIXD-safe module reads: no UDS 1902FF / 1003. Extended session upset some trucks.
+  var MODULE_READS_SAFE = Object.freeze([
+    { command: "03", timeoutMs: 2500, label: "stored codes" },
+    { command: "07", timeoutMs: 2500, label: "pending codes" }
   ]);
 
   var RESTORE_HEADER = Object.freeze(["ATFCSM0", "ATAR", "ATSH7DF"]);
@@ -450,8 +476,11 @@
     FUNCTIONAL_READS: FUNCTIONAL_READS,
     PHYSICAL_NODES: PHYSICAL_NODES,
     EXTRA_NODES: EXTRA_NODES,
+    PRIMARY_VEHICLE: PRIMARY_VEHICLE,
     GM_CANDIDATE_NODES: GM_CANDIDATE_NODES,
+    SIERRA_ABS_PROBE_NODES: SIERRA_ABS_PROBE_NODES,
     MODULE_READS: MODULE_READS,
+    MODULE_READS_SAFE: MODULE_READS_SAFE,
     RESTORE_HEADER: RESTORE_HEADER,
     CLEAR_EMISSIONS: CLEAR_EMISSIONS,
     CLEAR_MODULE: CLEAR_MODULE,

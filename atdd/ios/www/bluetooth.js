@@ -73,12 +73,14 @@
     const connect = byId("btnBtConnect");
     const scanAll = byId("btnBtScanAll");
     const read = byId("btnBtReadCodes");
+    const probeAbs = byId("btnBtProbeAbs");
     const clear = byId("btnBtClearVehicle");
     const disc = byId("btnBtDisconnect");
     const webOk = webBluetoothAvailable();
     if (connect) connect.disabled = busy || !webOk;
     if (scanAll) scanAll.disabled = busy || !webOk;
     if (read) read.disabled = busy || !writeChar;
+    if (probeAbs) probeAbs.disabled = busy || !writeChar;
     if (clear) clear.disabled = busy || !writeChar;
     if (disc) disc.disabled = busy || !device;
   }
@@ -98,12 +100,20 @@
     return "This browser does not support Web Bluetooth. Use Chrome or Edge on Android/desktop.";
   }
 
+  function primaryVehicleLabel() {
+    const scan = global.ATDDVehicleScan;
+    return (scan && scan.PRIMARY_VEHICLE && scan.PRIMARY_VEHICLE.label) ||
+      "2008 GMC Sierra 1500 SLT flex-fuel (GMT900)";
+  }
+
   function confirmClear() {
     const dialog = byId("clearCodesDialog");
     if (!dialog || typeof dialog.showModal !== "function") {
       return Promise.resolve(
         window.confirm(
-          "Clear emissions and ABS/module codes this vehicle accepts? Park, key on, engine off."
+          "Clear engine (Mode 04) and try ABS/brake module clear on " +
+            primaryVehicleLabel() +
+            "? Park, key on, engine off."
         )
       );
     }
@@ -371,9 +381,11 @@
     api.showScanReadout({ ok: !!ok, codes: codes || [], reply });
   }
 
+  /** Default Read: emissions only. Long module thrash upset key-on GMT900 trucks mid-scan. */
   async function readCodesLive() {
     if (!writeChar) throw new Error("Connect a scanner first.");
     const scan = global.ATDDVehicleScan;
+    log("Quick emissions read for " + primaryVehicleLabel() + ". Key on, engine off. ABS is a separate button.");
     if (!scan) {
       log("Reading Mode 03 DTCs…");
       const reply = await sendCommand("03", 1500);
@@ -384,51 +396,95 @@
       return;
     }
     const sections = [];
-    for (const step of scan.FUNCTIONAL_READS) {
+    const quick = [
+      { command: "03", timeoutMs: 12000, label: "stored codes" },
+      { command: "07", timeoutMs: 10000, label: "pending codes" },
+      { command: "0A", timeoutMs: 8000, label: "permanent codes" },
+      { command: "0101", timeoutMs: 6000, label: "check-engine light and code count" },
+    ];
+    for (const step of quick) {
       log("Requesting " + step.label + ".");
-      const reply = await sendCommand(step.command, Math.min(step.timeoutMs, 2500));
+      const reply = await sendCommand(step.command, Math.min(step.timeoutMs, 4000));
       log(reply || "(no reply)");
       sections.push({ label: step.label, raw: reply });
     }
-    log("Probing ABS/chassis candidates first, then other modules the adapter will answer…");
-    const nodes = [];
-    const candidates =
-      typeof scan.allProbeNodes === "function"
-        ? scan.allProbeNodes()
-        : [].concat(scan.PHYSICAL_NODES || [], scan.EXTRA_NODES || []);
-    for (const node of candidates) {
-      for (const command of scan.adapterHeader(node)) await sendOptional(command, 350);
-      for (const step of scan.MODULE_READS || []) {
-        let reply = await sendOptional(step.command, Math.min(step.timeoutMs || 2000, 2000));
-        if (step.command === "1902FF" && scan.needsExtendedSession && scan.needsExtendedSession(reply)) {
-          await sendOptional(scan.EXTENDED_SESSION, 500);
-          reply = await sendOptional(step.command, Math.min(step.timeoutMs || 2000, 2000));
-          await sendOptional(scan.DEFAULT_SESSION, 500);
-        }
-        if (reply) {
-          sections.push({
-            label: (node.label || node.request || "module") + " " + step.label,
-            raw: reply,
-          });
-          log((node.label || node.request) + " " + step.label + ": " + reply);
-        }
-        if (scan.replyHasVehicleData(reply)) {
-          if (!nodes.some((n) => n.request === node.request)) nodes.push(node);
-        }
-      }
-    }
-    answeredNodes = nodes;
     for (const command of scan.RESTORE_HEADER || []) await sendOptional(command, 350);
-    if (!nodes.length) {
-      log("No chassis/ABS module answered. Only functional OBD codes are listed — nothing was invented.");
-    } else {
-      log("Modules that answered (eligible for clear): " + nodes.map((n) => n.request).join(", "));
-    }
+    log("Emissions read finished. Truck bus left at functional OBD address — no deep module sweep.");
     const report = scan.buildReport(sections);
     applyCodesToScanner(report.uniqueCodes);
     const reply = sections.map((section) => section.raw).join("\n");
     const api = global.ATDDScanReadout;
     if (api) api.showScanReadout({ ok: true, codes: report.uniqueCodes, reply, report });
+    if (!report.uniqueCodes.length) {
+      log(
+        "No engine codes returned. If the brake / ABS light is on, tap Probe ABS (short), then Clear. FIXD often cannot reach Sierra EBCM."
+      );
+    } else {
+      log("Tap Clear engine / brake lights to send Mode 04 (and ABS clear if a module answered).");
+    }
+  }
+
+  async function probeAbsShortLive() {
+    if (!writeChar) throw new Error("Connect a scanner first.");
+    const scan = global.ATDDVehicleScan;
+    if (!scan) {
+      log("ABS probe needs the vehicle scan parser in this build.");
+      return;
+    }
+    const nodes = scan.SIERRA_ABS_PROBE_NODES || scan.GM_CANDIDATE_NODES || [];
+    const sections = [];
+    const answered = [];
+    log(
+      "Short ABS probe for " +
+        primaryVehicleLabel() +
+        " (" +
+        nodes.length +
+        " candidates, soft headers, no extended session)."
+    );
+    await sendOptional("ATH1", 800);
+    for (let index = 0; index < nodes.length; index++) {
+      const node = nodes[index];
+      log("ABS candidate " + (node.label || node.request) + " (" + (index + 1) + " of " + nodes.length + ").");
+      const soft = typeof scan.adapterHeaderSoft === "function" ? scan.adapterHeaderSoft(node) : ["ATSH" + node.request];
+      for (const command of soft) await sendOptional(command, 400);
+      const steps = scan.MODULE_READS_SAFE || [
+        { command: "03", timeoutMs: 2500, label: "stored codes" },
+        { command: "07", timeoutMs: 2500, label: "pending codes" },
+      ];
+      let nodeAnswered = false;
+      for (const step of steps) {
+        const reply = await sendOptional(step.command, Math.min(step.timeoutMs || 2500, 2500));
+        if (reply) {
+          sections.push({ label: (node.label || node.request) + " " + step.label, raw: reply });
+          log((node.label || node.request) + " " + step.label + ": " + reply);
+        }
+        if (scan.replyHasVehicleData(reply)) nodeAnswered = true;
+      }
+      if (nodeAnswered) answered.push(node);
+    }
+    answeredNodes = answered;
+    for (const command of scan.RESTORE_HEADER || []) await sendOptional(command, 350);
+    const report = scan.buildReport(sections);
+    if (report.uniqueCodes.length) {
+      const field = byId("codes");
+      const existing = String(field && field.value || "")
+        .split(/\n+/)
+        .map((s) => s.trim())
+        .filter(Boolean);
+      const merged = Array.from(new Set(existing.concat(report.uniqueCodes)));
+      applyCodesToScanner(merged);
+    }
+    if (report.chassisCodes && report.chassisCodes.length) {
+      log("ABS/chassis codes: " + report.chassisCodes.join(", ") + ". Tap Clear to try clearing them.");
+    } else if (answered.length) {
+      log("ABS candidates answered but returned no C-codes.");
+    } else {
+      log(
+        "No ABS/EBCM answer on FIXD for " +
+          primaryVehicleLabel() +
+          ". Brake light cannot be cleared through this adapter — need an EBCM-capable tool."
+      );
+    }
   }
 
   async function clearVehicleLive() {
@@ -440,7 +496,9 @@
     }
     const scan = global.ATDDVehicleScan;
     log(
-      "Clearing emissions (Mode 04) and module clears for answered computers plus ABS/chassis candidates. New scan does not send a clear."
+      "Clear for " +
+        primaryVehicleLabel() +
+        " — engine Mode 04, then short ABS clear tries. Key on, engine off."
     );
     // Re-init functional addressing so Mode 04 is not sent under a stale physical header.
     for (const command of ["ATZ", "ATE0", "ATL0", "ATS0", "ATH0", "ATSP0"]) {
@@ -460,31 +518,35 @@
       nodes.push(node);
     }
     (answeredNodes || []).forEach(addNode);
-    if (scan && typeof scan.chassisAbsCandidates === "function") {
+    if (scan && scan.SIERRA_ABS_PROBE_NODES) {
+      scan.SIERRA_ABS_PROBE_NODES.forEach(addNode);
+    } else if (scan && typeof scan.chassisAbsCandidates === "function") {
       scan.chassisAbsCandidates().forEach(addNode);
     } else if (!nodes.length) {
       (await probeClearNodes()).forEach(addNode);
     }
     answeredNodes = nodes;
+    let absCleared = 0;
     if (scan && nodes.length) {
+      log("Trying brake / ABS module clear on " + nodes.length + " short-list candidates (soft headers only).");
+      await sendOptional("ATH1", 800);
       for (const node of nodes) {
         const soft = typeof scan.adapterHeaderSoft === "function" ? scan.adapterHeaderSoft(node) : scan.adapterHeader(node);
         for (const command of soft) await sendOptional(command, 400);
-        let cleared = await sendOptional(scan.CLEAR_MODULE, 2000);
-        if (!cleared || /\?/.test(cleared)) {
-          for (const command of scan.adapterHeader(node)) await sendOptional(command, 400);
-          cleared = await sendOptional(scan.CLEAR_MODULE, 2000);
-        }
-        log(
-          "Module clear " +
-            node.request +
-            ": " +
-            (cleared || "(no reply)")
-        );
+        const cleared = await sendOptional(scan.CLEAR_MODULE, 2000);
+        if (cleared && !/\bNO DATA\b|\b\?\b/i.test(cleared)) absCleared++;
+        log("Module clear " + node.request + ": " + (cleared || "(no reply)"));
       }
       for (const command of scan.RESTORE_HEADER || []) await sendOptional(command, 400);
     } else {
       log("No answering modules remembered for ABS/module clear. Emissions clear still ran.");
+    }
+    if (!absCleared) {
+      log(
+        "No ABS/EBCM accepted a clear on FIXD. Brake / ABS dash light may stay on for " +
+          primaryVehicleLabel() +
+          " until an EBCM-capable tool clears it."
+      );
     }
     await readCodesLive();
   }
@@ -564,6 +626,20 @@
           await readCodesLive();
         } catch (err) {
           log("Read codes failed: " + (err && err.message ? err.message : err));
+        } finally {
+          setBusy(false);
+        }
+      };
+    }
+    const probeAbs = byId("btnBtProbeAbs");
+    if (probeAbs) {
+      probeAbs.onclick = async () => {
+        if (busy) return;
+        setBusy(true);
+        try {
+          await probeAbsShortLive();
+        } catch (err) {
+          log("Probe ABS failed: " + (err && err.message ? err.message : err));
         } finally {
           setBusy(false);
         }

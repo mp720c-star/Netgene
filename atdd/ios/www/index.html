@@ -135,11 +135,12 @@
             <button class="warn" id="btnBtConnect">Connect OBD-II Scanner</button>
             <button class="secondary" id="btnBtScanAll">Scan any BLE device</button>
             <button class="secondary" id="btnBtReadCodes" disabled>Read codes</button>
-            <button class="warn" id="btnBtClearVehicle" disabled>Clear codes (incl. ABS)</button>
+            <button class="secondary" id="btnBtProbeAbs" disabled>Probe ABS (short)</button>
+            <button class="warn" id="btnBtClearVehicle" disabled>Clear engine / brake lights</button>
             <button class="secondary" id="btnBtDisconnect" disabled>Disconnect</button>
           </div>
           <pre id="btLog" class="bt-log" aria-live="polite">Idle. Tap Connect, with the adapter powered in the OBD port.</pre>
-          <p class="small mt-8">Read codes asks for stored, pending, and permanent codes, MIL, VIN, distances, and every module that answers (including ABS when it answers). Clear sends Mode 04 plus module clear to computers that answered. FIXD brand protocol stays <code>UNVERIFIED</code>. New scan does not send Mode 04.</p>
+          <p class="small mt-8">Primary truck: 2008 GMC Sierra 1500 SLT flex-fuel. <strong>Read codes</strong> is a short emissions scan only (Mode 03/07/0A) so the truck stays quiet. <strong>Probe ABS (short)</strong> is optional and limited. Clear sends Mode 04 for the engine light and tries ABS candidates for the brake light when that module answers. FIXD often cannot reach GMT900 EBCM — brake light may stay on. Protocol claim <code>UNVERIFIED</code>.</p>
           <div class="row mt-8">
             <button type="button" class="secondary" data-open-hub="scanners">Scanner how-to</button>
             <button type="button" class="secondary" data-open-hub="abs_chassis">ABS how-to</button>
@@ -335,12 +336,12 @@
 
   <dialog id="clearCodesDialog" class="confirm-dialog" aria-labelledby="clearCodesDialogTitle">
     <form method="dialog" id="clearCodesForm">
-      <h2 id="clearCodesDialogTitle">Clear emissions and ABS/module codes?</h2>
+      <h2 id="clearCodesDialogTitle">Clear engine and brake / ABS lights?</h2>
       <p>This sends Mode 04 (standard OBD clear) and a clear-all request to each module that answered the last scan, including the ABS/chassis computer when it answered. The check-engine and ABS lights go off only if the vehicle accepts those clears. Park, switch the key on, and leave the engine off.</p>
       <p class="small">New scan does not clear codes. Permanent codes (Mode 0A) and OEM-locked ABS faults may remain. No codes are added if a module does not answer.</p>
       <div class="row dialog-actions">
         <button type="button" class="secondary" id="btnClearVehicleCancel">Cancel</button>
-        <button type="submit" class="warn" id="btnClearVehicleConfirm" value="confirm">Clear codes (incl. ABS)</button>
+        <button type="submit" class="warn" id="btnClearVehicleConfirm" value="confirm">Clear engine / brake lights</button>
       </div>
     </form>
   </dialog>

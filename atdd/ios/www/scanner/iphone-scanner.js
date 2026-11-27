@@ -12,6 +12,7 @@ const field = el("codes");
 const connect = el("btnBtConnect");
 const top = el("btnBluetoothTop");
 const read = el("btnBtReadCodes");
+const probeAbsBtn = el("btnBtProbeAbs");
 const clear = el("btnBtClearVehicle");
 const disconnect = el("btnBtDisconnect");
 const scanAll = el("btnBtScanAll");
@@ -22,11 +23,17 @@ let adapterReady = false;
 let busy = false;
 let available = false;
 let answeredNodes = [];
+let lastMilOn = false;
 
 function scanApi() {
   const api = window.ATDDVehicleScan;
   if (!api) throw new Error("Vehicle scan parser is missing from this build.");
   return api;
+}
+
+function primaryVehicleLabel() {
+  const v = scanApi().PRIMARY_VEHICLE;
+  return v?.label || "2008 GMC Sierra 1500 SLT flex-fuel (GMT900)";
 }
 
 function readout() {
@@ -38,6 +45,7 @@ function buttons() {
   connect.disabled = busy || !available || Boolean(active);
   if (scanAll) scanAll.disabled = busy || !available || Boolean(active);
   read.disabled = busy || !ready;
+  if (probeAbsBtn) probeAbsBtn.disabled = busy || !ready;
   if (clear) clear.disabled = busy || !ready;
   disconnect.disabled = busy || !ready;
 }
@@ -53,6 +61,7 @@ async function release(scanner) {
     ready = false;
     adapterReady = false;
     answeredNodes = [];
+    lastMilOn = false;
   }
   if (scanner) await scanner.disconnect();
 }
@@ -100,8 +109,8 @@ async function prepareAdapter(scanner) {
 
 async function restoreFunctional(scanner) {
   const api = scanApi();
-  for (const command of api.RESTORE_HEADER) await sendOptional(scanner, command, 3000);
-  await sendOptional(scanner, "ATH0", 3000);
+  for (const command of api.RESTORE_HEADER) await sendOptional(scanner, command, 2500);
+  await sendOptional(scanner, "ATH0", 2500);
 }
 
 function showCodes(codes, reply, label) {
@@ -143,7 +152,6 @@ async function readModeFamily(scanner, command, label, timeoutMs) {
     const codes = storedCodes(reply);
     return { codes, reply };
   } catch (error) {
-    // Mode 07/0A often return NO DATA when empty; do not fail the whole read.
     log(label + " parse: " + (error?.message || error));
     const api = readout();
     if (api && command === "03") {
@@ -153,52 +161,50 @@ async function readModeFamily(scanner, command, label, timeoutMs) {
   }
 }
 
-async function applyNodeHeader(scanner, node, soft) {
+async function applyNodeHeaderSoft(scanner, node) {
   const api = scanApi();
-  const commands = soft && typeof api.adapterHeaderSoft === "function"
+  const commands = typeof api.adapterHeaderSoft === "function"
     ? api.adapterHeaderSoft(node)
-    : api.adapterHeader(node);
-  let rejected = false;
+    : ["ATSH" + node.request];
   for (const command of commands) {
-    const reply = await sendOptional(scanner, command, 2500);
-    if (/\?/.test(reply)) rejected = true;
+    await sendOptional(scanner, command, 2000);
   }
-  return !rejected;
 }
 
-async function readModuleSteps(scanner, node, sections) {
+async function readModuleStepsSafe(scanner, node, sections) {
   const api = scanApi();
+  const steps = api.MODULE_READS_SAFE || [
+    { command: "03", timeoutMs: 2500, label: "stored codes" },
+    { command: "07", timeoutMs: 2500, label: "pending codes" },
+  ];
   let nodeAnswered = false;
-  for (const step of api.MODULE_READS) {
-    let reply = await sendOptional(scanner, step.command, Math.min(step.timeoutMs || 4000, 4000));
-    if (step.command === "1902FF" && api.needsExtendedSession(reply)) {
-      await sendOptional(scanner, api.EXTENDED_SESSION, 3000);
-      reply = await sendOptional(scanner, step.command, 4000);
-      await sendOptional(scanner, api.DEFAULT_SESSION, 3000);
-    }
+  for (const step of steps) {
+    // No 1902FF / 1003 here — extended session and long UDS probes upset some GMT900 trucks mid-scan.
+    const reply = await sendOptional(scanner, step.command, step.timeoutMs || 2500);
     sections.push({ label: (node.label || node.response) + " " + step.label, raw: reply });
     if (api.replyHasVehicleData(reply)) nodeAnswered = true;
   }
   return nodeAnswered;
 }
 
-async function probeAbsFast(scanner, sections) {
+/** Optional short ABS probe only — never the old 22-module marathon. */
+async function probeAbsShort(scanner, sections) {
   const api = scanApi();
-  const nodes = typeof api.chassisAbsCandidates === "function"
-    ? api.chassisAbsCandidates()
-    : (api.GM_CANDIDATE_NODES || []);
+  const nodes = api.SIERRA_ABS_PROBE_NODES || api.GM_CANDIDATE_NODES || [];
   const answered = [];
-  log("ABS/chassis fast probe (" + nodes.length + " candidates). Soft headers first for FIXD-class adapters.");
-  await sendOptional(scanner, "ATH1", 2500);
+  log(
+    "Short ABS probe for " +
+      primaryVehicleLabel() +
+      " (" +
+      nodes.length +
+      " candidates, soft headers, no extended session)."
+  );
+  await sendOptional(scanner, "ATH1", 2000);
   for (let index = 0; index < nodes.length; index++) {
     const node = nodes[index];
     log("ABS candidate " + (node.label || node.request) + " (" + (index + 1) + " of " + nodes.length + ").");
-    let ok = await applyNodeHeader(scanner, node, true);
-    let nodeAnswered = await readModuleSteps(scanner, node, sections);
-    if (!nodeAnswered) {
-      ok = await applyNodeHeader(scanner, node, false);
-      if (ok) nodeAnswered = await readModuleSteps(scanner, node, sections);
-    }
+    await applyNodeHeaderSoft(scanner, node);
+    const nodeAnswered = await readModuleStepsSafe(scanner, node, sections);
     if (nodeAnswered) {
       answered.push({ request: node.request, response: node.response, label: node.label || "" });
       rememberNode(node);
@@ -208,50 +214,14 @@ async function probeAbsFast(scanner, sections) {
   return answered;
 }
 
-async function probeRemainingModules(scanner, sections, already) {
-  const api = scanApi();
-  const seen = new Set(already.map((node) => String(node.request).toUpperCase()));
-  const nodes = (typeof api.allProbeNodes === "function"
-    ? api.allProbeNodes()
-    : api.PHYSICAL_NODES.concat(api.EXTRA_NODES)
-  ).filter((node) => !seen.has(String(node.request).toUpperCase()));
-  const answered = already.slice();
-  if (!nodes.length) return answered;
-  log("Probing remaining modules (" + nodes.length + "). Silent modules are skipped.");
-  await sendOptional(scanner, "ATH1", 2500);
-  for (let index = 0; index < nodes.length; index++) {
-    const node = nodes[index];
-    if (node.request.length === 8 && answered.some((item) => item.request.length === 8 && item.unsupported)) break;
-    log("Module " + (node.label || node.response) + " (" + (index + 1) + " of " + nodes.length + ").");
-    let setupFailed = false;
-    const softOk = await applyNodeHeader(scanner, node, true);
-    if (!softOk && node.request.length === 8) {
-      answered.push({ request: node.request, response: node.response, unsupported: true });
-      setupFailed = true;
-    }
-    if (setupFailed) continue;
-    let nodeAnswered = await readModuleSteps(scanner, node, sections);
-    if (!nodeAnswered) {
-      await applyNodeHeader(scanner, node, false);
-      nodeAnswered = await readModuleSteps(scanner, node, sections);
-    }
-    if (nodeAnswered) {
-      const hit = { request: node.request, response: node.response, label: node.label || "" };
-      answered.push(hit);
-      rememberNode(hit);
-    }
-  }
-  await restoreFunctional(scanner);
-  return answered.filter((node) => !node.unsupported);
-}
-
+/** Default Read codes: emissions only. Stops before the bus thrash that was cranking/upsetting the truck. */
 async function readVehicle() {
   if (!ready) return;
   await perform(async () => {
     const scanner = active;
+    log("Quick emissions read for " + primaryVehicleLabel() + ". Key on, engine off. ABS is a separate button.");
     await prepareAdapter(scanner);
 
-    // FIXD-critical path: Mode 03 first.
     const stored = await readModeFamily(scanner, "03", "stored codes", 12000);
     if (stored.error && !stored.codes.length && /incomplete|did not reply|rejected/i.test(stored.error.message || stored.error)) {
       throw new Error(stored.error.message || String(stored.error));
@@ -261,7 +231,7 @@ async function readVehicle() {
     const pending = await readModeFamily(scanner, "07", "pending codes", 10000);
     codes = showCodes(mergeUnique(codes, pending.codes), [stored.reply, pending.reply].filter(Boolean).join("\n"), "Stored/pending codes");
 
-    const permanent = await readModeFamily(scanner, "0A", "permanent codes", 10000);
+    const permanent = await readModeFamily(scanner, "0A", "permanent codes", 8000);
     codes = showCodes(
       mergeUnique(codes, permanent.codes),
       [stored.reply, pending.reply, permanent.reply].filter(Boolean).join("\n"),
@@ -269,62 +239,55 @@ async function readVehicle() {
     );
 
     const statusReply = await sendOptional(scanner, "0101", 6000);
-    const milOn = /41\s*01\s*[8-9A-F]/i.test(String(statusReply).replace(/\s+/g, ""));
+    lastMilOn = /41\s*01\s*[8-9A-F]/i.test(String(statusReply).replace(/\s+/g, ""));
     if (statusReply) {
       log(
-        milOn
-          ? "Mode 01 PID 01: check-engine / MIL bit is on for at least one answering computer."
-          : "Mode 01 PID 01: check-engine / MIL bit is off on the answering computers."
+        lastMilOn
+          ? "Engine / MIL status: on (at least one computer)."
+          : "Engine / MIL status: off on answering computers."
       );
     }
 
-    const sections = [
-      { label: "stored codes", raw: stored.reply },
-      { label: "pending codes", raw: pending.reply },
-      { label: "permanent codes", raw: permanent.reply },
-    ];
-
-    try {
-      const absHits = await probeAbsFast(scanner, sections);
-      let report = scanApi().buildReport(sections);
-      if (report.uniqueCodes.length) {
-        codes = showCodes(mergeUnique(codes, report.uniqueCodes), sections.map((s) => s.raw).join("\n"), "Codes");
-      }
-      if (report.chassisCodes.length) {
-        log("ABS/chassis codes from answering modules: " + report.chassisCodes.join(", ") + ".");
-      } else if (absHits.length) {
-        log("ABS candidates answered but no C-codes were in the replies.");
-      } else {
-        log("No ABS/chassis module answered on the fast probe. Continuing with other modules.");
-      }
-
-      answeredNodes = await probeRemainingModules(scanner, sections, absHits);
-      report = scanApi().buildReport(sections);
-      if (report.uniqueCodes.length) {
-        codes = showCodes(mergeUnique(codes, report.uniqueCodes), sections.map((s) => s.raw).join("\n"), "Codes");
-      }
-      if (report.chassisCodes.length) {
-        log("ABS/chassis codes after full probe: " + report.chassisCodes.join(", ") + ".");
-      } else if (!absHits.length) {
-        log(
-          "No ABS/chassis module answered on FIXD. Emissions Mode 03/07/0A still listed — nothing was invented. " +
-            "On many GMT900 trucks the EBCM is not reachable from this adapter's HS-CAN bridge."
-        );
-      }
-    } catch (error) {
-      log("Module probe skipped after primary read: " + (error?.message || error));
-      await restoreFunctional(scanner);
-    }
+    await restoreFunctional(scanner);
+    log("Emissions read finished. Truck bus left at functional OBD address — no deep module sweep.");
 
     if (!codes.length) {
-      if (!milOn) {
+      if (!lastMilOn) {
         log(
-          "The PCM reported no stored/pending codes and MIL off. Clear will have nothing emissions-side to erase. " +
-            "If an ABS light is on, that module did not answer FIXD — need an EBCM-capable tool for those codes."
+          "No engine codes and MIL off — Clear will not change a check-engine light that is already off. " +
+            "If the brake / ABS light is on, tap Probe ABS (short), then Clear. FIXD often cannot reach Sierra EBCM."
         );
       } else {
-        log("Primary Mode 03/07/0A returned no codes while MIL looks on. Retry with key on, engine off, then re-read.");
+        log("MIL looks on but Mode 03/07 returned no codes. Retry key on, engine off.");
       }
+    } else {
+      log("Tap Clear engine / brake lights to send Mode 04 (and ABS clear if a module answered).");
+    }
+  });
+}
+
+async function probeAbsOnly() {
+  if (!ready) return;
+  await perform(async () => {
+    const scanner = active;
+    await prepareAdapter(scanner);
+    const sections = [];
+    const hits = await probeAbsShort(scanner, sections);
+    const report = scanApi().buildReport(sections);
+    if (report.uniqueCodes.length) {
+      const existing = field.value.split(/\n+/).map((s) => s.trim()).filter(Boolean);
+      showCodes(mergeUnique(existing, report.uniqueCodes), sections.map((s) => s.raw).join("\n"), "Codes incl. ABS");
+    }
+    if (report.chassisCodes.length) {
+      log("ABS/chassis codes: " + report.chassisCodes.join(", ") + ". Tap Clear to try clearing them.");
+    } else if (hits.length) {
+      log("ABS candidates answered but returned no C-codes.");
+    } else {
+      log(
+        "No ABS/EBCM answer on FIXD for " +
+          primaryVehicleLabel() +
+          ". Brake light cannot be cleared through this adapter — need an EBCM-capable tool."
+      );
     }
   });
 }
@@ -334,7 +297,13 @@ function confirmClear() {
   const confirmBtn = el("btnClearVehicleConfirm");
   const cancelBtn = el("btnClearVehicleCancel");
   if (!dialog || typeof dialog.showModal !== "function" || !confirmBtn) {
-    return Promise.resolve(window.confirm("Clear codes on this vehicle? Park, key on, engine off."));
+    return Promise.resolve(
+      window.confirm(
+        "Clear engine (Mode 04) and try ABS/brake module clear on " +
+          primaryVehicleLabel() +
+          "? Park, key on, engine off."
+      )
+    );
   }
   return new Promise((resolve) => {
     let settled = false;
@@ -376,18 +345,26 @@ async function clearVehicle() {
   await perform(async () => {
     const scanner = active;
     const api = scanApi();
+    log("Clear for " + primaryVehicleLabel() + " — engine Mode 04, then short ABS clear tries. Key on, engine off.");
 
-    // Full adapter reset — required after physical ABS headers or a cold connect.
     await prepareAdapter(scanner);
     await restoreFunctional(scanner);
 
-    // Before snapshot so the operator can see what clear changed.
-    const beforeStored = await readModeFamily(scanner, "03", "stored codes before clear", 12000);
+    const beforeStored = await readModeFamily(scanner, "03", "stored codes before clear", 10000);
     const beforePending = await readModeFamily(scanner, "07", "pending codes before clear", 8000);
     const before = mergeUnique(beforeStored.codes.slice(), beforePending.codes);
     showCodes(before, [beforeStored.reply, beforePending.reply].filter(Boolean).join("\n"), "Before clear");
 
-    // Always try ABS candidates for module clear, even if the last read found none.
+    log("Clearing engine / check-engine path (Mode 04).");
+    let emissions = await sendOptional(scanner, api.CLEAR_EMISSIONS, 8000);
+    if (!clearAccepted(emissions)) {
+      await prepareAdapter(scanner);
+      await restoreFunctional(scanner);
+      emissions = await sendLogged(scanner, api.CLEAR_EMISSIONS, 8000);
+    }
+    if (clearAccepted(emissions)) log("Mode 04 accepted — engine light should clear if codes were only emissions stored/pending.");
+    else log("Mode 04 inconclusive.");
+
     const clearTargets = [];
     const seen = new Set();
     function addTarget(node) {
@@ -397,75 +374,71 @@ async function clearVehicle() {
       clearTargets.push(node);
     }
     answeredNodes.forEach(addTarget);
-    (typeof api.chassisAbsCandidates === "function" ? api.chassisAbsCandidates() : api.GM_CANDIDATE_NODES || []).forEach(addTarget);
+    (api.SIERRA_ABS_PROBE_NODES || api.GM_CANDIDATE_NODES || []).forEach(addTarget);
 
-    log("Clearing emissions (Mode 04) on the functional address.");
-    let emissions = await sendOptional(scanner, api.CLEAR_EMISSIONS, 8000);
-    if (!clearAccepted(emissions)) {
-      log("Mode 04 did not look accepted. Resetting adapter and retrying once.");
-      await prepareAdapter(scanner);
-      await restoreFunctional(scanner);
-      emissions = await sendLogged(scanner, api.CLEAR_EMISSIONS, 8000);
-    }
-    if (clearAccepted(emissions)) log("Mode 04 reply looked accepted.");
-    else log("Mode 04 reply was inconclusive. Continuing with module clears.");
-
-    log("Clearing ABS/chassis and other module candidates (" + clearTargets.length + ").");
-    await sendOptional(scanner, "ATH1", 2500);
+    log("Trying brake / ABS module clear on " + clearTargets.length + " short-list candidates (soft headers only).");
+    let absCleared = 0;
+    await sendOptional(scanner, "ATH1", 2000);
     for (const node of clearTargets) {
-      log("Module clear → " + (node.label || node.request));
-      await applyNodeHeader(scanner, node, true);
-      let cleared = await sendOptional(scanner, api.CLEAR_MODULE, 8000);
-      if (!clearAccepted(cleared)) {
-        await applyNodeHeader(scanner, node, false);
-        cleared = await sendOptional(scanner, api.CLEAR_MODULE, 8000);
+      await applyNodeHeaderSoft(scanner, node);
+      const cleared = await sendOptional(scanner, api.CLEAR_MODULE, 5000);
+      if (clearAccepted(cleared)) {
+        absCleared++;
+        log("Module clear accepted at " + (node.label || node.request) + ".");
       }
-      if (clearAccepted(cleared)) log("Module clear accepted at " + (node.label || node.request) + ".");
     }
     await restoreFunctional(scanner);
 
-    log("Reading codes again after clear.");
-    await prepareAdapter(scanner);
-    const afterStored = await readModeFamily(scanner, "03", "stored codes after clear", 12000);
-    const afterPending = await readModeFamily(scanner, "07", "pending codes after clear", 8000);
-    const afterPermanent = await readModeFamily(scanner, "0A", "permanent codes after clear", 8000);
-    const after = mergeUnique(mergeUnique(afterStored.codes.slice(), afterPending.codes), afterPermanent.codes);
-    showCodes(after, [afterStored.reply, afterPending.reply, afterPermanent.reply].filter(Boolean).join("\n"), "After clear");
-
-    const cleared = before.filter((code) => !after.includes(code));
-    const remained = after.filter((code) => before.includes(code));
-    if (cleared.length) log("Cleared (gone on rescan): " + cleared.join(", ") + ".");
-    if (remained.length) log("Still present after clear: " + remained.join(", ") + ".");
-    if (afterPermanent.codes.length) {
-      log("Permanent (0A) codes may stay until the monitor runs a drive cycle — Mode 04 does not always erase them.");
+    if (!absCleared) {
+      log(
+        "No ABS/EBCM accepted a clear on FIXD. Brake / ABS dash light may stay on for " +
+          primaryVehicleLabel() +
+          " until an EBCM-capable tool clears it."
+      );
     }
-    if (!before.length && !after.length) {
-      log("No stored/pending codes before or after clear. If the light is still on, run Read codes again with key on, engine off.");
+
+    log("Rescanning emissions after clear.");
+    await prepareAdapter(scanner);
+    const afterStored = await readModeFamily(scanner, "03", "stored codes after clear", 10000);
+    const afterPending = await readModeFamily(scanner, "07", "pending codes after clear", 8000);
+    const after = mergeUnique(afterStored.codes.slice(), afterPending.codes);
+    showCodes(after, [afterStored.reply, afterPending.reply].filter(Boolean).join("\n"), "After clear");
+
+    const gone = before.filter((code) => !after.includes(code));
+    const stayed = after.filter((code) => before.includes(code));
+    if (gone.length) log("Engine codes cleared on rescan: " + gone.join(", ") + ".");
+    if (stayed.length) log("Still present after clear: " + stayed.join(", ") + ".");
+    if (!before.length && !after.length && !lastMilOn) {
+      log("Engine path already empty before clear. Brake light depends on ABS module reachability above.");
     }
   });
 }
 
 panel.querySelector(".lead").textContent =
-  "Connect a FIXD or generic ELM327-style BLE OBD-II reader, then Read codes. FIXD brand protocol claim is " +
+  "Primary vehicle: " +
+  primaryVehicleLabel() +
+  ". Connect FIXD or another ELM327-style BLE adapter. FIXD claim: " +
   FIXD_COMPATIBILITY +
   ".";
 panel.querySelector("h2").textContent = "Connect OBD-II Scanner";
 panel.querySelector("p.small.mt-8").textContent =
-  "Read codes starts with Mode 03, then a fast ABS/chassis probe, then other modules. Clear resets the adapter, sends Mode 04, clears ABS/module candidates, and rescans. Permanent codes may remain until a drive cycle. No simulated scanner data is used.";
+  "Read codes is a short emissions scan only so the Sierra stays quiet. Probe ABS (short) is optional. Clear engine / brake lights sends Mode 04 and soft ABS clears — FIXD may not reach EBCM. No simulated data.";
 connect.textContent = "Connect OBD-II Scanner";
 top.textContent = "Connect";
-if (clear) clear.textContent = "Clear codes (incl. ABS)";
+if (clear) clear.textContent = "Clear engine / brake lights";
+if (probeAbsBtn) probeAbsBtn.textContent = "Probe ABS (short)";
 if (scanAll) scanAll.hidden = false;
 const demoBtn = el("btnBtDemo");
 if (demoBtn) demoBtn.remove();
 el("btIphoneGate").hidden = true;
 try { available = capacitorBleAvailable(); } catch { available = false; }
 el("btSupport").textContent = available
-  ? "iPhone Bluetooth is available. Pick your FIXD or other ELM327-style BLE adapter. Protocol claim is " + FIXD_COMPATIBILITY + "."
+  ? "iPhone Bluetooth ready. Tuned for " + primaryVehicleLabel() + ". FIXD claim " + FIXD_COMPATIBILITY + "."
   : "The native Bluetooth connection is unavailable in this copy.";
 top.onclick = connect.onclick = () => choose();
 if (scanAll) scanAll.onclick = () => choose();
 read.onclick = readVehicle;
+if (probeAbsBtn) probeAbsBtn.onclick = probeAbsOnly;
 if (clear) clear.onclick = clearVehicle;
 disconnect.onclick = () => perform(async () => {
   await release(active);
@@ -491,7 +464,7 @@ async function choose() {
       },
     });
     active = scanner;
-    log("Choose a FIXD or other ELM327-style BLE OBD-II adapter plugged into the vehicle.");
+    log("Choose FIXD or another ELM327-style BLE adapter. Primary truck: " + primaryVehicleLabel() + ".");
     log("FIXD compatibility is " + FIXD_COMPATIBILITY + ".");
     const [device] = await scanner.scan();
     await scanner.connect(device.id);
@@ -501,7 +474,7 @@ async function choose() {
     answeredNodes = [];
     const name = device.name || "BLE adapter";
     const fixdName = device.isFixdName ? " (FIXD-named device)" : "";
-    log("Connected to " + name + fixdName + ". Tap Read codes (Mode 03 first, then ABS probe) or Clear codes.");
+    log("Connected to " + name + fixdName + ". Tap Read codes (short emissions only). Use Probe ABS only if needed.");
   });
 }
 

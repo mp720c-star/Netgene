@@ -234,15 +234,12 @@ function fakeDom() {
     /ELM_ADAPTER_INIT\s*=\s*Object\.freeze\(\[\s*"ATZ",\s*"ATE0",\s*"ATL0",\s*"ATS0",\s*"ATH0",\s*"ATSP0"\s*\]\)/
   );
   assert.match(scanner, /from\s+"\.\/stored-codes\.js"/);
-  assert.match(scanner, /1902FF/);
-  assert.match(scanner, /needsExtendedSession/);
-  assert.match(scanner, /EXTENDED_SESSION/);
-  assert.match(scanner, /probeAbsFast/);
-  assert.match(scanner, /chassisAbsCandidates/);
-  assert.match(scanner, /adapterHeaderSoft/);
+  assert.match(scanner, /probeAbsShort|Probe ABS/);
+  assert.match(scanner, /SIERRA_ABS_PROBE_NODES|MODULE_READS_SAFE/);
+  assert.match(scanner, /PRIMARY_VEHICLE|Sierra/);
   assert.match(scanner, /CLEAR_EMISSIONS|Mode 04/);
   assert.match(scanner, /prepareAdapter\(scanner\)/);
-  assert.doesNotMatch(scanner, /if \(step\.command === "1902FF"\) continue/);
+  assert.doesNotMatch(scanner, /probeRemainingModules/);
   assert.match(scanner, /btnBtClearVehicle/);
   assert.match(scanner, /CLEAR_MODULE/);
   assert.doesNotMatch(scanner, /send\(["']04["']\)/);
