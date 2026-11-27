@@ -20,7 +20,7 @@
   ];
   const WRITE_HINTS = ["fff2", "ffe1", "ffe9", "2af1", "6e400002", "fff2"];
   const NOTIFY_HINTS = ["fff1", "ffe1", "ffe4", "2af0", "6e400003", "fff1"];
-  const ELM_PROBE = ["ATZ", "ATE0", "ATL0", "ATH1", "ATSP0", "0100"];
+  const ELM_PROBE = ["ATZ", "ATI", "ATE0", "ATL0", "ATS0", "ATH0", "ATSP0", "ATDP", "0100"];
   const NAME_FILTERS = [
     { namePrefix: "FIXD" },
     { namePrefix: "fixd" },

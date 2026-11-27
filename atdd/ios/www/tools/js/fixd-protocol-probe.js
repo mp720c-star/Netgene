@@ -41,7 +41,18 @@ export const CANDIDATE_GATT_PROFILES = [
   }
 ];
 
-export const ELM_PROBE_SEQUENCE = ["ATZ", "ATE0", "ATL0", "ATH1", "ATSP0", "0100"];
+/** Adapter identity + init. ATI / ATDP are logged for acceptance rows A3 / A4. */
+export const ELM_PROBE_SEQUENCE = [
+  "ATZ",
+  "ATI",
+  "ATE0",
+  "ATL0",
+  "ATS0",
+  "ATH0",
+  "ATSP0",
+  "ATDP",
+  "0100",
+];
 
 /**
  * Match discovered GATT services/characteristics to candidate profiles.
