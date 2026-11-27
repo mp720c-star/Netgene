@@ -60,6 +60,14 @@ assert.match(scannerText, /readModeFamily\(scanner,\s*"03"/);
 assert.match(scannerText, /readModeFamily\(scanner,\s*"07"/);
 assert.match(scannerText, /readModeFamily\(scanner,\s*"0A"/);
 assert.match(scannerText, /storedCodes\(/);
+assert.match(scannerText, /1902FF/);
+assert.match(scannerText, /needsExtendedSession/);
+assert.match(scannerText, /allProbeNodes/);
+assert.doesNotMatch(scannerText, /if \(step\.command === "1902FF"\) continue/);
+const vehicleScan = fs.readFileSync(path.join(root, "obdVehicleScan.js"), "utf8");
+assert.match(vehicleScan, /GM_CANDIDATE_NODES/);
+assert.match(vehicleScan, /request:\s*"241"/);
+assert.match(vehicleScan, /allProbeNodes/);
 assert.match(entry, /id="scanReadoutCard"/);
 assert.match(entry, /id="scanReadout"/);
 

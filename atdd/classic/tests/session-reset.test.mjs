@@ -234,6 +234,11 @@ function fakeDom() {
     /ELM_ADAPTER_INIT\s*=\s*Object\.freeze\(\[\s*"ATZ",\s*"ATE0",\s*"ATL0",\s*"ATS0",\s*"ATH0",\s*"ATSP0"\s*\]\)/
   );
   assert.match(scanner, /from\s+"\.\/stored-codes\.js"/);
+  assert.match(scanner, /1902FF/);
+  assert.match(scanner, /needsExtendedSession/);
+  assert.match(scanner, /EXTENDED_SESSION/);
+  assert.match(scanner, /allProbeNodes/);
+  assert.doesNotMatch(scanner, /if \(step\.command === "1902FF"\) continue/);
   assert.match(scanner, /New scan does not send Mode 04/);
   assert.match(scanner, /btnBtClearVehicle/);
   assert.match(scanner, /CLEAR_EMISSIONS/);

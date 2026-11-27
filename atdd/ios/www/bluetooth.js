@@ -390,19 +390,27 @@
       log(reply || "(no reply)");
       sections.push({ label: step.label, raw: reply });
     }
-    log("Probing chassis/ABS addresses the adapter will answer…");
+    log("Probing ABS/chassis candidates first, then other modules the adapter will answer…");
     const nodes = [];
-    const candidates = [].concat(scan.PHYSICAL_NODES || [], scan.EXTRA_NODES || []);
+    const candidates =
+      typeof scan.allProbeNodes === "function"
+        ? scan.allProbeNodes()
+        : [].concat(scan.PHYSICAL_NODES || [], scan.EXTRA_NODES || []);
     for (const node of candidates) {
       for (const command of scan.adapterHeader(node)) await sendOptional(command, 350);
       for (const step of scan.MODULE_READS || []) {
-        const reply = await sendOptional(step.command, Math.min(step.timeoutMs || 2000, 2000));
+        let reply = await sendOptional(step.command, Math.min(step.timeoutMs || 2000, 2000));
+        if (step.command === "1902FF" && scan.needsExtendedSession && scan.needsExtendedSession(reply)) {
+          await sendOptional(scan.EXTENDED_SESSION, 500);
+          reply = await sendOptional(step.command, Math.min(step.timeoutMs || 2000, 2000));
+          await sendOptional(scan.DEFAULT_SESSION, 500);
+        }
         if (reply) {
           sections.push({
-            label: (node.request || "module") + " " + step.label,
+            label: (node.label || node.request || "module") + " " + step.label,
             raw: reply,
           });
-          log(node.request + " " + step.label + ": " + reply);
+          log((node.label || node.request) + " " + step.label + ": " + reply);
         }
         if (scan.replyHasVehicleData(reply)) {
           if (!nodes.some((n) => n.request === node.request)) nodes.push(node);

@@ -138,13 +138,17 @@ async function readModeFamily(scanner, command, label, timeoutMs) {
 
 async function probeNodes(scanner, sections) {
   const api = scanApi();
-  const nodes = api.PHYSICAL_NODES.concat(api.EXTRA_NODES);
+  const nodes = typeof api.allProbeNodes === "function"
+    ? api.allProbeNodes()
+    : api.PHYSICAL_NODES.concat(api.EXTRA_NODES);
   const answered = [];
-  log("Optional: asking modules that answer on this adapter. Silent modules are skipped.");
+  // Headers on only for physical module targeting. Mode 03 above stays on ATH0.
+  await sendOptional(scanner, "ATH1", 3000);
+  log("Asking ABS/chassis candidates first, then other modules. Silent modules are skipped.");
   for (let index = 0; index < nodes.length; index++) {
     const node = nodes[index];
     if (node.request.length === 8 && answered.some((item) => item.request.length === 8 && item.unsupported)) break;
-    log("Module " + node.response + " (" + (index + 1) + " of " + nodes.length + ").");
+    log("Module " + (node.label || node.response) + " (" + (index + 1) + " of " + nodes.length + ").");
     let setupFailed = false;
     for (const command of api.adapterHeader(node)) {
       const reply = await sendOptional(scanner, command, 3000);
@@ -157,15 +161,22 @@ async function probeNodes(scanner, sections) {
     if (setupFailed) continue;
     let nodeAnswered = false;
     for (const step of api.MODULE_READS) {
-      // Skip UDS 1902FF on the FIXD-first path — many ELM clones stall here.
-      if (step.command === "1902FF") continue;
-      const reply = await sendOptional(scanner, step.command, step.timeoutMs);
-      sections.push({ label: node.response + " " + step.label, raw: reply });
+      let reply = await sendOptional(scanner, step.command, step.timeoutMs);
+      // ABS/chassis modules often need UDS 1902FF; retry in extended session when required.
+      if (step.command === "1902FF" && api.needsExtendedSession(reply)) {
+        await sendOptional(scanner, api.EXTENDED_SESSION, 3000);
+        reply = await sendOptional(scanner, step.command, step.timeoutMs);
+        await sendOptional(scanner, api.DEFAULT_SESSION, 3000);
+      }
+      sections.push({ label: (node.label || node.response) + " " + step.label, raw: reply });
       if (api.replyHasVehicleData(reply)) nodeAnswered = true;
     }
-    if (nodeAnswered) answered.push({ request: node.request, response: node.response });
+    if (nodeAnswered) {
+      answered.push({ request: node.request, response: node.response, label: node.label || "" });
+    }
   }
   for (const command of api.RESTORE_HEADER) await sendOptional(scanner, command, 3000);
+  await sendOptional(scanner, "ATH0", 3000);
   return answered.filter((node) => !node.unsupported);
 }
 
@@ -209,8 +220,16 @@ async function readVehicle() {
       if (report.uniqueCodes.length) {
         codes = showCodes(mergeUnique(codes, report.uniqueCodes), sections.map((s) => s.raw).join("\n"), "Codes");
       }
-      if (!report.chassisCodes.length) {
-        log("No chassis-module codes in the replies. ABS codes appear only when that module answers.");
+      if (report.chassisCodes.length) {
+        log("ABS/chassis codes from answering modules: " + report.chassisCodes.join(", ") + ".");
+      } else if (answeredNodes.length) {
+        log(
+          "Modules answered (" +
+            answeredNodes.map((n) => n.label || n.request).join(", ") +
+            ") but no C-codes were in the replies. ABS light on with no C-code often means the EBCM path is still silent on this adapter."
+        );
+      } else {
+        log("No ABS/chassis module answered. Mode 03/07/0A emissions codes still listed — nothing was invented.");
       }
     } catch (error) {
       log("Module probe skipped after primary read: " + (error?.message || error));
@@ -276,7 +295,7 @@ panel.querySelector(".lead").textContent =
   ".";
 panel.querySelector("h2").textContent = "Connect OBD-II Scanner";
 panel.querySelector("p.small.mt-8").textContent =
-  "Read codes starts with Mode 03 (stored), then pending and permanent. Adapter setup is ATZ/ATE0/ATL0/ATS0/ATH0/ATSP0 — the same sequence as the last working TestFlight read. Clear still needs confirmation. No simulated scanner data is used.";
+  "Read codes starts with Mode 03 (stored), then pending and permanent, then ABS/chassis module probes (including UDS 1902FF and GM EBCM candidates). Adapter setup stays ATZ/ATE0/ATL0/ATS0/ATH0/ATSP0 for Mode 03; headers turn on only during the module probe. Clear still needs confirmation. No simulated scanner data is used.";
 connect.textContent = "Connect OBD-II Scanner";
 top.textContent = "Connect";
 if (clear) clear.textContent = "Clear codes (incl. ABS)";

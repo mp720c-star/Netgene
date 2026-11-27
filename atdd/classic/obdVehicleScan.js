@@ -51,9 +51,38 @@
     { request: "18DA10F1", response: "18DAF110" },
     { request: "18DA20F1", response: "18DAF120" },
     { request: "18DA30F1", response: "18DAF130" },
-    { request: "740", response: "748" },
-    { request: "7B0", response: "7B8" }
+    { request: "740", response: "748", label: "Chassis/ABS candidate 740" },
+    { request: "7B0", response: "7B8", label: "Chassis/ABS candidate 7B0" }
   ]);
+
+  // GMT900 / GM light-truck ABS/BCM candidates. Silent candidates stay out of
+  // the report. FIXD is not assumed to reach EBCM/BCM on every truck.
+  var GM_CANDIDATE_NODES = Object.freeze([
+    { request: "241", response: "641", label: "ABS/EBCM candidate 241" },
+    { request: "24C", response: "64C", label: "ABS/EBCM candidate 24C" },
+    { request: "244", response: "644", label: "BCM candidate 244" },
+    { request: "760", response: "768", label: "Module candidate 760" }
+  ]);
+
+  // ABS/chassis candidates first so a slow FIXD-class adapter still reaches them
+  // before a long silent powertrain/29-bit sweep.
+  function allProbeNodes() {
+    var seen = {};
+    var out = [];
+    function add(node) {
+      var key = String(node.request || "").toUpperCase();
+      if (!key || seen[key]) return;
+      seen[key] = true;
+      out.push(node);
+    }
+    GM_CANDIDATE_NODES.forEach(add);
+    EXTRA_NODES.filter(function (node) {
+      return node.request === "740" || node.request === "7B0" || /^18DA[1234]0F1$/i.test(node.request);
+    }).forEach(add);
+    PHYSICAL_NODES.forEach(add);
+    EXTRA_NODES.forEach(add);
+    return out;
+  }
 
   var MODULE_READS = Object.freeze([
     { command: "03", timeoutMs: 4000, label: "stored codes" },
@@ -395,6 +424,7 @@
     FUNCTIONAL_READS: FUNCTIONAL_READS,
     PHYSICAL_NODES: PHYSICAL_NODES,
     EXTRA_NODES: EXTRA_NODES,
+    GM_CANDIDATE_NODES: GM_CANDIDATE_NODES,
     MODULE_READS: MODULE_READS,
     RESTORE_HEADER: RESTORE_HEADER,
     CLEAR_EMISSIONS: CLEAR_EMISSIONS,
@@ -408,6 +438,7 @@
     formatDistance: formatDistance,
     adapterHeader: adapterHeader,
     needsExtendedSession: needsExtendedSession,
-    replyHasVehicleData: replyHasVehicleData
+    replyHasVehicleData: replyHasVehicleData,
+    allProbeNodes: allProbeNodes
   };
 })(typeof window !== "undefined" ? window : globalThis);
