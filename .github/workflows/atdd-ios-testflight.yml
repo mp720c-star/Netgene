@@ -37,7 +37,8 @@ env:
 jobs:
   build-and-upload:
     name: Archive ATDD Connect
-    runs-on: macos-26
+    # Xcode 27 image (iOS 27 SDK) — clears ITMS-90725 ahead of the April 2027 upload rule.
+    runs-on: xcode-27
     timeout-minutes: 45
     steps:
       - name: Check out ATDD Connect
@@ -62,7 +63,9 @@ jobs:
           grep -q 'CapacitorCommunityBluetoothLe' atdd/ios/ios/App/Podfile
           xcodebuild -version
           sdk=$(xcrun --sdk iphoneos --show-sdk-version)
-          test "$(printf '%s' "$sdk" | cut -d. -f1)" -ge 26
+          echo "IPHONEOS_SDK=$sdk"
+          # Apple ITMS-90725: uploads must use the iOS 27 SDK (or later) starting April 2027.
+          test "$(printf '%s' "$sdk" | cut -d. -f1)" -ge 27
           if [[ ! "$MARKETING_VERSION" =~ ^[0-9]+(\.[0-9]+){0,2}$ ]]; then
             echo "Marketing version is missing or invalid."
             exit 1
