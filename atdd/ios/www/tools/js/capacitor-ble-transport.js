@@ -18,16 +18,19 @@ function getCapacitor() {
  * Looking only at `Plugins.BluetoothLe` made the installed app treat itself as a
  * web page and disable Connect Scanner.
  */
-export function resolveNativeBlePlugin(cap) {
+export function resolveNativeBlePlugin(cap, { register = true } = {}) {
   if (!cap || typeof cap.isNativePlatform !== "function" || !cap.isNativePlatform()) return null;
-  if (cap.Plugins?.BluetoothLe) return cap.Plugins.BluetoothLe;
-  if (cap.Plugins?.BleClient) return cap.Plugins.BleClient;
-  if (typeof cap.registerPlugin === "function") return cap.registerPlugin("BluetoothLe");
+  if (cap.Plugins && cap.Plugins.BluetoothLe) return cap.Plugins.BluetoothLe;
+  if (cap.Plugins && cap.Plugins.BleClient) return cap.Plugins.BleClient;
+  // Do not register during cold launch probes — early registerPlugin has killed TestFlight boots.
+  if (register && typeof cap.registerPlugin === "function") return cap.registerPlugin("BluetoothLe");
   return null;
 }
 
 export function capacitorBleAvailable() {
-  return resolveNativeBlePlugin(getCapacitor()) != null;
+  // Availability check must stay side-effect free so app open cannot crash the process.
+  return resolveNativeBlePlugin(getCapacitor(), { register: false }) != null
+    || Boolean(getCapacitor() && typeof getCapacitor().isNativePlatform === "function" && getCapacitor().isNativePlatform());
 }
 
 function plugin() {

@@ -32,8 +32,17 @@ function scanApi() {
 }
 
 function primaryVehicleLabel() {
-  const v = scanApi().PRIMARY_VEHICLE;
-  return v?.label || "2008 GMC Sierra 1500 SLT flex-fuel (GMT900)";
+  try {
+    const v = window.ATDDVehicleScan && window.ATDDVehicleScan.PRIMARY_VEHICLE;
+    if (v && v.label) return v.label;
+  } catch (_) {
+    /* launch must not die if the scan parser is late or incomplete */
+  }
+  return "2008 GMC Sierra 1500 SLT flex-fuel (GMT900)";
+}
+
+function setText(node, value) {
+  if (node) node.textContent = value;
 }
 
 function readout() {
@@ -41,16 +50,17 @@ function readout() {
 }
 
 function buttons() {
-  top.disabled = busy;
-  connect.disabled = busy || !available || Boolean(active);
+  if (top) top.disabled = busy;
+  if (connect) connect.disabled = busy || !available || Boolean(active);
   if (scanAll) scanAll.disabled = busy || !available || Boolean(active);
-  read.disabled = busy || !ready;
+  if (read) read.disabled = busy || !ready;
   if (probeAbsBtn) probeAbsBtn.disabled = busy || !ready;
   if (clear) clear.disabled = busy || !ready;
-  disconnect.disabled = busy || !ready;
+  if (disconnect) disconnect.disabled = busy || !ready;
 }
 
 function log(message) {
+  if (!output) return;
   output.textContent += (output.textContent ? "\n" : "") + message;
   output.scrollTop = output.scrollHeight;
 }
@@ -414,44 +424,69 @@ async function clearVehicle() {
   });
 }
 
-panel.querySelector(".lead").textContent =
-  "Primary vehicle: " +
-  primaryVehicleLabel() +
-  ". Connect FIXD or another ELM327-style BLE adapter. FIXD claim: " +
-  FIXD_COMPATIBILITY +
-  ".";
-panel.querySelector("h2").textContent = "Connect OBD-II Scanner";
-panel.querySelector("p.small.mt-8").textContent =
-  "Read codes is a short emissions scan only so the Sierra stays quiet. Probe ABS (short) is optional. Clear engine / brake lights sends Mode 04 and soft ABS clears — FIXD may not reach EBCM. No simulated data.";
-connect.textContent = "Connect OBD-II Scanner";
-top.textContent = "Connect";
-if (clear) clear.textContent = "Clear engine / brake lights";
-if (probeAbsBtn) probeAbsBtn.textContent = "Probe ABS (short)";
-if (scanAll) scanAll.hidden = false;
-const demoBtn = el("btnBtDemo");
-if (demoBtn) demoBtn.remove();
-el("btIphoneGate").hidden = true;
-try { available = capacitorBleAvailable(); } catch { available = false; }
-el("btSupport").textContent = available
-  ? "iPhone Bluetooth ready. Tuned for " + primaryVehicleLabel() + ". FIXD claim " + FIXD_COMPATIBILITY + "."
-  : "The native Bluetooth connection is unavailable in this copy.";
-top.onclick = connect.onclick = () => choose();
-if (scanAll) scanAll.onclick = () => choose();
-read.onclick = readVehicle;
-if (probeAbsBtn) probeAbsBtn.onclick = probeAbsOnly;
-if (clear) clear.onclick = clearVehicle;
-disconnect.onclick = () => perform(async () => {
-  await release(active);
-  log("Disconnected.");
-});
-buttons();
+function wireScannerUi() {
+  if (!panel) return;
+  const lead = panel.querySelector(".lead");
+  const heading = panel.querySelector("h2");
+  const help = panel.querySelector("p.small.mt-8");
+  // Keep launch text simple — do not call scanApi() during cold start.
+  setText(
+    lead,
+    "Connect a FIXD or generic ELM327-style BLE OBD-II reader, then Read codes. Tuned for " +
+      primaryVehicleLabel() +
+      ". FIXD claim is " +
+      FIXD_COMPATIBILITY +
+      "."
+  );
+  setText(heading, "Connect OBD-II Scanner");
+  setText(
+    help,
+    "Read codes is a short emissions scan only so the Sierra stays quiet. Probe ABS (short) is optional. Clear engine / brake lights sends Mode 04 and soft ABS clears. FIXD may not reach EBCM. No simulated data."
+  );
+  setText(connect, "Connect OBD-II Scanner");
+  setText(top, "Connect");
+  if (clear) setText(clear, "Clear engine / brake lights");
+  if (probeAbsBtn) setText(probeAbsBtn, "Probe ABS (short)");
+  if (scanAll) scanAll.hidden = false;
+  const demoBtn = el("btnBtDemo");
+  if (demoBtn) demoBtn.remove();
+  const gate = el("btIphoneGate");
+  if (gate) gate.hidden = true;
+  try {
+    available = capacitorBleAvailable();
+  } catch (_) {
+    available = false;
+  }
+  setText(
+    el("btSupport"),
+    available
+      ? "iPhone Bluetooth ready. Tuned for " + primaryVehicleLabel() + ". FIXD claim " + FIXD_COMPATIBILITY + "."
+      : "The native Bluetooth connection is unavailable in this copy."
+  );
+  if (top) top.onclick = () => choose();
+  if (connect) connect.onclick = () => choose();
+  if (scanAll) scanAll.onclick = () => choose();
+  if (read) read.onclick = readVehicle;
+  if (probeAbsBtn) probeAbsBtn.onclick = probeAbsOnly;
+  if (clear) clear.onclick = clearVehicle;
+  if (disconnect) {
+    disconnect.onclick = () =>
+      perform(async () => {
+        await release(active);
+        log("Disconnected.");
+      });
+  }
+  buttons();
+}
 
 async function choose() {
-  panel.hidden = false;
-  panel.scrollIntoView({ block: "start" });
+  if (panel) {
+    panel.hidden = false;
+    panel.scrollIntoView({ block: "start" });
+  }
   if (active || !available) return;
   await perform(async () => {
-    output.textContent = "";
+    if (output) output.textContent = "";
     const scanner = createCapacitorBleTransport({
       requireKnownProfile: false,
       onRawPayload(decoded) {
@@ -485,3 +520,15 @@ window.ATDDIphoneScanner = {
   },
   ELM_ADAPTER_INIT,
 };
+
+try {
+  wireScannerUi();
+} catch (error) {
+  // Never let scanner wiring abort the Capacitor shell before the UI opens.
+  try {
+    const support = el("btSupport");
+    if (support) support.textContent = "Scanner UI failed to start: " + (error && error.message ? error.message : error);
+  } catch (_) {
+    /* ignore */
+  }
+}

@@ -237,6 +237,7 @@ function fakeDom() {
   assert.match(scanner, /probeAbsShort|Probe ABS/);
   assert.match(scanner, /SIERRA_ABS_PROBE_NODES|MODULE_READS_SAFE/);
   assert.match(scanner, /PRIMARY_VEHICLE|Sierra/);
+  assert.match(scanner, /wireScannerUi/);
   assert.match(scanner, /CLEAR_EMISSIONS|Mode 04/);
   assert.match(scanner, /prepareAdapter\(scanner\)/);
   assert.doesNotMatch(scanner, /probeRemainingModules/);

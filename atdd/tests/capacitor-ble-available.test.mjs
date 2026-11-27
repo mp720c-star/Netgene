@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { resolveNativeBlePlugin } from "../web/js/capacitor-ble-transport.js";
+import { capacitorBleAvailable, resolveNativeBlePlugin } from "../web/js/capacitor-ble-transport.js";
 
 {
   assert.equal(resolveNativeBlePlugin(null), null);
@@ -49,6 +49,44 @@ import { resolveNativeBlePlugin } from "../web/js/capacitor-ble-transport.js";
     }),
     null,
   );
+}
+
+{
+  let calls = 0;
+  assert.equal(
+    resolveNativeBlePlugin(
+      {
+        isNativePlatform: () => true,
+        Plugins: {},
+        registerPlugin() {
+          calls += 1;
+          return { name: "should-not-run-on-boot" };
+        },
+      },
+      { register: false },
+    ),
+    null,
+  );
+  assert.equal(calls, 0);
+}
+
+{
+  const previous = globalThis.window;
+  globalThis.window = {
+    Capacitor: {
+      isNativePlatform: () => true,
+      Plugins: {},
+      registerPlugin() {
+        throw new Error("boot must not registerPlugin");
+      },
+    },
+  };
+  try {
+    assert.equal(capacitorBleAvailable(), true);
+  } finally {
+    if (previous === undefined) delete globalThis.window;
+    else globalThis.window = previous;
+  }
 }
 
 console.log("capacitor-ble-available: ok");

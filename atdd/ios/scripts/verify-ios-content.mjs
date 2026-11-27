@@ -64,8 +64,13 @@ assert.match(scannerText, /probeAbsShort/);
 assert.match(scannerText, /SIERRA_ABS_PROBE_NODES|MODULE_READS_SAFE/);
 assert.match(scannerText, /PRIMARY_VEHICLE|Sierra/);
 assert.match(scannerText, /prepareAdapter\(scanner\)/);
+assert.match(scannerText, /wireScannerUi/);
 assert.doesNotMatch(scannerText, /probeRemainingModules/);
 assert.match(entry, /id="btnBtProbeAbs"/);
+assert.match(
+  fs.readFileSync(path.join(root, "tools/js/capacitor-ble-transport.js"), "utf8"),
+  /register:\s*false/,
+);
 const vehicleScan = fs.readFileSync(path.join(root, "obdVehicleScan.js"), "utf8");
 assert.match(vehicleScan, /GM_CANDIDATE_NODES/);
 assert.match(vehicleScan, /PRIMARY_VEHICLE/);
