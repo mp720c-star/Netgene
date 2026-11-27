@@ -23,4 +23,14 @@ end
 
 post_install do |installer|
   assertDeploymentTarget(installer)
+  # Xcode 27 / iOS 27 SDK only supports deployment targets 15.0–27.x.
+  # Capacitor pods still ship with 13.0; force the App Store floor.
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      current = config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'].to_f
+      if current < 15.0
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
+      end
+    end
+  end
 end
