@@ -103,10 +103,21 @@ assert.match(html, /src="\.\/obdVehicleScan\.js"/);
 assert.match(html, /id="btnClearCodes"/);
 assert.ok(scan.EXTRA_NODES.length >= 5);
 assert.ok(scan.EXTRA_NODES.some((node) => node.request === "7B0"));
+assert.ok(scan.GM_CANDIDATE_NODES.some((node) => node.request === "241"));
+assert.ok(scan.GM_CANDIDATE_NODES.some((node) => node.request === "24C"));
+const probeOrder = scan.allProbeNodes().map((node) => node.request);
+assert.equal(probeOrder[0], "241");
+assert.ok(probeOrder.indexOf("241") < probeOrder.indexOf("7E0"));
+assert.ok(scan.MODULE_READS.some((step) => step.command === "1902FF"));
+assert.deepEqual(list(scan.adapterHeaderSoft({ request: "241", response: "641" })), ["ATSH241"]);
+assert.ok(scan.chassisAbsCandidates().some((node) => node.request === "241"));
+assert.ok(scan.chassisAbsCandidates()[0].request === "241");
 
 const bluetooth = fs.readFileSync(path.join(classic, "bluetooth.js"), "utf8");
 assert.match(bluetooth, /CLEAR_MODULE/);
 assert.match(bluetooth, /acceptAllDevices:\s*true/);
 assert.match(bluetooth, /NAME_FILTERS/);
+assert.match(bluetooth, /allProbeNodes/);
+assert.match(bluetooth, /1902FF/);
 
 console.log("vehicle-scan: live Mode 03 capture, per-module status, chassis codes, ABS clear, and empty replies covered");

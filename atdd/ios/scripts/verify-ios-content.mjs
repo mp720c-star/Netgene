@@ -13,7 +13,7 @@ assert.match(entry, /<title>Auto\/Truck Diagnostics for Dummies<\/title>/);
 for (const label of ["Diagnose", "Listen", "Look", "Code"]) assert.ok(entry.includes(">" + label + "</button>"), label);
 assert.ok(entry.includes('id="btnBluetoothTop"'));
 assert.ok(entry.includes('src="./scanner/iphone-scanner.js"'));
-for (const file of ["app.js", "icon.png", "styles.css", "diagnosticsEngine.js", "scanReadout.js", "vehicleCatalog.js", "sessionReset.js", "dtcGuidance.js", "symptomRepair.js", "data/dtc-db.js", "data/common-jobs.js", "data/cdi-pinout-db.js", "data/cdi-pinout-db.json", "data/cdi-pinout-db.manifest.json", "data/vehicle-index.js", "data/vehicle-index.json", "data/dtc-sae-generic-additions.js", "data/dtc-guidance-overlay.js", "data/dtc-guidance.manifest.json", "data/symptom-repair-db.js", "data/symptom-repair.manifest.json"]) {
+for (const file of ["app.js", "icon.png", "styles.css", "diagnosticsEngine.js", "scanReadout.js", "vehicleCatalog.js", "sessionReset.js", "dtcGuidance.js", "symptomRepair.js", "data/dtc-db.js", "data/common-jobs.js", "data/howto-hub.js", "data/cdi-pinout-db.js", "data/cdi-pinout-db.json", "data/cdi-pinout-db.manifest.json", "data/vehicle-index.js", "data/vehicle-index.json", "data/dtc-sae-generic-additions.js", "data/dtc-guidance-overlay.js", "data/dtc-guidance.manifest.json", "data/symptom-repair-db.js", "data/symptom-repair.manifest.json"]) {
   const packed = fs.readFileSync(path.join(root, file));
   assert.ok(packed.equals(fs.readFileSync(path.join(classic, file))), "Changed original " + file);
 }
@@ -33,16 +33,46 @@ assert.match(entry, /src="\.\/data\/dtc-guidance-overlay\.js"/);
 assert.match(entry, /src="\.\/dtcGuidance\.js"/);
 assert.match(entry, /src="\.\/data\/symptom-repair-db\.js"/);
 assert.match(entry, /src="\.\/symptomRepair\.js"/);
+assert.match(entry, /src="\.\/data\/howto-hub\.js"/);
 assert.match(entry, /id="symptomRepairCard"/);
+assert.match(entry, /id="howtoHubCard"/);
+assert.match(entry, /id="btnGuidesTop"/);
+assert.match(entry, /class="hub-topic-grid"/);
+assert.match(entry, /id="codeStep"/);
 const scanner = fs.readFileSync(path.join(root, "scanner/iphone-scanner.js"));
 assert.ok(scanner.equals(fs.readFileSync(path.join(ios, "scanner/iphone-scanner.js"))));
 const scannerText = scanner.toString("utf8");
+assert.match(
+  scannerText,
+  /ELM_ADAPTER_INIT\s*=\s*Object\.freeze\(\[\s*"ATZ",\s*"ATE0",\s*"ATL0",\s*"ATS0",\s*"ATH0",\s*"ATSP0"\s*\]\)/,
+  "FIXD-safe adapter init must stay ATZ/ATE0/ATL0/ATS0/ATH0/ATSP0"
+);
+assert.doesNotMatch(scannerText, /ELM_ADAPTER_INIT[\s\S]{0,220}"ATH1"/);
+assert.doesNotMatch(scannerText, /ELM_ADAPTER_INIT[\s\S]{0,220}"ATL1"/);
+assert.doesNotMatch(scannerText, /ELM_ADAPTER_INIT[\s\S]{0,220}"ATCAF1"/);
 for (const allowed of ["ATZ", "ATE0", "ATL0", "ATS0", "ATH0", "ATSP0"]) {
   assert.match(scannerText, new RegExp("\\b" + allowed + "\\b"), allowed);
 }
 assert.doesNotMatch(scannerText, /\bATMA\b|\bATPP\b|\bATS1\b|send\(["']04["']\)/);
 assert.match(scannerText, /FIXD_COMPATIBILITY/);
-assert.match(scannerText, /scanner\.send\("03"/);
+assert.match(scannerText, /from\s+"\.\/stored-codes\.js"/);
+assert.match(scannerText, /readModeFamily\(scanner,\s*"03"/);
+assert.match(scannerText, /readModeFamily\(scanner,\s*"07"/);
+assert.match(scannerText, /readModeFamily\(scanner,\s*"0A"/);
+assert.match(scannerText, /storedCodes\(/);
+assert.match(scannerText, /1902FF/);
+assert.match(scannerText, /needsExtendedSession/);
+assert.match(scannerText, /probeAbsFast/);
+assert.match(scannerText, /chassisAbsCandidates/);
+assert.match(scannerText, /adapterHeaderSoft/);
+assert.match(scannerText, /prepareAdapter\(scanner\)/);
+assert.doesNotMatch(scannerText, /if \(step\.command === "1902FF"\) continue/);
+const vehicleScan = fs.readFileSync(path.join(root, "obdVehicleScan.js"), "utf8");
+assert.match(vehicleScan, /GM_CANDIDATE_NODES/);
+assert.match(vehicleScan, /request:\s*"241"/);
+assert.match(vehicleScan, /allProbeNodes/);
+assert.match(vehicleScan, /adapterHeaderSoft/);
+assert.match(vehicleScan, /chassisAbsCandidates/);
 assert.match(entry, /id="scanReadoutCard"/);
 assert.match(entry, /id="scanReadout"/);
 

@@ -17,7 +17,11 @@ runInNewContext(fs.readFileSync(path.join(classic, "diagnosticsEngine.js"), "utf
 const Diag = context.window.DiagEngine;
 const Guidance = context.window.DtcGuidance;
 
-const absCodes = ["C0035", "C0040", "C0045", "C0050", "C0110", "C0121", "C0131", "C0161", "U0121"];
+const absCodes = [
+  "C0031", "C0034", "C0035", "C0040", "C0045", "C0050",
+  "C0110", "C0121", "C0131", "C0161", "C0200", "C0201", "C0245", "C0265",
+  "U0121", "U0140"
+];
 for (const code of absCodes) {
   const guide = Diag.diyStepsFor(code, "abs_brakes");
   assert.ok(Array.isArray(guide) && guide.length >= 3, code + " needs DIY steps");
