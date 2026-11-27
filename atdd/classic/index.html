@@ -26,7 +26,12 @@
 
       <div class="tab-panel is-active" id="tab-scan" data-tab="scan" role="tabpanel" aria-labelledby="tabBtnScan">
         <section class="card hero compact" id="scanIntro">
-          <p class="sub">Listen, look, or enter a code, then diagnose.</p>
+          <p class="sub">Connect a scanner or enter a code, then diagnose. Repair steps open on Results.</p>
+          <ol class="flow-steps" aria-label="Scan flow">
+            <li><strong>Connect</strong> or type a code</li>
+            <li><strong>Diagnose</strong></li>
+            <li>Read the <strong>Results</strong></li>
+          </ol>
           <div class="acceptance">
             <input type="checkbox" id="acceptLegal">
             <div>I know this is an assistant, not a guaranteed repair. <span class="small">(Saved on this device after one check.)</span></div>
@@ -35,93 +40,110 @@
         </section>
 
         <div class="row scan-actions" aria-label="Scan actions">
+          <button class="warn" id="btnBluetoothTop" title="Connect scanner over Bluetooth">Connect</button>
           <button class="warn" id="btnRunDiagnosisTop">Diagnose</button>
+          <button id="btnRebuildTop">Code</button>
           <button id="btnLookupTop">Listen</button>
           <button id="btnJobsTop">Look</button>
-          <button id="btnRebuildTop">Code</button>
-          <button class="warn" id="btnBluetoothTop" title="Connect scanner over Bluetooth">Connect</button>
+          <button class="secondary" id="btnGuidesTop" data-open-hub="scanners" title="Open how-to guides">Guides</button>
         </div>
 
         <section class="card primary-card" id="lookupCard">
           <h2>Scan</h2>
 
-          <div class="capture-grid">
-            <div class="capture-panel" id="listenPanel">
-              <h3>Listen</h3>
-              <p class="small">Record idle knock, tick, squeal, or grind (10–20 seconds).</p>
-              <div class="row">
-                <button id="btnAudioRecord">Start listening</button>
-                <button class="secondary" id="btnAudioUpload">Upload audio</button>
-              </div>
-              <input type="file" id="audioFile" accept="audio/*" hidden>
-              <audio id="audioPreview" controls class="full-w mt-8"></audio>
-              <div class="small" id="audioSummary">No audio yet.</div>
+          <div class="scan-step" id="codeStep">
+            <h3>1. Code</h3>
+            <p class="small">Type what the scanner showed, tap an example, or use <strong>Connect</strong> to read live codes.</p>
+            <label for="codes">Scanner code</label>
+            <textarea id="codes" placeholder="P0300" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false"></textarea>
+            <div class="chip-row" id="exampleCodes" aria-label="Example codes">
+              <button type="button" class="chip" data-code="P0300">P0300</button>
+              <button type="button" class="chip" data-code="P0420">P0420</button>
+              <button type="button" class="chip" data-code="P0171">P0171</button>
+              <button type="button" class="chip" data-code="C0035">C0035</button>
             </div>
-
-            <div class="capture-panel" id="lookPanel">
-              <h3>Look</h3>
-              <p class="small">Point at exhaust or the belt area, then capture a frame.</p>
-              <div class="row">
-                <button id="btnStartCamera">Open camera</button>
-                <button class="secondary" id="btnCaptureFrame">Capture frame</button>
-              </div>
-              <div class="row mt-8">
-                <button class="secondary" id="btnStopCamera">Stop camera</button>
-                <button class="secondary" id="btnPhotoUpload">Upload photo</button>
-                <button class="secondary" id="btnVideoUpload">Upload video</button>
-              </div>
-              <input type="file" id="photoFile" accept="image/*" hidden>
-              <input type="file" id="videoFile" accept="video/*" hidden>
-              <video id="videoPreview" playsinline muted controls class="mt-8"></video>
-              <canvas id="frameCanvas" hidden></canvas>
-              <img id="frameImage" hidden alt="Captured frame" class="mt-8">
-              <img id="photoPreview" hidden alt="Photo evidence" class="mt-8">
-              <div class="small" id="imageSummary">No photo or frame yet.</div>
+            <div class="row secondary-actions">
+              <button class="secondary" id="btnLookup">Code-only lookup</button>
+              <button class="secondary" id="btnSearchDtc">Search words</button>
+              <button class="secondary" id="btnClearCodes">Clear entered code</button>
             </div>
+            <label for="dbQuery">Search a word (optional)</label>
+            <input id="dbQuery" placeholder="thermostat, misfire, starter">
+            <div id="codeResults" class="cards mt-10"></div>
           </div>
 
-          <label for="codes">Scanner code (optional)</label>
-          <textarea id="codes" placeholder="P0300" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false"></textarea>
-          <div class="chip-row" id="exampleCodes" aria-label="Example codes">
-            <button type="button" class="chip" data-code="P0300">P0300</button>
-            <button type="button" class="chip" data-code="P0420">P0420</button>
-            <button type="button" class="chip" data-code="P0171">P0171</button>
-            <button type="button" class="chip" data-code="P0301">P0301</button>
+          <div class="scan-step" id="diagnoseStep">
+            <h3>2. Diagnose</h3>
+            <div class="row primary-actions">
+              <button class="warn" id="btnRunDiagnosis">Diagnose now</button>
+            </div>
+            <p class="small mt-8">Repair steps show on Results. Guides for pairing, ABS, and the diagnose flow live under <strong>Guides</strong>.</p>
           </div>
-          <div class="row secondary-actions">
-            <button class="secondary" id="btnLookup">Code-only lookup</button>
-            <button class="secondary" id="btnSearchDtc">Search words</button>
-            <button class="secondary" id="btnClearCodes">Clear entered code</button>
-          </div>
-          <label for="dbQuery">Search a word (optional)</label>
-          <input id="dbQuery" placeholder="thermostat, misfire, starter">
-          <div id="codeResults" class="cards mt-10"></div>
 
-          <h3 class="mt-14">Quick symptoms (optional)</h3>
-          <div class="symptoms" id="symptoms"></div>
-          <label for="notes">Notes</label>
-          <textarea id="notes" placeholder="Stalls warm, fuel smell, battery light on."></textarea>
+          <details class="scan-optional" id="evidenceDetails">
+            <summary>Optional: Listen &amp; Look evidence</summary>
+            <div class="capture-grid">
+              <div class="capture-panel" id="listenPanel">
+                <h3>Listen</h3>
+                <p class="small">Record idle knock, tick, squeal, or grind (10–20 seconds).</p>
+                <div class="row">
+                  <button id="btnAudioRecord">Start listening</button>
+                  <button class="secondary" id="btnAudioUpload">Upload audio</button>
+                </div>
+                <input type="file" id="audioFile" accept="audio/*" hidden>
+                <audio id="audioPreview" controls class="full-w mt-8"></audio>
+                <div class="small" id="audioSummary">No audio yet.</div>
+              </div>
 
-          <div class="row primary-actions mt-10">
-            <button class="warn" id="btnRunDiagnosis">Diagnose now</button>
-          </div>
-          <p class="small mt-8">Repair steps show on Results after you diagnose.</p>
+              <div class="capture-panel" id="lookPanel">
+                <h3>Look</h3>
+                <p class="small">Point at exhaust or the belt area, then capture a frame.</p>
+                <div class="row">
+                  <button id="btnStartCamera">Open camera</button>
+                  <button class="secondary" id="btnCaptureFrame">Capture frame</button>
+                </div>
+                <div class="row mt-8">
+                  <button class="secondary" id="btnStopCamera">Stop camera</button>
+                  <button class="secondary" id="btnPhotoUpload">Upload photo</button>
+                  <button class="secondary" id="btnVideoUpload">Upload video</button>
+                </div>
+                <input type="file" id="photoFile" accept="image/*" hidden>
+                <input type="file" id="videoFile" accept="video/*" hidden>
+                <video id="videoPreview" playsinline muted controls class="mt-8"></video>
+                <canvas id="frameCanvas" hidden></canvas>
+                <img id="frameImage" hidden alt="Captured frame" class="mt-8">
+                <img id="photoPreview" hidden alt="Photo evidence" class="mt-8">
+                <div class="small" id="imageSummary">No photo or frame yet.</div>
+              </div>
+            </div>
+          </details>
+
+          <details class="scan-optional" id="symptomsDetails">
+            <summary>Optional: quick symptoms &amp; notes</summary>
+            <div class="symptoms" id="symptoms"></div>
+            <label for="notes">Notes</label>
+            <textarea id="notes" placeholder="Stalls warm, fuel smell, battery light on."></textarea>
+          </details>
         </section>
 
         <section class="card" id="bluetoothCard" hidden>
-          <h2>Bluetooth · Connect FIXD</h2>
-          <p class="lead">Pair any ELM327-style Bluetooth OBD-II scanner and read the vehicle. The app does not invent results.</p>
+          <h2>Bluetooth · OBD-II Scanner</h2>
+          <p class="lead">Pair any Bluetooth ELM327-style reader. Only codes the vehicle returns are listed.</p>
           <p class="small" id="btSupport">Checking Bluetooth…</p>
           <div class="status-banner warn" id="btIphoneGate" hidden></div>
           <div class="row secondary-actions">
             <button class="warn" id="btnBtConnect">Connect OBD-II Scanner</button>
             <button class="secondary" id="btnBtScanAll">Scan any BLE device</button>
             <button class="secondary" id="btnBtReadCodes" disabled>Read codes</button>
-            <button class="warn" id="btnBtClearVehicle" disabled>Clear vehicle codes</button>
+            <button class="warn" id="btnBtClearVehicle" disabled>Clear codes (incl. ABS)</button>
             <button class="secondary" id="btnBtDisconnect" disabled>Disconnect</button>
           </div>
           <pre id="btLog" class="bt-log" aria-live="polite">Idle. Tap Connect, with the adapter powered in the OBD port.</pre>
-          <p class="small mt-8">Read codes asks for stored, pending, and permanent codes, the check-engine light, VIN, distances, and every module that answers, including chassis modules. A module that stays silent is left out. FIXD protocol claim stays <code>UNVERIFIED</code>. New scan does not send Mode 04.</p>
+          <p class="small mt-8">Read codes asks for stored, pending, and permanent codes, MIL, VIN, distances, and every module that answers (including ABS when it answers). Clear sends Mode 04 plus module clear to computers that answered. FIXD brand protocol stays <code>UNVERIFIED</code>. New scan does not send Mode 04.</p>
+          <div class="row mt-8">
+            <button type="button" class="secondary" data-open-hub="scanners">Scanner how-to</button>
+            <button type="button" class="secondary" data-open-hub="abs_chassis">ABS how-to</button>
+          </div>
         </section>
 
         <section class="card" id="scanReadoutCard" hidden>
@@ -199,8 +221,16 @@
 
       <div class="tab-panel" id="tab-more" data-tab="more" role="tabpanel" aria-labelledby="tabBtnMore" hidden>
         <section class="card" id="moreIntro">
-          <h2>More</h2>
-          <p class="lead">Optional libraries and device settings. Day-to-day use stays on Scan, Vehicle, Symptoms, and Results.</p>
+          <h2>Guides &amp; libraries</h2>
+          <p class="lead">Start with a how-to topic below. Driveway job lists and settings stay collapsed underneath.</p>
+        </section>
+
+        <section class="card primary-card" id="howtoHubCard">
+          <h2>How-to hubs</h2>
+          <p class="lead">Tap one topic. Only that guide opens — short steps that link back into Scan, Symptoms, or a job.</p>
+          <p class="small">Live readings still come only from a connected adapter. Hubs never invent codes.</p>
+          <div class="hub-topic-grid" id="howtoHubCats" aria-label="How-to hub topics"></div>
+          <div id="howtoHubArticles" class="howto-hub-list mt-10"></div>
         </section>
 
         <details class="card collapsible" id="jobsCard">
@@ -304,12 +334,12 @@
 
   <dialog id="clearCodesDialog" class="confirm-dialog" aria-labelledby="clearCodesDialogTitle">
     <form method="dialog" id="clearCodesForm">
-      <h2 id="clearCodesDialogTitle">Clear codes on this vehicle?</h2>
-      <p>This sends Mode 04, the standard OBD clear, and a clear-all request to each module that answered the last scan. The check-engine light goes off only if the vehicle accepts it. Park, switch the key on, and leave the engine off.</p>
-      <p class="small">New scan does not clear codes. No codes are added if a module does not answer.</p>
+      <h2 id="clearCodesDialogTitle">Clear emissions and ABS/module codes?</h2>
+      <p>This sends Mode 04 (standard OBD clear) and a clear-all request to each module that answered the last scan, including the ABS/chassis computer when it answered. The check-engine and ABS lights go off only if the vehicle accepts those clears. Park, switch the key on, and leave the engine off.</p>
+      <p class="small">New scan does not clear codes. Permanent codes (Mode 0A) and OEM-locked ABS faults may remain. No codes are added if a module does not answer.</p>
       <div class="row dialog-actions">
         <button type="button" class="secondary" id="btnClearVehicleCancel">Cancel</button>
-        <button type="submit" class="warn" id="btnClearVehicleConfirm" value="confirm">Clear vehicle codes</button>
+        <button type="submit" class="warn" id="btnClearVehicleConfirm" value="confirm">Clear codes (incl. ABS)</button>
       </div>
     </form>
   </dialog>
@@ -335,6 +365,7 @@
   <script src="./data/symptom-repair-db.js"></script>
   <script src="./symptomRepair.js"></script>
   <script src="./data/common-jobs.js"></script>
+  <script src="./data/howto-hub.js"></script>
   <script src="./data/cdi-pinout-db.js"></script>
   <script src="./data/vehicle-index.js"></script>
   <script src="./vehicleCatalog.js"></script>

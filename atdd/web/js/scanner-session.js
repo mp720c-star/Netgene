@@ -160,9 +160,20 @@ export function createSimulatedTransport() {
     },
     async send(cmd) {
       const c = String(cmd).trim().toUpperCase();
+      if (c === "ATZ") return "ELM327 v1.5\r\n>";
+      if (c === "ATI") return "ELM327 v1.5\r\n>";
+      if (c === "ATDP") return "AUTO, ISO 15765-4 (CAN 11/500)\r\n>";
       if (c.startsWith("AT")) return "OK\r>";
       if (c === "0100") return "41 00 BE 1F A8 13\r>";
+      if (c === "010C") return "41 0C 1F 40\r>"; // SYNTHETIC RPM ~2000
+      if (c === "010D") return "41 0D 3C\r>"; // SYNTHETIC 60 km/h
+      if (c === "0105") return "41 05 64\r>"; // SYNTHETIC coolant
+      if (c === "0902") {
+        return "49 02 01 31 47 31 4A 43 35 34 34 34 52 37 32 35 32 33 36 37\r>";
+      }
       if (c === "03") return "43 02 03 01 04 20\r>";
+      if (c === "07") return "47 01 03 01\r>";
+      if (c === "0A") return "4A 01 04 20\r>";
       return "NO DATA\r>";
     },
     async disconnect() {}

@@ -115,6 +115,84 @@ const DiagEngine = (() => {
     U0121: { title: 'Lost communication with ABS module', firstChecks: ['Check ABS fuses and the module connector.', 'Inspect the ABS module for water (common in some trucks).', 'Verify battery voltage.'], likelyParts: ['ABS fuse / connector', 'Wheel-speed wiring short taking down the module', 'ABS module after power/ground proof'], warnings: ['ABS may be down. Brakes still work, but stopping distance and stability control can be worse.'] },
     C0035: { title: 'LF wheel speed sensor', firstChecks: ['Inspect the left-front wheel speed sensor harness.', 'Check for rust jacking or debris at the tone ring.', 'Check wheel bearing play.'], likelyParts: ['Wheel speed sensor', 'Harness repair', 'Hub / bearing if tone signal is unstable'], warnings: ['ABS and traction control may be reduced until repaired.'] },
     C0040: { title: 'RF wheel speed sensor', firstChecks: ['Inspect the right-front wheel speed sensor harness.', 'Check the tone ring / encoder.', 'Check that corner’s bearing play.'], likelyParts: ['Wheel speed sensor', 'Harness repair', 'Hub / bearing if confirmed'], warnings: ['ABS and traction control may be reduced until repaired.'] },
+    C0045: wheelSpeedGuide('right-rear'),
+    C0050: wheelSpeedGuide('left-rear'),
+    C0060: {
+      title: 'ABS lateral accelerometer',
+      firstChecks: ['Confirm the battery is charged — low voltage fakes yaw/accel codes.', 'Inspect the ABS / stability module connector for water.', 'Look for a loose module mounting after body or frame work.'],
+      likelyParts: ['ABS / yaw sensor cluster', 'Module connector repair', 'ABS module after power/ground proof'],
+      warnings: ['Stability control may be offline. Drive carefully; brakes still work without ABS.'],
+      diySteps: [
+        'Charge the battery and clean the main grounds first. Low voltage sets chassis sensor codes.',
+        'Find the ABS hydraulic unit (usually in the left-front engine bay). Unplug the big connector and look for green corrosion or water.',
+        'If the connector is wet, dry it with electrical cleaner, dielectric grease lightly, and reseat. Do not spray water into the module.',
+        'A yaw/lateral sensor sealed inside the module is not a driveway swap on most trucks. If power and grounds are good and the code returns immediately, that is a shop module/sensor job.',
+        'Clear codes only after the repair. Clearing alone will not fix a wet connector.'
+      ]
+    },
+    C0065: {
+      title: 'ABS longitudinal accelerometer',
+      firstChecks: ['Same path as a lateral-sensor code: battery, grounds, then the ABS connector.', 'Note whether the code set after a collision or a hard tow-hook hit.'],
+      likelyParts: ['ABS / G-sensor cluster', 'Connector / harness', 'ABS module after proof'],
+      warnings: ['Traction and stability aids may be disabled.'],
+      diySteps: [
+        'Verify battery voltage first. Then inspect the ABS module connector for water or bent pins.',
+        'Check that the ABS unit is bolted solid — a loose mount after crash work can throw accel codes.',
+        'Clear only after a dry, tight connector. If it returns with a healthy battery, stop guessing and have the module tested.'
+      ]
+    },
+    C0110: {
+      title: 'ABS pump motor circuit',
+      firstChecks: ['Listen for the ABS pump whir at key-on (many trucks self-test for a second).', 'Check ABS fuses and the pump-motor relay if equipped.', 'Inspect the ABS module connector for melted pump pins.'],
+      likelyParts: ['ABS fuse / relay', 'ABS pump / hydraulic unit', 'Harness repair'],
+      warnings: ['Pump codes are not a wheel-speed sensor. Do not keep buying sensors for a dead pump circuit.', 'A seized pump can be a whole hydraulic unit — that is usually a shop.'],
+      diySteps: [
+        'Key on, engine off. Listen near the ABS unit for a short pump buzz. Silence every key cycle means the pump is not being powered or the motor is dead.',
+        'Check every ABS / ESC fuse in the under-hood box. Replace a blown fuse once. If it blows again, there is a short — stop.',
+        'Unplug the ABS connector and look for burned pump-motor pins. A melted cavity needs a pigtail repair before a new unit.',
+        'Bleed procedure and unit replacement are vehicle-specific. Do not open brake lines until you have the correct bleed sequence and a way to keep the reservoir topped — air in ABS lines is dangerous.'
+      ]
+    },
+    C0121: {
+      title: 'ABS valve relay / solenoid supply',
+      firstChecks: ['Check ABS fuses and the valve-relay feed.', 'Inspect the ABS connector for corrosion.', 'Confirm the battery can hold above ~12.4 V key-off.'],
+      likelyParts: ['ABS fuse / relay', 'ABS module connector', 'ABS hydraulic unit if the relay is internal'],
+      warnings: ['Without valve power, ABS cannot modulate. Normal brakes should still work — test carefully in a safe lot.'],
+      diySteps: [
+        'Charge the battery. Weak batteries drop ABS relays and set supply codes.',
+        'Check ABS fuses. Swap a same-number relay if the under-hood box has a spare ABS/valve relay.',
+        'Inspect the ABS connector. Clean corrosion; reseat until it clicks.',
+        'If fuses and the connector are good and the code returns, the relay is often inside the hydraulic unit — that is a unit replacement, not a $5 part from the aisle.'
+      ]
+    },
+    C0131: {
+      title: 'ABS pressure sensor / circuit',
+      firstChecks: ['Check for an external brake-pressure sensor on the ABS unit or master cylinder.', 'Inspect the sensor connector.', 'Note hard or soft pedal complaints separately — those are hydraulic, not just the sensor.'],
+      likelyParts: ['Brake pressure sensor', 'ABS module (integral sensor)', 'Harness repair'],
+      warnings: ['Do not crack open ABS hydraulic fittings as a first DIY step. Pressurized brake fluid and trapped air are safety-critical.'],
+      diySteps: [
+        'If the pedal feels normal and only the ABS light is on, inspect the pressure-sensor connector on or near the ABS unit.',
+        'Clean and reseat the connector. Look for brake-fluid contamination on the pins — fluid eats connectors.',
+        'A soft pedal, a sinking pedal, or fluid on the ground is a hydraulic leak. Fix the leak before chasing the sensor code.',
+        'Integral sensors inside the ABS block are not separate aisle parts. After proving the wiring, that is a unit or shop diagnosis.'
+      ]
+    },
+    C0161: {
+      title: 'ABS / brake switch circuit',
+      firstChecks: ['Does the brake light work when you press the pedal?', 'Inspect the brake-light switch above the pedal.', 'Check the brake-light fuse.'],
+      likelyParts: ['Brake light / brake switch', 'Brake-light fuse', 'Pedal switch adjustment'],
+      warnings: ['A bad brake switch can keep cruise off and confuse ABS/traction logic.'],
+      diySteps: [
+        'Press the pedal and confirm the rear brake lights. If they stay dark, check the brake-light fuse first.',
+        'Find the switch on the brake pedal arm. Unplug it and look for a broken plastic tip or a switch that never clicks.',
+        'Many switches thread or clip in. Adjust so the lights are off with the pedal released and on with a light press.',
+        'Clear the code after the lights work correctly. If lights work and the code stays, inspect the signal wire to the ABS module.'
+      ]
+    },
+    C0221: wheelSpeedGuide('left-front'),
+    C0225: wheelSpeedGuide('right-front'),
+    C0235: wheelSpeedGuide('left-rear'),
+    C0240: wheelSpeedGuide('right-rear'),
     P0420: { title: 'Bank 1 catalyst efficiency', firstChecks: ['Repair upstream misfire, lean, or rich codes first.', 'Inspect exhaust leaks before the rear O2 sensor.', 'Confirm fuel and ignition condition before condemning the converter.'], likelyParts: ['Upstream ignition / fuel repair', 'Exhaust leak repair', 'Catalytic converter only after proof'], warnings: ['Do not replace a converter until upstream causes are ruled out.'] },
     P0430: { title: 'Bank 2 catalyst efficiency', firstChecks: ['Repair upstream misfire, lean, or rich codes first.', 'Inspect exhaust leaks before the rear O2 sensor.', 'Compare bank-to-bank fuel trims and misfire counts.'], likelyParts: ['Upstream ignition / fuel repair', 'Exhaust leak repair', 'Catalytic converter only after proof'], warnings: ['Do not replace a converter until upstream causes are ruled out.'] },
     P0101: { title: 'MAF range/performance', firstChecks: ['Inspect the intake tube after the MAF for splits.', 'Check the air filter and MAF screen for dirt or oil.', 'Clean the MAF only with MAF cleaner.'], likelyParts: ['Intake boot', 'Air filter', 'MAF sensor'], warnings: ['Do not spray brake cleaner on a MAF.'] },
@@ -178,7 +256,77 @@ const DiagEngine = (() => {
     P0750: { title: 'Shift solenoid A', firstChecks: ['Inspect the exterior trans connector first.', 'Check fluid.', 'A solenoid electrical code can be the solenoid or the wiring; a performance code with burnt fluid is deeper.'], likelyParts: ['Shift solenoid A / valve body', 'Internal harness', 'Fluid / filter'], warnings: ['Dropping a pan and swapping a solenoid is DIY on many trucks. A sealed 8/9/10-speed is often a shop.'] },
     P2101: { title: 'Throttle actuator range/performance', firstChecks: ['Inspect the electronic throttle-body connector.', 'Look for cowl water on the throttle.', 'Do not pry the blade.'], likelyParts: ['Electronic throttle body', 'Connector / wiring', 'APP pedal only if pedal codes are also present'], warnings: ['Limp mode / high idle. Stop if it surges. A throttle relearn may be needed after replacement — check that vehicle’s procedure.'] },
     P2135: { title: 'Throttle/pedal A/B correlation', firstChecks: ['Inspect the throttle-body connector and the accelerator-pedal connector.', 'Look for water, oil, or bent pins.', 'Wiggle-test the pedal harness under the dash.'], likelyParts: ['Electronic throttle body', 'Accelerator pedal position sensor', 'Harness repair'], warnings: ['Limp mode is the PCM protecting you. Do not floor it. Two sensors disagree — do not replace both as a guess; test which circuit is dead.'] },
-    P2195: { title: 'O2 B1S1 stuck lean', firstChecks: ['This is the upstream O2 staying lean — often a real lean condition (vacuum leak/MAF) or a dead sensor.', 'Fix P0171-type leaks first if trims are also lean.', 'Inspect the B1S1 sensor and exhaust leak before it.'], likelyParts: ['Intake leak / MAF', 'Upstream O2 (B1S1)', 'Exhaust leak'], warnings: ['Do not replace the converter for a stuck-lean upstream sensor.'] }
+    P2195: { title: 'O2 B1S1 stuck lean', firstChecks: ['This is the upstream O2 staying lean — often a real lean condition (vacuum leak/MAF) or a dead sensor.', 'Fix P0171-type leaks first if trims are also lean.', 'Inspect the B1S1 sensor and exhaust leak before it.'], likelyParts: ['Intake leak / MAF', 'Upstream O2 (B1S1)', 'Exhaust leak'], warnings: ['Do not replace the converter for a stuck-lean upstream sensor.'] },
+    P0010: { title: 'Camshaft position actuator circuit bank 1', firstChecks: ['Check oil level and oil age first. VVT actuators need oil pressure.', 'Inspect the bank-1 VVT/oil-control solenoid connector.', 'Look for sludge on the solenoid screen if it is serviceable.'], likelyParts: ['Engine oil / filter', 'VVT oil-control solenoid', 'Cam phaser after oil and solenoid'], warnings: ['A circuit code is electrical or a dead solenoid coil — carbon-cleaning the phaser will not fix an open wire.'] },
+    P0013: { title: 'Camshaft position actuator circuit bank 1 (B)', firstChecks: ['Same oil-first path as other VVT codes.', 'Identify which solenoid is the “B” actuator on this engine before buying.'], likelyParts: ['Oil / filter', 'VVT solenoid (B)', 'Connector / wiring'], warnings: ['Wrong-bank or wrong-cam solenoids are a common wasted part. Match the connector location to the service diagram.'] },
+    P0021: { title: 'Cam timing over-advanced bank 2', firstChecks: ['Check oil level and condition.', 'Inspect the bank-2 VVT solenoid and screen.', 'Do not assume a jumped chain until oil and the solenoid are checked.'], likelyParts: ['Engine oil / filter', 'Bank-2 VVT solenoid', 'Cam phaser or chain after proof'], warnings: ['Low oil or sludge is still the #1 DIY cause on bank 2.'] },
+    P0022: { title: 'Cam timing over-retarded bank 2', firstChecks: ['Same oil-first path as P0021.', 'A stuck solenoid or worn phaser can hold the cam retarded.'], likelyParts: ['Oil / filter', 'Bank-2 VVT solenoid', 'Cam phaser after oil and solenoid'], warnings: ['Cold-start rattle plus this code is a common phaser pattern — still change oil and try the solenoid first when accessible.'] },
+    P0068: { title: 'MAP/MAF–throttle correlation', firstChecks: ['Inspect the intake boot after the MAF for splits.', 'Check the throttle-body connector and carbon on the blade.', 'Confirm the MAP vacuum port is seated.'], likelyParts: ['Intake boot', 'MAF sensor', 'Throttle body / MAP'], warnings: ['Do not force an electronic throttle blade by hand.'] },
+    P0116: { title: 'ECT range/performance', firstChecks: ['Confirm coolant level when cold.', 'Watch warm-up: stuck-open thermostat stays cold; stuck-closed overheats.', 'Inspect the coolant-temp sensor connector.'], likelyParts: ['Thermostat', 'Coolant', 'ECT sensor if confirmed'], warnings: ['Do not open a hot cooling system.'] },
+    P0123: { title: 'TPS A circuit high', firstChecks: ['Inspect the throttle connector for oil or bent pins.', 'Check the 5V reference and signal wire.', 'Note limp mode / high idle.'], likelyParts: ['Throttle body / TPS', 'Connector pigtail', 'Shared 5V reference if other sensors failed'], warnings: ['Limp mode is common. Stop slamming the pedal.'] },
+    P0221: { title: 'Throttle/pedal position sensor B', firstChecks: ['Inspect the electronic throttle connector and the accelerator-pedal connector.', 'Wiggle-test the pedal harness under the dash.', 'Look for water in the cowl soaking the throttle.'], likelyParts: ['Electronic throttle body', 'Accelerator pedal sensor', 'Harness repair'], warnings: ['Two pedal/throttle tracks must agree. Do not replace both as a guess — prove which circuit is dead.'] },
+    P0330: { title: 'Knock sensor 1 circuit intermittent', firstChecks: ['Inspect the knock-sensor connector on the block.', 'Look for a harness that only fails when hot or when the starter is under load.', 'Do not confuse an intermittent knock code with a failing engine until the circuit is proven.'], likelyParts: ['Knock sensor', 'Knock-sensor harness'], warnings: ['If you hear real knock under load, ease off and check oil/fuel octane.'] },
+    P0345: { title: 'Camshaft position sensor circuit bank 2', firstChecks: ['Inspect the bank-2 cam sensor connector (often on the valve cover or timing cover).', 'Check oil in the connector.', 'Verify oil level on VVT engines before assuming the chain jumped.'], likelyParts: ['Camshaft position sensor (bank 2)', 'Connector / wiring', 'VVT solenoid / oil'], warnings: ['Can cause extended crank or no-start. Check battery first.'] },
+    P0405: { title: 'EGR sensor/circuit range', firstChecks: ['Inspect the EGR valve and position-sensor connector.', 'Check for carbon holding the valve.', 'Look for a melted harness on the valve.'], likelyParts: ['EGR valve / sensor', 'EGR gasket / cleaning', 'Connector / wiring'], warnings: ['Let a hot engine cool before wrenching on EGR tubes.'] },
+    P0627: { title: 'Fuel pump A control circuit open', firstChecks: ['Listen for the in-tank pump prime at key-on.', 'Check the fuel-pump fuse and relay.', 'Inspect the tank harness / lock-ring connector.'], likelyParts: ['Fuel pump fuse / relay', 'In-tank pump / sender', 'Pump control wiring'], warnings: ['No sparks around an open tank. Support the tank — do not let it hang on the filler neck.'] },
+    P0841: { title: 'Transmission fluid pressure sensor A range', firstChecks: ['Check transmission fluid the exact way this unit requires.', 'Inspect the exterior trans connector.', 'Note harsh shifts or flare with companion solenoid codes.'], likelyParts: ['TFT / line-pressure sensor', 'Fluid / filter', 'Internal harness'], warnings: ['Burnt fluid and metal are not a sensor-only hope. Tow if it will not hold a gear.'] },
+    P0842: { title: 'Transmission fluid pressure sensor A low', firstChecks: ['Same fluid-first path as P0841.', 'A low reading can be a real pressure loss or a shorted sensor.'], likelyParts: ['Pressure sensor', 'Fluid / filter', 'Pump / internal — after fluid proof'], warnings: ['Do not keep flogging a slipping trans while chasing a sensor.'] },
+    P2096: { title: 'Post-catalyst fuel trim too lean bank 1', firstChecks: ['Repair upstream misfire, lean, or exhaust leaks first.', 'Inspect the downstream O2 and the exhaust before it.', 'Confirm the converter is not already rattling from prior misfire.'], likelyParts: ['Upstream ignition/fuel repair', 'Exhaust leak repair', 'Downstream O2 after proof'], warnings: ['Do not replace the converter because a post-cat trim code set alone.'] },
+    P2097: { title: 'Post-catalyst fuel trim too rich bank 1', firstChecks: ['Repair upstream rich/misfire codes first.', 'Inspect for exhaust leaks and a contaminated downstream O2.', 'Check for a stuck-open purge contributing rich.'], likelyParts: ['Upstream fuel/ignition repair', 'Downstream O2', 'Purge valve'], warnings: ['Fix the cause of rich running before condemning the converter.'] },
+    P2196: { title: 'O2 B1S1 stuck rich', firstChecks: ['Stuck rich upstream often means dripping fuel, a stuck purge, or a dead sensor.', 'Do the P0172 checks first.', 'Inspect B1S1 and exhaust leaks before it.'], likelyParts: ['Purge valve / leaking injector', 'Upstream O2 (B1S1)', 'MAF if oily'], warnings: ['Do not replace the converter for a stuck-rich upstream sensor.'] },
+    C0031: wheelSpeedGuide('left-front'),
+    C0034: wheelSpeedGuide('right-front'),
+    C0200: {
+      title: 'ABS solenoid valve circuit (LF)',
+      firstChecks: ['Check ABS fuses and the hydraulic-unit connector.', 'Listen for the ABS self-test buzz at key-on.', 'Note whether a corner sensor code set with this.'],
+      likelyParts: ['ABS fuse / relay', 'ABS hydraulic unit (integral solenoids)', 'Harness repair'],
+      warnings: ['Solenoid codes inside the HCU are usually a unit, not a $5 aisle part.', 'Normal brakes should still work — test carefully.'],
+      diySteps: [
+        'Charge the battery and check every ABS/ESC fuse. Replace a blown fuse once; if it blows again, stop and find the short.',
+        'Unplug the ABS connector. Look for water, green pins, or a melted cavity on the solenoid feed.',
+        'Dry and reseat the connector. Clear codes and do a short, safe ABS stop in an empty lot only if the light goes out.',
+        'If the code returns with a dry connector and good fuses, the valve is inside the hydraulic unit — that is a shop bleed and programming job, not a driveway solenoid swap.'
+      ]
+    },
+    C0201: {
+      title: 'Brake fluid level switch circuit',
+      firstChecks: ['Check brake fluid in the master-cylinder reservoir when cold.', 'Inspect the fluid-level sensor connector on the reservoir cap or body.', 'Look under the truck for wet calipers, lines, or a wet booster area.'],
+      likelyParts: ['Brake fluid (correct spec)', 'Reservoir level sensor / cap', 'Hydraulic leak repair'],
+      warnings: ['Low fluid usually means a leak or worn pads. Topping off without finding the leak is temporary.', 'Do not reuse mystery fluid from an open bottle.'],
+      diySteps: [
+        'Clean the reservoir cap area, then open and check the level against the marks. Add only the fluid type on the cap.',
+        'If the level is low, inspect pads/rotors and look for wetness at each corner and at the master. Fix the leak before endless topping-off.',
+        'Unplug the level-sensor connector (often in the cap). Look for brake-fluid contamination on the pins — fluid eats connectors.',
+        'Clear the code after the level is correct and the connector is dry. If the light stays with a full reservoir, the switch or wiring is next.'
+      ]
+    },
+    C0245: {
+      title: 'Wheel-speed sensor frequency mismatch',
+      firstChecks: ['Note which corner sensors also set codes.', 'Inspect tone rings / encoders for missing teeth or rust jacking.', 'Check tire sizes — a mismatched spare can confuse ABS.'],
+      likelyParts: ['Wheel speed sensor', 'Hub / tone ring', 'Tire size correction'],
+      warnings: ['ABS and traction may be reduced. Confirm all four tires match the placard size before condemning parts.'],
+      diySteps: [
+        'Confirm all four tires are the same size and within a normal wear match. A temporary spare will set mismatch complaints.',
+        'Inspect each wheel-speed harness and sensor tip. Repair the damaged corner first if a C0035-style code is also present.',
+        'Look at the tone ring / magnetic encoder for cracks, rust scales, or missing teeth while the corner is supported on a stand.',
+        'Clear after repairs. If every sensor and tire checks out and the code returns, that is a shop scope of the ABS module inputs.'
+      ]
+    },
+    C0265: {
+      title: 'EBCM / ABS relay circuit',
+      firstChecks: ['Check ABS fuses and the EBCM/ABS relay in the under-hood box.', 'Swap with a same-number relay if a spare exists.', 'Inspect the ABS module connector for heat damage.'],
+      likelyParts: ['ABS / EBCM relay', 'ABS fuse', 'ABS module after power proof'],
+      warnings: ['Without relay power, ABS cannot run its pump/valves. Hydraulic brakes should still work — test carefully.'],
+      diySteps: [
+        'Charge the battery. Weak batteries drop ABS relays and set supply codes.',
+        'Find the ABS/EBCM relay. Swap with a matching spare relay. If the light behavior changes, replace the relay.',
+        'Check ABS fuses. Inspect the ABS connector for melted relay/pump pins.',
+        'If fuses, relay, and the connector are good and the code returns, stop guessing — module power/driver diagnosis is next.'
+      ]
+    },
+    U0140: { title: 'Lost communication with body control module', firstChecks: ['Charge the battery first.', 'Check BCM fuses (often under-dash and under-hood).', 'Look for water in the kick panel / BCM area after a cowl leak.'], likelyParts: ['Battery / grounds', 'BCM fuse / connector', 'BCM after power proof'], warnings: ['Low voltage and water create false “dead BCM” jobs.'] },
+    U0155: { title: 'Lost communication with instrument cluster', firstChecks: ['Charge the battery.', 'Note whether the gauges are dead or the cluster reboots.', 'Inspect the cluster connector if the cluster was recently pulled.'], likelyParts: ['Battery / grounds', 'Cluster connector', 'Cluster after power proof'], warnings: ['A dying battery makes the cluster drop off the bus and set U0155.'] },
+    U0104: { title: 'Lost communication with cruise control module', firstChecks: ['Charge the battery.', 'Check cruise/brake-switch related fuses.', 'On integrated cruise (PCM/ECM), treat this like a network/power issue — not a separate “cruise box” on many newer trucks.'], likelyParts: ['Battery / grounds', 'Brake switch / cruise fuse', 'Module only after power proof'], warnings: ['A brake-switch fault often disables cruise and can confuse related modules.'] }
   };
 
   for (let cyl = 1; cyl <= 12; cyl++) {
@@ -193,6 +341,14 @@ const DiagEngine = (() => {
   }
   if (!DETAILED_GUIDANCE.C0040.diySteps) DETAILED_GUIDANCE.C0040 = wheelSpeedGuide('right-front');
   DETAILED_GUIDANCE.C0035.diySteps = DETAILED_GUIDANCE.C0035.diySteps || wheelSpeedGuide('left-front').diySteps;
+  DETAILED_GUIDANCE.C0040.diySteps = DETAILED_GUIDANCE.C0040.diySteps || wheelSpeedGuide('right-front').diySteps;
+  DETAILED_GUIDANCE.U0121.diySteps = DETAILED_GUIDANCE.U0121.diySteps || [
+    'Charge the battery and clean the main grounds. A weak battery drops the ABS module off the network and sets U0121.',
+    'Check every ABS / ESC fuse. Replace a blown fuse once; if it blows again, find the short before buying a module.',
+    'Unplug the ABS connector (usually on the hydraulic unit in the left-front bay). Look for water, mud, or green pins — common on trucks that see road splash.',
+    'Dry and reseat the connector. If a wheel-speed harness is chafed and shorted, it can pull the whole module offline — inspect the corners before condemning the ABS unit.',
+    'Clear codes after power and the connector are proven. A module that stays silent with good power is a shop diagnosis, not a guess-swap.'
+  ];
 
   DETAILED_GUIDANCE.P0171.diySteps = [
     'Engine off. Find the big plastic/rubber intake tube between the air box and the throttle. Look for splits, especially after the MAF sensor. Replace a cracked tube; do not tape it as a permanent fix.',
@@ -528,6 +684,86 @@ const DiagEngine = (() => {
     'A shorted wheel-speed wire can take the module off the bus. If you also have a C0035/C0040-type code, inspect that harness before you buy an ABS module.',
     'Clean grounds on the frame/ABS bracket.',
     'A new ABS module is often a programming job. Prove power, ground, and a dry connector first. You still have hydraulic brakes — drive gently, not like the ABS light is a decoration on ice.'
+  ];
+
+  DETAILED_GUIDANCE.P0010.diySteps = DETAILED_GUIDANCE.P0013.diySteps = [
+    'Check oil level and oil age first. VVT solenoids need clean oil pressure — a quart low or sludge is a real cause.',
+    'Find the cam actuator / oil-control solenoid on bank 1. Unplug it and inspect for oil in the connector or a broken lock tab.',
+    'If the solenoid pulls out with a screen, clean the screen in solvent and inspect for metal. Replace the solenoid if the coil is open or the screen is shredded.',
+    'Clear codes after an oil change and a known-good solenoid. A phaser or chain job is next only after oil and the solenoid are proven — that is usually more than a driveway first step.'
+  ];
+  DETAILED_GUIDANCE.P0021.diySteps = DETAILED_GUIDANCE.P0011.diySteps;
+  DETAILED_GUIDANCE.P0022.diySteps = DETAILED_GUIDANCE.P0014.diySteps;
+  DETAILED_GUIDANCE.P0068.diySteps = [
+    'Engine off. Inspect the intake tube after the MAF all the way to the throttle. Splits there make MAF and throttle disagree.',
+    'Reseat the MAF and throttle connectors. Clean the MAF with MAF cleaner only; clean throttle deposits with throttle-body cleaner with the blade undriven by hand on electronic throttles.',
+    'Check the MAP sensor vacuum port for a cracked hose or an unplugged sensor after intake work.',
+    'If boots and connectors are good and the code returns, stop guessing between MAF and throttle — you need data PIDs or a shop scope, not three parts in one afternoon.'
+  ];
+  DETAILED_GUIDANCE.P0116.diySteps = DETAILED_GUIDANCE.P0128.diySteps;
+  DETAILED_GUIDANCE.P0123.diySteps = [
+    'Key off. Unplug the throttle connector and look for bent pins, oil, or water from a cowl leak.',
+    'Check related 5V-reference codes. Several sensors dead at once means a shared 5V short — unplug suspects one at a time key-off.',
+    'A replacement electronic throttle body must be the exact part. Many need a relearn — follow that vehicle’s procedure after install.',
+    'Do not pry the blade open with a screwdriver on an electronic throttle.'
+  ];
+  DETAILED_GUIDANCE.P0221.diySteps = DETAILED_GUIDANCE.P2135.diySteps;
+  DETAILED_GUIDANCE.P0330.diySteps = [
+    'Inspect the knock-sensor connector on the block. Wiggle the harness with the connector seated — intermittent opens often live in the first few inches of wire.',
+    'Look for a harness pinched by the intake, starter, or a heat shield. Repair the wiring before buying a sensor.',
+    'If the connector and wiring look clean, replace the knock sensor with the exact sensor for that engine. Use the correct torque from the service data — over-tightening kills new sensors.',
+    'If you hear real knock after the circuit is fixed, ease off and check oil level and fuel octane. Do not keep boosting or towing on audible knock.'
+  ];
+  DETAILED_GUIDANCE.P0345.diySteps = [
+    'Check battery voltage and oil level first. Low voltage and low oil create cam/crank noise on VVT engines.',
+    'Find the bank-2 cam sensor. Unplug it and look for oil, rust, or a broken connector lock.',
+    'If the connector is clean, replace the sensor with the exact bank-2 part. Do not install a bank-1 sensor on the wrong cover.',
+    'Clear codes and retest. If cam/crank correlation codes remain, check the VVT solenoid screen before assuming a jumped chain.'
+  ];
+  DETAILED_GUIDANCE.P0405.diySteps = [
+    'Let the engine cool. Inspect the EGR valve connector and the tube passages for heavy carbon.',
+    'On vacuum-EGR trucks, check vacuum hoses for splits. On electric EGR, a circuit/range code can be the integral position sensor.',
+    'Cleaning carbon is DIY when the valve is reachable — new gasket, no broken bolts in the manifold. Do not snap a rusty tube.',
+    'If the connector is open or the motor never moves when commanded, replace the valve after the wiring is proven. Skip “EGR delete” kits that only hide the light.'
+  ];
+  DETAILED_GUIDANCE.P0627.diySteps = DETAILED_GUIDANCE.P0230.diySteps;
+  DETAILED_GUIDANCE.P0841.diySteps = DETAILED_GUIDANCE.P0842.diySteps = [
+    'Check transmission fluid the exact way this unit wants — many need to be hot and running. Do not guess on a sealed unit with a cold stick.',
+    'If fluid is black and burnt, stop flogging it. A sensor will not fix cooked clutches.',
+    'Inspect the exterior transmission connector for ATF in the pins. Clean with electrical cleaner, not water.',
+    'A pressure-sensor DIY swap is possible on some pans/valve bodies and impossible on others. If the tip of a related speed sensor is chewed up, that is internal wear — tow, do not keep driving.'
+  ];
+  DETAILED_GUIDANCE.P2096.diySteps = DETAILED_GUIDANCE.P2097.diySteps = [
+    'Fix upstream misfire, lean, rich, or exhaust-leak problems first. Post-cat trim codes often follow neglected upstream faults.',
+    'Inspect the exhaust before the rear O2 for rust holes or a broken flex pipe.',
+    'Confirm the downstream (after-cat) O2 connector is dry and seated.',
+    'Do not buy a catalytic converter until upstream causes and exhaust leaks are ruled out.'
+  ];
+  DETAILED_GUIDANCE.P2196.diySteps = [
+    'Stuck rich on the upstream O2: either the engine is rich (purge/injector/MAF) or the sensor is dead.',
+    'Do the P0172 checks first: purge valve stuck open, oily MAF, dripping injector smells on the dipstick.',
+    'If trims are normal and only the O2 is stuck rich, replace bank 1 sensor 1 (upstream). Confirm it is the pre-cat sensor on bank 1.',
+    'Do not replace the catalytic converter for this code.'
+  ];
+  DETAILED_GUIDANCE.C0031.diySteps = DETAILED_GUIDANCE.C0035.diySteps;
+  DETAILED_GUIDANCE.C0034.diySteps = DETAILED_GUIDANCE.C0040.diySteps;
+  DETAILED_GUIDANCE.U0140.diySteps = [
+    'Charge the battery and clean the main grounds. Body modules drop off first when voltage sags.',
+    'Check BCM / body fuses in the under-dash and under-hood boxes. Replace a blown fuse once; if it blows again, find the short.',
+    'Look for water in the kick panel or cowl area where many BCMs live. Dry connectors; fix the cowl drain so it does not refill.',
+    'A BCM usually needs programming. Prove power, grounds, and a dry connector before buying a module.'
+  ];
+  DETAILED_GUIDANCE.U0155.diySteps = [
+    'Cluster went quiet. Charge the battery first — a dying battery reboots clusters and sets lost-communication codes.',
+    'Note whether gauges are dead, sweep on key-on, or reboot while driving. Intermittent reboots scream voltage/ground.',
+    'If the cluster was recently removed, reseat the connector fully until it locks.',
+    'Do not condemn the cluster until battery, grounds, and the connector are proven.'
+  ];
+  DETAILED_GUIDANCE.U0104.diySteps = [
+    'Cruise module went quiet. Charge the battery and check related fuses.',
+    'Confirm the brake lights work — a bad brake switch disables cruise on most vehicles and can confuse related modules.',
+    'On many newer trucks cruise lives inside the PCM/ECM. Treat this like a network/power issue, not a separate cruise box under the hood.',
+    'Clear after voltage and the brake switch are proven. Keep shopping for a “cruise module” only if this vehicle actually has a separate one.'
   ];
 
   const ENGINE_REBUILD = {

@@ -21,6 +21,8 @@ function createMockBleTransport() {
     },
     async send(cmd) {
       const c = String(cmd).trim().toUpperCase();
+      if (c === "ATZ" || c === "ATI") return "ELM327 v1.5\r\n>";
+      if (c === "ATDP") return "AUTO, ISO 15765-4 (CAN 11/500)\r\n>";
       if (c.startsWith("AT")) return "OK\r>";
       if (c === "0100") return "41 00 BE 1F A8 13\r>";
       if (c === "03") return "43 02 03 01 04 20\r>";

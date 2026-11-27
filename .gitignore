@@ -5,6 +5,7 @@ site/
 .DS_Store
 *.log
 .expo/
+atdd/scripts/.vehicle-catalog-cache.json
 
 mike-ai/node_modules/
 mike-ai/.next/

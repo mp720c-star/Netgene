@@ -57,10 +57,10 @@ runInNewContext(fs.readFileSync(path.join(classic, "vehicleCatalog.js"), "utf8")
 const Catalog = catalogWin.window.VehicleCatalog;
 const counts = Catalog.data().counts;
 
-assert.equal(counts.source_rows, 3632);
-assert.equal(counts.entries, 3464);
+assert.equal(counts.source_rows, 12600);
+assert.equal(counts.entries, 12432);
 assert.equal(counts.exact_merges, 168);
-assert.equal(counts.near_match_pairs, 31);
+assert.equal(counts.near_match_pairs, 3578);
 assert.equal(counts.cdi_profiles_represented, 69);
 assert.equal(counts.catalog_sources, 361);
 const sourceKinds = new Set();
@@ -68,8 +68,8 @@ for (const entry of Catalog.data().entries) {
   for (const s of entry.sources || []) sourceKinds.add(s.kind);
 }
 assert.deepEqual([...sourceKinds].sort(), ["catalog", "cdi", "vehicle_genius"]);
-assert.equal(counts.vehicle_genius_sources, 3202);
-assert.equal(counts.by_type.car_truck, 3129);
+assert.equal(counts.vehicle_genius_sources, 12170);
+assert.equal(counts.by_type.car_truck, 12097);
 assert.equal(counts.by_type.dirt_bike, 168);
 assert.equal(counts.by_type.atv, 150);
 assert.equal(counts.by_type.atc, 9);
@@ -77,7 +77,7 @@ assert.equal(counts.by_type.snowmobile, 4);
 assert.equal(counts.by_type.motorcycle, 2);
 assert.equal(counts.by_type.generic_reference, 2);
 assert.equal(counts.by_type.simulated, undefined);
-assert.equal(counts.by_workflow.generic_automotive, 3129);
+assert.equal(counts.by_workflow.generic_automotive, 12097);
 assert.equal(counts.by_workflow.cdi_pinout, 69);
 assert.equal(counts.by_workflow.index_only, 266);
 
@@ -85,6 +85,13 @@ const trucks = Catalog.search({ type: "car_truck", make: "Ford", query: "F-150" 
 assert.ok(trucks.length > 0);
 assert.ok(trucks.every((e) => e.workflow === "generic_automotive" && !e.has_cdi_pinout));
 assert.equal(Catalog.pinoutsFor(trucks[0]).length, 0);
+
+const modernMakes = ["Acura", "Genesis", "Infiniti", "Volvo", "Porsche", "Mitsubishi", "MINI", "Rivian"];
+for (const make of modernMakes) {
+  const hits = Catalog.search({ type: "car_truck", make });
+  assert.ok(hits.length > 0, "expected car/truck rows for " + make);
+  assert.ok(hits.some((e) => e.year_start >= 2012), make + " should include last-15-year coverage");
+}
 
 const sleds = Catalog.search({ type: "snowmobile", query: "Ski-Doo" });
 assert.equal(sleds.length, 1);

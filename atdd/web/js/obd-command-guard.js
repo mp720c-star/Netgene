@@ -25,6 +25,9 @@ export const ALLOWED_ELM_ADAPTER_INIT = Object.freeze([
 ]);
 
 const EXTRA_ADAPTER = new Set([
+  "ATI",
+  "ATDP",
+  "ATDPN",
   "ATL1",
   "ATH1",
   "ATCAF1",

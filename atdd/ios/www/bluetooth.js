@@ -1,5 +1,5 @@
 /**
- * ATDD classic Bluetooth · Connect FIXD
+ * ATDD classic Bluetooth · any ELM327-style BLE OBD-II reader
  * Non-module bridge for the v1.2.0 shell (CSP script-src 'self').
  *
  * A failed live connect does not invent codes.
@@ -15,10 +15,36 @@
     "0000ffe0-0000-1000-8000-00805f9b34fb",
     "000018f0-0000-1000-8000-00805f9b34fb",
     "6e400001-b5a3-f393-e0a9-e50e24dcca9e",
+    "0000ffe5-0000-1000-8000-00805f9b34fb",
+    "0000fff0-0000-1000-8000-00805f9b34fb",
   ];
-  const WRITE_HINTS = ["fff2", "ffe1", "2af1", "6e400002"];
-  const NOTIFY_HINTS = ["fff1", "ffe1", "2af0", "6e400003"];
-  const ELM_PROBE = ["ATZ", "ATE0", "ATL0", "ATH1", "ATSP0", "0100"];
+  const WRITE_HINTS = ["fff2", "ffe1", "ffe9", "2af1", "6e400002", "fff2"];
+  const NOTIFY_HINTS = ["fff1", "ffe1", "ffe4", "2af0", "6e400003", "fff1"];
+  const ELM_PROBE = ["ATZ", "ATI", "ATE0", "ATL0", "ATS0", "ATH0", "ATSP0", "ATDP", "0100"];
+  const NAME_FILTERS = [
+    { namePrefix: "FIXD" },
+    { namePrefix: "fixd" },
+    { namePrefix: "OBD" },
+    { namePrefix: "ELM" },
+    { namePrefix: "VEEPEAK" },
+    { namePrefix: "Veepeak" },
+    { namePrefix: "Vgate" },
+    { namePrefix: "VGATE" },
+    { namePrefix: "OBDLink" },
+    { namePrefix: "OBDLINK" },
+    { namePrefix: "OBDII" },
+    { namePrefix: "OBD2" },
+    { namePrefix: "Kiwi" },
+    { namePrefix: "BAFX" },
+    { namePrefix: "Carista" },
+    { namePrefix: "LELink" },
+    { namePrefix: "Scan" },
+    { namePrefix: "Android-Vlink" },
+    { namePrefix: "IOS-Vlink" },
+    { namePrefix: "V-Link" },
+    { namePrefix: "CN100" },
+    { namePrefix: "DUN" },
+  ];
 
   let device = null;
   let server = null;
@@ -26,6 +52,7 @@
   let notifyChar = null;
   let replyBuffer = "";
   let busy = false;
+  let answeredNodes = [];
 
   function byId(id) {
     return document.getElementById(id);
@@ -63,12 +90,47 @@
   function webBluetoothBlockReason() {
     const isiOS = /iPhone|iPad|iPod/i.test(navigator.userAgent || "");
     if (isiOS) {
-      return "iPhone Safari / Home Screen PWA has no Web Bluetooth. Live FIXD needs the native ATDD Connect app (com.netgene.atdd.ble) via TestFlight when signing is ready.";
+      return "iPhone Safari / Home Screen PWA has no Web Bluetooth. Live OBD-II scanning needs the native ATDD TestFlight app (any ELM327-style BLE adapter).";
     }
     if (!window.isSecureContext) {
       return "Web Bluetooth requires HTTPS (or localhost).";
     }
     return "This browser does not support Web Bluetooth. Use Chrome or Edge on Android/desktop.";
+  }
+
+  function confirmClear() {
+    const dialog = byId("clearCodesDialog");
+    if (!dialog || typeof dialog.showModal !== "function") {
+      return Promise.resolve(
+        window.confirm(
+          "Clear emissions and ABS/module codes this vehicle accepts? Park, key on, engine off."
+        )
+      );
+    }
+    return new Promise((resolve) => {
+      let settled = false;
+      const finish = (value) => {
+        if (settled) return;
+        settled = true;
+        dialog.close();
+        resolve(value);
+      };
+      const form = byId("clearCodesForm");
+      const cancel = byId("btnClearVehicleCancel");
+      if (form) {
+        form.addEventListener(
+          "submit",
+          (event) => {
+            event.preventDefault();
+            finish(true);
+          },
+          { once: true }
+        );
+      }
+      if (cancel) cancel.addEventListener("click", () => finish(false), { once: true });
+      dialog.addEventListener("cancel", () => finish(false), { once: true });
+      dialog.showModal();
+    });
   }
 
   function normalizeUuid(uuid) {
@@ -225,15 +287,7 @@
         ? { acceptAllDevices: true, optionalServices: OPTIONAL_SERVICES }
         : {
             acceptAllDevices: false,
-            filters: [
-              { namePrefix: "FIXD" },
-              { namePrefix: "fixd" },
-              { namePrefix: "OBD" },
-              { namePrefix: "ELM" },
-              { namePrefix: "VEEPEAK" },
-              { namePrefix: "Vgate" },
-              { namePrefix: "OBDLink" },
-            ],
+            filters: NAME_FILTERS,
             optionalServices: OPTIONAL_SERVICES,
           }
     );
@@ -267,8 +321,37 @@
       const reply = await sendCommand(cmd, cmd === "ATZ" ? 1200 : 700);
       log("> " + cmd + "\n" + (reply || "(no reply)"));
     }
-    log("Probe finished. FIXD protocol claim: " + FIXD_CLAIM + ". Tap Read codes for Mode 03.");
+    log(
+      "Probe finished. Adapter speaks ELM-style AT commands. FIXD brand protocol claim: " +
+        FIXD_CLAIM +
+        ". Tap Read codes for a full OBD scan (including chassis codes when that module answers)."
+    );
     setBusy(false);
+  }
+
+  async function sendOptional(cmd, waitMs) {
+    try {
+      return await sendCommand(cmd, waitMs);
+    } catch (err) {
+      log("Optional command skipped: " + cmd + " (" + (err && err.message ? err.message : err) + ")");
+      return "";
+    }
+  }
+
+  async function probeClearNodes() {
+    const scan = global.ATDDVehicleScan;
+    if (!scan) return [];
+    const found = [];
+    const nodes = [].concat(scan.PHYSICAL_NODES || [], scan.EXTRA_NODES || []);
+    for (const node of nodes) {
+      for (const command of scan.adapterHeader(node)) {
+        await sendOptional(command, 400);
+      }
+      const reply = await sendOptional("03", 1200);
+      if (scan.replyHasVehicleData(reply)) found.push(node);
+    }
+    for (const command of scan.RESTORE_HEADER || []) await sendOptional(command, 400);
+    return found;
   }
 
   function applyCodesToScanner(codes) {
@@ -307,7 +390,40 @@
       log(reply || "(no reply)");
       sections.push({ label: step.label, raw: reply });
     }
-    log("Chassis-module reads run in the TestFlight app, which waits for each adapter reply. This browser lists the codes in the replies above.");
+    log("Probing ABS/chassis candidates first, then other modules the adapter will answer…");
+    const nodes = [];
+    const candidates =
+      typeof scan.allProbeNodes === "function"
+        ? scan.allProbeNodes()
+        : [].concat(scan.PHYSICAL_NODES || [], scan.EXTRA_NODES || []);
+    for (const node of candidates) {
+      for (const command of scan.adapterHeader(node)) await sendOptional(command, 350);
+      for (const step of scan.MODULE_READS || []) {
+        let reply = await sendOptional(step.command, Math.min(step.timeoutMs || 2000, 2000));
+        if (step.command === "1902FF" && scan.needsExtendedSession && scan.needsExtendedSession(reply)) {
+          await sendOptional(scan.EXTENDED_SESSION, 500);
+          reply = await sendOptional(step.command, Math.min(step.timeoutMs || 2000, 2000));
+          await sendOptional(scan.DEFAULT_SESSION, 500);
+        }
+        if (reply) {
+          sections.push({
+            label: (node.label || node.request || "module") + " " + step.label,
+            raw: reply,
+          });
+          log((node.label || node.request) + " " + step.label + ": " + reply);
+        }
+        if (scan.replyHasVehicleData(reply)) {
+          if (!nodes.some((n) => n.request === node.request)) nodes.push(node);
+        }
+      }
+    }
+    answeredNodes = nodes;
+    for (const command of scan.RESTORE_HEADER || []) await sendOptional(command, 350);
+    if (!nodes.length) {
+      log("No chassis/ABS module answered. Only functional OBD codes are listed — nothing was invented.");
+    } else {
+      log("Modules that answered (eligible for clear): " + nodes.map((n) => n.request).join(", "));
+    }
     const report = scan.buildReport(sections);
     applyCodesToScanner(report.uniqueCodes);
     const reply = sections.map((section) => section.raw).join("\n");
@@ -317,15 +433,59 @@
 
   async function clearVehicleLive() {
     if (!writeChar) throw new Error("Connect a scanner first.");
-    const accepted = window.confirm("Clear codes on this vehicle? Park, key on, engine off. This sends the standard OBD clear.");
+    const accepted = await confirmClear();
     if (!accepted) {
       log("Clear cancelled. Nothing was sent to the vehicle.");
       return;
     }
     const scan = global.ATDDVehicleScan;
-    log("Clearing codes the vehicle accepts. New scan does not send a clear.");
-    const reply = await sendCommand(scan ? scan.CLEAR_EMISSIONS : "04", 2500);
-    log(reply || "(no reply)");
+    log(
+      "Clearing emissions (Mode 04) and module clears for answered computers plus ABS/chassis candidates. New scan does not send a clear."
+    );
+    // Re-init functional addressing so Mode 04 is not sent under a stale physical header.
+    for (const command of ["ATZ", "ATE0", "ATL0", "ATS0", "ATH0", "ATSP0"]) {
+      await sendOptional(command, command === "ATZ" ? 2000 : 800);
+    }
+    if (scan && scan.RESTORE_HEADER) {
+      for (const command of scan.RESTORE_HEADER) await sendOptional(command, 500);
+    }
+    const emissions = await sendCommand(scan ? scan.CLEAR_EMISSIONS : "04", 2500);
+    log(emissions || "(no Mode 04 reply)");
+    const nodes = [];
+    const seen = new Set();
+    function addNode(node) {
+      const key = String(node?.request || "").toUpperCase();
+      if (!key || seen.has(key)) return;
+      seen.add(key);
+      nodes.push(node);
+    }
+    (answeredNodes || []).forEach(addNode);
+    if (scan && typeof scan.chassisAbsCandidates === "function") {
+      scan.chassisAbsCandidates().forEach(addNode);
+    } else if (!nodes.length) {
+      (await probeClearNodes()).forEach(addNode);
+    }
+    answeredNodes = nodes;
+    if (scan && nodes.length) {
+      for (const node of nodes) {
+        const soft = typeof scan.adapterHeaderSoft === "function" ? scan.adapterHeaderSoft(node) : scan.adapterHeader(node);
+        for (const command of soft) await sendOptional(command, 400);
+        let cleared = await sendOptional(scan.CLEAR_MODULE, 2000);
+        if (!cleared || /\?/.test(cleared)) {
+          for (const command of scan.adapterHeader(node)) await sendOptional(command, 400);
+          cleared = await sendOptional(scan.CLEAR_MODULE, 2000);
+        }
+        log(
+          "Module clear " +
+            node.request +
+            ": " +
+            (cleared || "(no reply)")
+        );
+      }
+      for (const command of scan.RESTORE_HEADER || []) await sendOptional(command, 400);
+    } else {
+      log("No answering modules remembered for ABS/module clear. Emissions clear still ran.");
+    }
     await readCodesLive();
   }
 
@@ -344,7 +504,7 @@
     const ok = webBluetoothAvailable();
     if (support) {
       support.textContent = ok
-        ? "Web Bluetooth ready. Tap Connect FIXD, pick your adapter, then Read codes."
+        ? "Web Bluetooth ready. Tap Connect OBD-II Scanner (or Scan any BLE device), pick your adapter, then Read codes."
         : webBluetoothBlockReason();
     }
     if (gate) {
@@ -352,7 +512,7 @@
       if (!ok && isiOS) {
         gate.hidden = false;
         gate.textContent =
-          "iPhone web shell cannot use Bluetooth. Keep using Diagnose / Listen / Look / Code here. Live FIXD needs native ATDD Connect (com.netgene.atdd.ble) when TestFlight signing is ready — or use Chrome/Edge on Android/desktop for Web Bluetooth.";
+          "iPhone web shell cannot use Bluetooth. Keep using Diagnose / Listen / Look / Code here. Live scanning of any ELM327-style BLE OBD-II adapter needs the native ATDD TestFlight app — or use Chrome/Edge on Android/desktop for Web Bluetooth.";
       } else {
         gate.hidden = true;
       }
@@ -374,9 +534,9 @@
       } catch (err) {
         const msg = err && err.message ? err.message : String(err);
         log(
-          "FIXD/live connect failed:\n" +
+          "OBD-II live connect failed:\n" +
             msg +
-            "\n\nNo codes were invented. Fix Bluetooth, then tap Connect FIXD again."
+            "\n\nNo codes were invented. Fix Bluetooth, then tap Connect again — or use Scan any BLE device for adapters with odd names."
         );
         await disconnect();
       } finally {

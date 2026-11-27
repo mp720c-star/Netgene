@@ -18,7 +18,7 @@ for (const allowed of ALLOWED_ELM_ADAPTER_INIT) {
   assert.equal(assertAllowedObdCommand(allowed), allowed, allowed);
 }
 assert.equal(assertAllowedObdCommand("at z"), "ATZ");
-for (const allowed of ["07", "0A", "04", "0902", "1902FF", "14FFFFFF", "1001", "1003", "ATH1", "ATCAF1", "ATSH7E4", "ATCRA7EC", "ATSH18DA28F1", "ATFCSD300000"]) {
+for (const allowed of ["07", "0A", "04", "0902", "1902FF", "14FFFFFF", "1001", "1003", "ATI", "ATDP", "ATDPN", "ATH1", "ATCAF1", "ATSH7E4", "ATCRA7EC", "ATSH18DA28F1", "ATFCSD300000"]) {
   assert.equal(assertAllowedObdCommand(allowed), allowed.replace(/\s+/g, ""), allowed);
 }
 

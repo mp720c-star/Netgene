@@ -228,10 +228,23 @@ function fakeDom() {
   assert.match(resetFn, /release\(active\)/);
   assert.doesNotMatch(resetFn, /\.send\(/);
   assert.doesNotMatch(resetFn, /["']04["']/);
-  assert.match(scanner, /scanner\.send\("03"/);
-  assert.match(scanner, /New scan does not send Mode 04/);
+  assert.match(scanner, /readModeFamily\(scanner,\s*"03"/);
+  assert.match(
+    scanner,
+    /ELM_ADAPTER_INIT\s*=\s*Object\.freeze\(\[\s*"ATZ",\s*"ATE0",\s*"ATL0",\s*"ATS0",\s*"ATH0",\s*"ATSP0"\s*\]\)/
+  );
+  assert.match(scanner, /from\s+"\.\/stored-codes\.js"/);
+  assert.match(scanner, /1902FF/);
+  assert.match(scanner, /needsExtendedSession/);
+  assert.match(scanner, /EXTENDED_SESSION/);
+  assert.match(scanner, /probeAbsFast/);
+  assert.match(scanner, /chassisAbsCandidates/);
+  assert.match(scanner, /adapterHeaderSoft/);
+  assert.match(scanner, /CLEAR_EMISSIONS|Mode 04/);
+  assert.match(scanner, /prepareAdapter\(scanner\)/);
+  assert.doesNotMatch(scanner, /if \(step\.command === "1902FF"\) continue/);
   assert.match(scanner, /btnBtClearVehicle/);
-  assert.match(scanner, /CLEAR_EMISSIONS/);
+  assert.match(scanner, /CLEAR_MODULE/);
   assert.doesNotMatch(scanner, /send\(["']04["']\)/);
   console.log("session-reset: iPhone scanner reset disconnects only; clear is a separate confirmed action");
 }

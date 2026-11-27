@@ -39,14 +39,50 @@
   ]);
 
   // 29-bit physical addresses on the same diagnostic CAN. A silent address is
-  // not given a name or a code.
+  // not given a name or a code. Includes common ABS / chassis request IDs used
+  // on many light trucks and cars; an unanswered ID is never labeled ABS.
   var EXTRA_NODES = Object.freeze([
     { request: "18DA11F1", response: "18DAF111" },
     { request: "18DA18F1", response: "18DAF118" },
     { request: "18DA28F1", response: "18DAF128" },
     { request: "18DA40F1", response: "18DAF140" },
-    { request: "18DA60F1", response: "18DAF160" }
+    { request: "18DA60F1", response: "18DAF160" },
+    // Common chassis / ABS request headers (29-bit). Silent = omitted.
+    { request: "18DA10F1", response: "18DAF110" },
+    { request: "18DA20F1", response: "18DAF120" },
+    { request: "18DA30F1", response: "18DAF130" },
+    { request: "740", response: "748", label: "Chassis/ABS candidate 740" },
+    { request: "7B0", response: "7B8", label: "Chassis/ABS candidate 7B0" }
   ]);
+
+  // GMT900 / GM light-truck ABS/BCM candidates. Silent candidates stay out of
+  // the report. FIXD is not assumed to reach EBCM/BCM on every truck.
+  var GM_CANDIDATE_NODES = Object.freeze([
+    { request: "241", response: "641", label: "ABS/EBCM candidate 241" },
+    { request: "24C", response: "64C", label: "ABS/EBCM candidate 24C" },
+    { request: "244", response: "644", label: "BCM candidate 244" },
+    { request: "760", response: "768", label: "Module candidate 760" }
+  ]);
+
+  // ABS/chassis candidates first so a slow FIXD-class adapter still reaches them
+  // before a long silent powertrain/29-bit sweep.
+  function allProbeNodes() {
+    var seen = {};
+    var out = [];
+    function add(node) {
+      var key = String(node.request || "").toUpperCase();
+      if (!key || seen[key]) return;
+      seen[key] = true;
+      out.push(node);
+    }
+    GM_CANDIDATE_NODES.forEach(add);
+    EXTRA_NODES.filter(function (node) {
+      return node.request === "740" || node.request === "7B0" || /^18DA[1234]0F1$/i.test(node.request);
+    }).forEach(add);
+    PHYSICAL_NODES.forEach(add);
+    EXTRA_NODES.forEach(add);
+    return out;
+  }
 
   var MODULE_READS = Object.freeze([
     { command: "03", timeoutMs: 4000, label: "stored codes" },
@@ -373,6 +409,32 @@
     return commands;
   }
 
+  // Soft header for FIXD-class adapters that reject ATCRA / flow-control setup.
+  // Physical ATSH alone is enough for many single-frame ABS replies.
+  function adapterHeaderSoft(node) {
+    var request = node.request;
+    var commands = [];
+    if (request.length === 8) commands.push("ATCP18");
+    commands.push("ATSH" + request);
+    return commands;
+  }
+
+  function chassisAbsCandidates() {
+    var seen = {};
+    var out = [];
+    function add(node) {
+      var key = String(node.request || "").toUpperCase();
+      if (!key || seen[key]) return;
+      seen[key] = true;
+      out.push(node);
+    }
+    GM_CANDIDATE_NODES.forEach(add);
+    EXTRA_NODES.filter(function (node) {
+      return node.request === "740" || node.request === "7B0" || /^18DA[1234]0F1$/i.test(node.request);
+    }).forEach(add);
+    return out;
+  }
+
   function needsExtendedSession(raw) {
     var compact = String(raw || "").toUpperCase().replace(/[^0-9A-F]/g, "");
     return compact.indexOf("7F197E") !== -1 || compact.indexOf("7F1922") !== -1 || compact.indexOf("7F1911") !== -1;
@@ -388,6 +450,7 @@
     FUNCTIONAL_READS: FUNCTIONAL_READS,
     PHYSICAL_NODES: PHYSICAL_NODES,
     EXTRA_NODES: EXTRA_NODES,
+    GM_CANDIDATE_NODES: GM_CANDIDATE_NODES,
     MODULE_READS: MODULE_READS,
     RESTORE_HEADER: RESTORE_HEADER,
     CLEAR_EMISSIONS: CLEAR_EMISSIONS,
@@ -400,7 +463,10 @@
     buildReport: buildReport,
     formatDistance: formatDistance,
     adapterHeader: adapterHeader,
+    adapterHeaderSoft: adapterHeaderSoft,
+    chassisAbsCandidates: chassisAbsCandidates,
     needsExtendedSession: needsExtendedSession,
-    replyHasVehicleData: replyHasVehicleData
+    replyHasVehicleData: replyHasVehicleData,
+    allProbeNodes: allProbeNodes
   };
 })(typeof window !== "undefined" ? window : globalThis);

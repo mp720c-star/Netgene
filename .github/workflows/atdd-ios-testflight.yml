@@ -263,7 +263,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload the verified build to TestFlight
-        if: ${{ inputs.upload }}
+        if: ${{ inputs.upload || github.event_name == 'push' }}
         uses: apple-actions/upload-testflight-build@v2
         with:
           app-path: ${{ steps.export.outputs.path }}
@@ -272,7 +272,7 @@ jobs:
           api-private-key: ${{ secrets.ASC_PRIVATE_KEY }}
 
       - name: Record Apple processing status
-        if: ${{ inputs.upload }}
+        if: ${{ inputs.upload || github.event_name == 'push' }}
         env:
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
