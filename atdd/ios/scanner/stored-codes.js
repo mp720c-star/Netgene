@@ -8,7 +8,10 @@ function bytes(text) {
 
 function readPayload(payload, codes) {
   if (payload[0] === 0x7f) throw new Error("The vehicle rejected the stored-code request.");
-  if (payload[0] !== 0x43 || payload.length < 2) throw new Error("Missing a complete stored-code response.");
+  // 0x43 = Mode 03 stored, 0x47 = Mode 07 pending, 0x4A = Mode 0A permanent.
+  if ((payload[0] !== 0x43 && payload[0] !== 0x47 && payload[0] !== 0x4A) || payload.length < 2) {
+    throw new Error("Missing a complete stored-code response.");
+  }
   let data = payload.slice(1);
   const counted = data.length % 2 === 1;
   if (counted) {
@@ -39,7 +42,7 @@ export function storedCodes(reply) {
   if (!/^[^>]*>$/.test(response)) throw new Error("The scanner reply is incomplete.");
   const lines = response.slice(0, -1).split(/[\r\n]+/)
     .map((line) => line.trim().replace(/^SEARCHING\.{3}\s*/, ""))
-    .filter((line) => line && line !== "03");
+    .filter((line) => line && line !== "03" && line !== "07" && line !== "0A");
   if (lines.length === 0) throw new Error("The vehicle did not reply.");
   const codes = new Set();
   const framed = new Map();
