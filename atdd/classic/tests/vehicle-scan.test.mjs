@@ -109,6 +109,9 @@ const probeOrder = scan.allProbeNodes().map((node) => node.request);
 assert.equal(probeOrder[0], "241");
 assert.ok(probeOrder.indexOf("241") < probeOrder.indexOf("7E0"));
 assert.ok(scan.MODULE_READS.some((step) => step.command === "1902FF"));
+assert.deepEqual(list(scan.adapterHeaderSoft({ request: "241", response: "641" })), ["ATSH241"]);
+assert.ok(scan.chassisAbsCandidates().some((node) => node.request === "241"));
+assert.ok(scan.chassisAbsCandidates()[0].request === "241");
 
 const bluetooth = fs.readFileSync(path.join(classic, "bluetooth.js"), "utf8");
 assert.match(bluetooth, /CLEAR_MODULE/);

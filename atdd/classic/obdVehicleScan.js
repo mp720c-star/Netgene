@@ -409,6 +409,32 @@
     return commands;
   }
 
+  // Soft header for FIXD-class adapters that reject ATCRA / flow-control setup.
+  // Physical ATSH alone is enough for many single-frame ABS replies.
+  function adapterHeaderSoft(node) {
+    var request = node.request;
+    var commands = [];
+    if (request.length === 8) commands.push("ATCP18");
+    commands.push("ATSH" + request);
+    return commands;
+  }
+
+  function chassisAbsCandidates() {
+    var seen = {};
+    var out = [];
+    function add(node) {
+      var key = String(node.request || "").toUpperCase();
+      if (!key || seen[key]) return;
+      seen[key] = true;
+      out.push(node);
+    }
+    GM_CANDIDATE_NODES.forEach(add);
+    EXTRA_NODES.filter(function (node) {
+      return node.request === "740" || node.request === "7B0" || /^18DA[1234]0F1$/i.test(node.request);
+    }).forEach(add);
+    return out;
+  }
+
   function needsExtendedSession(raw) {
     var compact = String(raw || "").toUpperCase().replace(/[^0-9A-F]/g, "");
     return compact.indexOf("7F197E") !== -1 || compact.indexOf("7F1922") !== -1 || compact.indexOf("7F1911") !== -1;
@@ -437,6 +463,8 @@
     buildReport: buildReport,
     formatDistance: formatDistance,
     adapterHeader: adapterHeader,
+    adapterHeaderSoft: adapterHeaderSoft,
+    chassisAbsCandidates: chassisAbsCandidates,
     needsExtendedSession: needsExtendedSession,
     replyHasVehicleData: replyHasVehicleData,
     allProbeNodes: allProbeNodes

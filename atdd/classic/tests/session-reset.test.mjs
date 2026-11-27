@@ -237,11 +237,14 @@ function fakeDom() {
   assert.match(scanner, /1902FF/);
   assert.match(scanner, /needsExtendedSession/);
   assert.match(scanner, /EXTENDED_SESSION/);
-  assert.match(scanner, /allProbeNodes/);
+  assert.match(scanner, /probeAbsFast/);
+  assert.match(scanner, /chassisAbsCandidates/);
+  assert.match(scanner, /adapterHeaderSoft/);
+  assert.match(scanner, /CLEAR_EMISSIONS|Mode 04/);
+  assert.match(scanner, /prepareAdapter\(scanner\)/);
   assert.doesNotMatch(scanner, /if \(step\.command === "1902FF"\) continue/);
-  assert.match(scanner, /New scan does not send Mode 04/);
   assert.match(scanner, /btnBtClearVehicle/);
-  assert.match(scanner, /CLEAR_EMISSIONS/);
+  assert.match(scanner, /CLEAR_MODULE/);
   assert.doesNotMatch(scanner, /send\(["']04["']\)/);
   console.log("session-reset: iPhone scanner reset disconnects only; clear is a separate confirmed action");
 }

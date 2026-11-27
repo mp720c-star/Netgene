@@ -440,22 +440,41 @@
     }
     const scan = global.ATDDVehicleScan;
     log(
-      "Clearing emissions (Mode 04) and sending a module clear to each computer that answered — including ABS/chassis when it answered. New scan does not send a clear."
+      "Clearing emissions (Mode 04) and module clears for answered computers plus ABS/chassis candidates. New scan does not send a clear."
     );
+    // Re-init functional addressing so Mode 04 is not sent under a stale physical header.
+    for (const command of ["ATZ", "ATE0", "ATL0", "ATS0", "ATH0", "ATSP0"]) {
+      await sendOptional(command, command === "ATZ" ? 2000 : 800);
+    }
     if (scan && scan.RESTORE_HEADER) {
       for (const command of scan.RESTORE_HEADER) await sendOptional(command, 500);
     }
     const emissions = await sendCommand(scan ? scan.CLEAR_EMISSIONS : "04", 2500);
     log(emissions || "(no Mode 04 reply)");
-    const nodes =
-      answeredNodes && answeredNodes.length
-        ? answeredNodes
-        : await probeClearNodes();
+    const nodes = [];
+    const seen = new Set();
+    function addNode(node) {
+      const key = String(node?.request || "").toUpperCase();
+      if (!key || seen.has(key)) return;
+      seen.add(key);
+      nodes.push(node);
+    }
+    (answeredNodes || []).forEach(addNode);
+    if (scan && typeof scan.chassisAbsCandidates === "function") {
+      scan.chassisAbsCandidates().forEach(addNode);
+    } else if (!nodes.length) {
+      (await probeClearNodes()).forEach(addNode);
+    }
     answeredNodes = nodes;
     if (scan && nodes.length) {
       for (const node of nodes) {
-        for (const command of scan.adapterHeader(node)) await sendOptional(command, 400);
-        const cleared = await sendOptional(scan.CLEAR_MODULE, 2000);
+        const soft = typeof scan.adapterHeaderSoft === "function" ? scan.adapterHeaderSoft(node) : scan.adapterHeader(node);
+        for (const command of soft) await sendOptional(command, 400);
+        let cleared = await sendOptional(scan.CLEAR_MODULE, 2000);
+        if (!cleared || /\?/.test(cleared)) {
+          for (const command of scan.adapterHeader(node)) await sendOptional(command, 400);
+          cleared = await sendOptional(scan.CLEAR_MODULE, 2000);
+        }
         log(
           "Module clear " +
             node.request +
