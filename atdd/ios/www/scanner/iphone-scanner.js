@@ -268,7 +268,15 @@ async function readVehicle() {
       "Codes"
     );
 
-    await sendOptional(scanner, "0101", 6000);
+    const statusReply = await sendOptional(scanner, "0101", 6000);
+    const milOn = /41\s*01\s*[8-9A-F]/i.test(String(statusReply).replace(/\s+/g, ""));
+    if (statusReply) {
+      log(
+        milOn
+          ? "Mode 01 PID 01: check-engine / MIL bit is on for at least one answering computer."
+          : "Mode 01 PID 01: check-engine / MIL bit is off on the answering computers."
+      );
+    }
 
     const sections = [
       { label: "stored codes", raw: stored.reply },
@@ -298,7 +306,10 @@ async function readVehicle() {
       if (report.chassisCodes.length) {
         log("ABS/chassis codes after full probe: " + report.chassisCodes.join(", ") + ".");
       } else if (!absHits.length) {
-        log("No ABS/chassis module answered. Emissions codes still listed — nothing was invented. FIXD often cannot reach GMT900 EBCM.");
+        log(
+          "No ABS/chassis module answered on FIXD. Emissions Mode 03/07/0A still listed — nothing was invented. " +
+            "On many GMT900 trucks the EBCM is not reachable from this adapter's HS-CAN bridge."
+        );
       }
     } catch (error) {
       log("Module probe skipped after primary read: " + (error?.message || error));
@@ -306,7 +317,14 @@ async function readVehicle() {
     }
 
     if (!codes.length) {
-      log("Primary Mode 03/07/0A returned no codes. If the check-engine light is on, retry Read codes with key on, engine off.");
+      if (!milOn) {
+        log(
+          "The PCM reported no stored/pending codes and MIL off. Clear will have nothing emissions-side to erase. " +
+            "If an ABS light is on, that module did not answer FIXD — need an EBCM-capable tool for those codes."
+        );
+      } else {
+        log("Primary Mode 03/07/0A returned no codes while MIL looks on. Retry with key on, engine off, then re-read.");
+      }
     }
   });
 }
