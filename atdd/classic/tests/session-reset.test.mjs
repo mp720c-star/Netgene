@@ -228,7 +228,12 @@ function fakeDom() {
   assert.match(resetFn, /release\(active\)/);
   assert.doesNotMatch(resetFn, /\.send\(/);
   assert.doesNotMatch(resetFn, /["']04["']/);
-  assert.match(scanner, /scanner\.send\("03"/);
+  assert.match(scanner, /readModeFamily\(scanner,\s*"03"/);
+  assert.match(
+    scanner,
+    /ELM_ADAPTER_INIT\s*=\s*Object\.freeze\(\[\s*"ATZ",\s*"ATE0",\s*"ATL0",\s*"ATS0",\s*"ATH0",\s*"ATSP0"\s*\]\)/
+  );
+  assert.match(scanner, /from\s+"\.\/stored-codes\.js"/);
   assert.match(scanner, /New scan does not send Mode 04/);
   assert.match(scanner, /btnBtClearVehicle/);
   assert.match(scanner, /CLEAR_EMISSIONS/);

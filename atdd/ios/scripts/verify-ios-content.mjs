@@ -42,12 +42,24 @@ assert.match(entry, /id="codeStep"/);
 const scanner = fs.readFileSync(path.join(root, "scanner/iphone-scanner.js"));
 assert.ok(scanner.equals(fs.readFileSync(path.join(ios, "scanner/iphone-scanner.js"))));
 const scannerText = scanner.toString("utf8");
+assert.match(
+  scannerText,
+  /ELM_ADAPTER_INIT\s*=\s*Object\.freeze\(\[\s*"ATZ",\s*"ATE0",\s*"ATL0",\s*"ATS0",\s*"ATH0",\s*"ATSP0"\s*\]\)/,
+  "FIXD-safe adapter init must stay ATZ/ATE0/ATL0/ATS0/ATH0/ATSP0"
+);
+assert.doesNotMatch(scannerText, /ELM_ADAPTER_INIT[\s\S]{0,220}"ATH1"/);
+assert.doesNotMatch(scannerText, /ELM_ADAPTER_INIT[\s\S]{0,220}"ATL1"/);
+assert.doesNotMatch(scannerText, /ELM_ADAPTER_INIT[\s\S]{0,220}"ATCAF1"/);
 for (const allowed of ["ATZ", "ATE0", "ATL0", "ATS0", "ATH0", "ATSP0"]) {
   assert.match(scannerText, new RegExp("\\b" + allowed + "\\b"), allowed);
 }
 assert.doesNotMatch(scannerText, /\bATMA\b|\bATPP\b|\bATS1\b|send\(["']04["']\)/);
 assert.match(scannerText, /FIXD_COMPATIBILITY/);
-assert.match(scannerText, /scanner\.send\("03"/);
+assert.match(scannerText, /from\s+"\.\/stored-codes\.js"/);
+assert.match(scannerText, /readModeFamily\(scanner,\s*"03"/);
+assert.match(scannerText, /readModeFamily\(scanner,\s*"07"/);
+assert.match(scannerText, /readModeFamily\(scanner,\s*"0A"/);
+assert.match(scannerText, /storedCodes\(/);
 assert.match(entry, /id="scanReadoutCard"/);
 assert.match(entry, /id="scanReadout"/);
 

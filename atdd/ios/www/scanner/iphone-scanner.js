@@ -1,7 +1,10 @@
 import { capacitorBleAvailable, createCapacitorBleTransport, formatBlePayloadDiagnostic } from "../tools/js/capacitor-ble-transport.js";
 import { FIXD_COMPATIBILITY } from "../tools/js/obd-command-guard.js";
+import { storedCodes } from "./stored-codes.js";
 
-const ELM_ADAPTER_INIT = Object.freeze(["ATZ", "ATE0", "ATL0", "ATS0", "ATH0", "ATH1", "ATL1", "ATCAF1", "ATAT1", "ATSP0"]);
+// Proven FIXD / ELM327-class setup from the last working TestFlight Mode 03 path.
+// Do not flip ATH0→ATH1 or enable ATL1/ATCAF1 here — that broke code reads on FIXD.
+const ELM_ADAPTER_INIT = Object.freeze(["ATZ", "ATE0", "ATL0", "ATS0", "ATH0", "ATSP0"]);
 
 const el = (id) => document.getElementById(id);
 const panel = el("bluetoothCard");
@@ -71,9 +74,7 @@ async function perform(action) {
 
 async function sendLogged(scanner, command, timeoutMs) {
   log("> " + command);
-  const reply = command === "03"
-    ? await scanner.send("03", { timeoutMs })
-    : await scanner.send(command, { timeoutMs });
+  const reply = await scanner.send(command, { timeoutMs });
   log(String(reply).trim());
   if (active !== scanner) throw new Error("Scanner disconnected.");
   return reply;
@@ -90,53 +91,56 @@ async function sendOptional(scanner, command, timeoutMs) {
 }
 
 async function prepareAdapter(scanner) {
-  log("Sending ELM adapter setup. These configure the dongle only. New scan does not send Mode 04.");
+  log("Sending ELM adapter setup (ATZ, ATE0, ATL0, ATS0, ATH0, ATSP0). Dongle only — not Mode 04.");
   for (const cmd of ELM_ADAPTER_INIT) {
     await sendOptional(scanner, cmd, cmd === "ATZ" ? 8000 : 4000);
   }
 }
 
-function showReport(sections) {
-  const reply = sections.map((section) => section.raw).filter(Boolean).join("\n");
-  try {
-    const report = scanApi().buildReport(sections);
-    field.value = report.uniqueCodes.join("\n");
-    field.dispatchEvent(new Event("input", { bubbles: true }));
-    const api = readout();
-    if (api) api.showScanReadout({ ok: true, codes: report.uniqueCodes, reply, report });
-    if (!report.answered) {
-      log("The vehicle did not reply. No codes were added.");
-    } else if (report.uniqueCodes.length) {
-      log("Codes from the vehicle: " + report.uniqueCodes.join(", ") + ".");
-    } else {
-      log("The vehicle answered and reported no fault codes.");
-    }
-    if (!report.chassisCodes.length) {
-      log("No chassis-module codes were in the replies. ABS codes appear only when that module answers.");
-    }
-    return report;
-  } catch (error) {
-    log("could not parse\n" + (error?.message || error));
-    const api = readout();
-    if (api) api.showScanReadout({ ok: false, reply, error: error?.message || String(error) });
-    return null;
+function showCodes(codes, reply, label) {
+  const list = Array.from(new Set((codes || []).filter(Boolean)));
+  field.value = list.join("\n");
+  field.dispatchEvent(new Event("input", { bubbles: true }));
+  const api = readout();
+  if (api) api.showScanReadout({ ok: true, codes: list, reply });
+  if (list.length) {
+    log((label || "Codes") + " from the vehicle: " + list.join(", ") + ".");
+  } else {
+    log((label || "The vehicle") + " reported no fault codes.");
   }
+  return list;
 }
 
-async function readSections(scanner) {
-  const sections = [];
-  for (const step of scanApi().FUNCTIONAL_READS) {
-    log("Requesting " + step.label + ".");
-    sections.push({ label: step.label, raw: await sendOptional(scanner, step.command, step.timeoutMs) });
+function mergeUnique(target, more) {
+  for (const code of more || []) {
+    if (code && !target.includes(code)) target.push(code);
   }
-  return sections;
+  return target;
+}
+
+async function readModeFamily(scanner, command, label, timeoutMs) {
+  log("Requesting " + label + " (" + command + ").");
+  const reply = await sendOptional(scanner, command, timeoutMs || 12000);
+  if (!reply) return { codes: [], reply: "" };
+  try {
+    const codes = storedCodes(reply);
+    return { codes, reply };
+  } catch (error) {
+    // Mode 07/0A often return NO DATA when empty; do not fail the whole read.
+    log(label + " parse: " + (error?.message || error));
+    const api = readout();
+    if (api && command === "03") {
+      api.showScanReadout({ ok: false, reply, error: error?.message || String(error) });
+    }
+    return { codes: [], reply, error };
+  }
 }
 
 async function probeNodes(scanner, sections) {
   const api = scanApi();
   const nodes = api.PHYSICAL_NODES.concat(api.EXTRA_NODES);
   const answered = [];
-  log("Asking each module on this adapter. A module that does not answer is left out.");
+  log("Optional: asking modules that answer on this adapter. Silent modules are skipped.");
   for (let index = 0; index < nodes.length; index++) {
     const node = nodes[index];
     if (node.request.length === 8 && answered.some((item) => item.request.length === 8 && item.unsupported)) break;
@@ -153,12 +157,9 @@ async function probeNodes(scanner, sections) {
     if (setupFailed) continue;
     let nodeAnswered = false;
     for (const step of api.MODULE_READS) {
-      let reply = await sendOptional(scanner, step.command, step.timeoutMs);
-      if (step.command === "1902FF" && api.needsExtendedSession(reply)) {
-        await sendOptional(scanner, api.EXTENDED_SESSION, 3000);
-        reply = await sendOptional(scanner, step.command, step.timeoutMs);
-        await sendOptional(scanner, api.DEFAULT_SESSION, 3000);
-      }
+      // Skip UDS 1902FF on the FIXD-first path — many ELM clones stall here.
+      if (step.command === "1902FF") continue;
+      const reply = await sendOptional(scanner, step.command, step.timeoutMs);
       sections.push({ label: node.response + " " + step.label, raw: reply });
       if (api.replyHasVehicleData(reply)) nodeAnswered = true;
     }
@@ -176,9 +177,48 @@ async function readVehicle() {
       await prepareAdapter(scanner);
       adapterReady = true;
     }
-    const sections = await readSections(scanner);
-    answeredNodes = await probeNodes(scanner, sections);
-    showReport(sections);
+
+    // FIXD-critical path: Mode 03 first (this is what worked on earlier TestFlight builds).
+    const stored = await readModeFamily(scanner, "03", "stored codes", 12000);
+    if (stored.error && !stored.codes.length && /incomplete|did not reply|rejected/i.test(stored.error.message || stored.error)) {
+      throw new Error(stored.error.message || String(stored.error));
+    }
+    let codes = showCodes(stored.codes, stored.reply, "Stored codes");
+
+    const pending = await readModeFamily(scanner, "07", "pending codes", 10000);
+    codes = showCodes(mergeUnique(codes, pending.codes), [stored.reply, pending.reply].filter(Boolean).join("\n"), "Stored/pending codes");
+
+    const permanent = await readModeFamily(scanner, "0A", "permanent codes", 10000);
+    codes = showCodes(
+      mergeUnique(codes, permanent.codes),
+      [stored.reply, pending.reply, permanent.reply].filter(Boolean).join("\n"),
+      "Codes"
+    );
+
+    // Light status only — do not block on a long 0100/VIN/module sweep before codes appear.
+    await sendOptional(scanner, "0101", 6000);
+
+    try {
+      const sections = [
+        { label: "stored codes", raw: stored.reply },
+        { label: "pending codes", raw: pending.reply },
+        { label: "permanent codes", raw: permanent.reply },
+      ];
+      answeredNodes = await probeNodes(scanner, sections);
+      const report = scanApi().buildReport(sections);
+      if (report.uniqueCodes.length) {
+        codes = showCodes(mergeUnique(codes, report.uniqueCodes), sections.map((s) => s.raw).join("\n"), "Codes");
+      }
+      if (!report.chassisCodes.length) {
+        log("No chassis-module codes in the replies. ABS codes appear only when that module answers.");
+      }
+    } catch (error) {
+      log("Module probe skipped after primary read: " + (error?.message || error));
+    }
+
+    if (!codes.length) {
+      log("Primary Mode 03/07/0A returned no codes. If the check-engine light is on, retry Read codes with key on, engine off.");
+    }
   });
 }
 
@@ -223,20 +263,22 @@ async function clearVehicle() {
       await sendOptional(scanner, api.CLEAR_MODULE, 8000);
     }
     for (const command of api.RESTORE_HEADER) await sendOptional(scanner, command, 3000);
-    log("Reading the vehicle again.");
-    const sections = await readSections(scanner);
-    answeredNodes = await probeNodes(scanner, sections);
-    showReport(sections);
+    log("Reading stored codes again.");
+    adapterReady = true;
+    const stored = await readModeFamily(scanner, "03", "stored codes", 12000);
+    showCodes(stored.codes, stored.reply, "Stored codes");
   });
 }
 
 panel.querySelector(".lead").textContent =
-  "Connect any Bluetooth-capable ELM327-style OBD-II reader. FIXD brand protocol claim is " + FIXD_COMPATIBILITY + ".";
+  "Connect a FIXD or generic ELM327-style BLE OBD-II reader, then Read codes. FIXD brand protocol claim is " +
+  FIXD_COMPATIBILITY +
+  ".";
 panel.querySelector("h2").textContent = "Connect OBD-II Scanner";
 panel.querySelector("p.small.mt-8").textContent =
-  "A read lists stored, pending, permanent, and module codes the vehicle returns, including ABS/chassis codes when that module answers. Clear sends Mode 04 plus a module clear to each computer that answered. New scan does not send Mode 04. No simulated scanner data is used.";
+  "Read codes starts with Mode 03 (stored), then pending and permanent. Adapter setup is ATZ/ATE0/ATL0/ATS0/ATH0/ATSP0 — the same sequence as the last working TestFlight read. Clear still needs confirmation. No simulated scanner data is used.";
 connect.textContent = "Connect OBD-II Scanner";
-top.textContent = "Connect Scanner";
+top.textContent = "Connect";
 if (clear) clear.textContent = "Clear codes (incl. ABS)";
 if (scanAll) scanAll.hidden = false;
 const demoBtn = el("btnBtDemo");
@@ -244,7 +286,7 @@ if (demoBtn) demoBtn.remove();
 el("btIphoneGate").hidden = true;
 try { available = capacitorBleAvailable(); } catch { available = false; }
 el("btSupport").textContent = available
-  ? "iPhone Bluetooth is available. Pick any ELM327-style BLE OBD-II adapter. FIXD brand protocol claim is " + FIXD_COMPATIBILITY + "."
+  ? "iPhone Bluetooth is available. Pick your FIXD or other ELM327-style BLE adapter. Protocol claim is " + FIXD_COMPATIBILITY + "."
   : "The native Bluetooth connection is unavailable in this copy.";
 top.onclick = connect.onclick = () => choose();
 if (scanAll) scanAll.onclick = () => choose();
@@ -281,7 +323,8 @@ async function choose() {
     if (active !== scanner) throw new Error("Scanner disconnected.");
     ready = true;
     const name = device.name || "BLE adapter";
-    log("Connected to " + name + ". Tap Read codes. The app lists only codes this adapter returns.");
+    const fixdName = device.isFixdName ? " (FIXD-named device)" : "";
+    log("Connected to " + name + fixdName + ". Tap Read codes for Mode 03 stored faults first.");
   });
 }
 
@@ -290,4 +333,5 @@ window.ATDDIphoneScanner = {
     await release(active);
     if (output) output.textContent = "Idle. Tap Connect, with the adapter powered in the OBD port.";
   },
+  ELM_ADAPTER_INIT,
 };
