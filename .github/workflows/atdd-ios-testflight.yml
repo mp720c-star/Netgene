@@ -1,6 +1,10 @@
 name: atdd-ios-testflight
 
 on:
+  # One-shot: upload iOS 27 UIScene launch-crash fix to TestFlight, then remove this push trigger.
+  push:
+    branches:
+      - cursor/atdd-scene-lifecycle-758a
   workflow_dispatch:
     inputs:
       upload:
@@ -61,6 +65,12 @@ jobs:
           grep -q 'registerPlugin("BluetoothLe")' atdd/web/js/capacitor-ble-transport.js
           grep -q '@capacitor-community/bluetooth-le' atdd/ios/package.json
           grep -q 'CapacitorCommunityBluetoothLe' atdd/ios/ios/App/Podfile
+          # iOS 27 traps at launch without UIScene lifecycle adoption.
+          grep -q 'UIApplicationSceneManifest' atdd/ios/ios/App/App/Info.plist
+          grep -q 'SceneDelegate' atdd/ios/ios/App/App/Info.plist
+          test -f atdd/ios/ios/App/App/SceneDelegate.swift
+          grep -q 'configurationForConnecting' atdd/ios/ios/App/App/AppDelegate.swift
+          grep -q 'SceneDelegate.swift in Sources' atdd/ios/ios/App/App.xcodeproj/project.pbxproj
           xcodebuild -version
           sdk=$(xcrun --sdk iphoneos --show-sdk-version)
           echo "IPHONEOS_SDK=$sdk"
