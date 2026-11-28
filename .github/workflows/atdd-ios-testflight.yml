@@ -1,10 +1,6 @@
 name: atdd-ios-testflight
 
 on:
-  # One-shot: upload UIScene fix + Dummy Diagnostics bonus app to TestFlight, then remove this push trigger.
-  push:
-    branches:
-      - cursor/atdd-scene-lifecycle-758a
   workflow_dispatch:
     inputs:
       upload:
