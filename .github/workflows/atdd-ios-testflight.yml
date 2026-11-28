@@ -1,7 +1,7 @@
 name: atdd-ios-testflight
 
 on:
-  # One-shot: upload iOS 27 UIScene launch-crash fix to TestFlight, then remove this push trigger.
+  # One-shot: upload UIScene fix + Dummy Diagnostics bonus app to TestFlight, then remove this push trigger.
   push:
     branches:
       - cursor/atdd-scene-lifecycle-758a

@@ -192,7 +192,7 @@ const ATDD_TAB_FOR = {
   vehicleSearchCard:'vehicle', selectedVehiclePanel:'vehicle', cdiPinoutView:'vehicle',
   symptomRepairCard:'symptoms', symptomEntryView:'symptoms', symptomSearchResults:'symptoms',
   resultsCard:'results', results:'results',
-  jobsCard:'more', howtoHubCard:'more', rebuildCard:'more', solutionsCardWrap:'more', computerCard:'more',
+  jobsCard:'more', howtoHubCard:'more', bonusAppsCard:'more', rebuildCard:'more', solutionsCardWrap:'more', computerCard:'more',
   vehicleFieldsCard:'more', fluidCard:'more', privacyCard:'more', moreIntro:'more'
 };
 
@@ -1358,6 +1358,38 @@ function wireHowtoHub(){
   renderHowtoHub('scanners');
 }
 
+const BONUS_DUMMY_DIAGNOSTICS_URL = 'https://www.dummydiagnostics.com/';
+
+async function openExternalUrl(url){
+  const target = String(url || '').trim();
+  if(!/^https:\/\//i.test(target)) return;
+  try{
+    const Cap = typeof window !== 'undefined' ? window.Capacitor : null;
+    if(Cap && typeof Cap.isNativePlatform === 'function' && Cap.isNativePlatform()){
+      const App = Cap.Plugins && Cap.Plugins.App;
+      if(App && typeof App.openUrl === 'function'){
+        await App.openUrl({ url: target });
+        return;
+      }
+    }
+  }catch(_err){ /* fall through to browser open */ }
+  if(typeof window !== 'undefined' && typeof window.open === 'function'){
+    window.open(target, '_blank', 'noopener,noreferrer');
+  }
+}
+
+function wireBonusApps(){
+  const card = byId('bonusAppsCard');
+  if(!card || card.getAttribute('data-wired') === '1') return;
+  card.setAttribute('data-wired', '1');
+  card.addEventListener('click', (e) => {
+    const btn = e.target.closest && e.target.closest('[data-external-url]');
+    if(!btn) return;
+    e.preventDefault();
+    openExternalUrl(btn.getAttribute('data-external-url') || BONUS_DUMMY_DIAGNOSTICS_URL);
+  });
+}
+
 function renderCommonJobs(filter){
   const box = byId('commonJobs');
   if(!box || typeof DiagEngine === 'undefined' || !DiagEngine.listCommonJobs) return;
@@ -1659,6 +1691,7 @@ async function init(){
   // Browse libraries stay collapsed — diagnosis pulls only what is needed.
   document.querySelectorAll('details.extra, details.collapsible').forEach((el) => { el.open = false; });
   wireHowtoHub();
+  wireBonusApps();
   const jobsCard = byId('jobsCard');
   if(jobsCard){
     jobsCard.addEventListener('toggle', () => { if(jobsCard.open) renderCommonJobs(); });
